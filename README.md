@@ -2,7 +2,7 @@
 
 **Asistente inteligente que orienta a las personas sobre la prioridad de atención médica a partir de los síntomas que describen — sin diagnosticar, sin prescribir, sin reemplazar a un profesional de salud.**
 
-Proyecto desarrollado en el marco de **Makers AI Product Fellowship** (equipo *AI Health Assist*).
+Proyecto desarrollado en el marco de **Makers Fellowship** (equipo *AI Health Assist*).
 
 ---
 
