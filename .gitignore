@@ -1,0 +1,7 @@
+.env
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+
+HealthGuide_AI_DemoDay.pptx
+HealthGuide_AI_Guion_y_Guia.docx
