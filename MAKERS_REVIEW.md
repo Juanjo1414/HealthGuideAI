@@ -34,3 +34,45 @@ En productos de IA de salud, un JSON valido no basta. El sistema debe demostrar 
 1. Core: completar `pass_fail` para los casos base y extendidos.
 2. Intermediate: conectar `validate_triage_output.py` a una ejecucion real del notebook o a una funcion importable.
 3. Advanced: crear una tabla comparativa Gemini vs NVIDIA con score, latencia, costo estimado y fallas de seguridad.
+
+<!-- MAKERS_REVIEW_2026_08_27_START -->
+## Revision docente - 2026-08-27
+
+### Lo que vimos
+
+- Juan Jose Jaramillo hizo un avance fuerte: corrio evals extendidos, comparo Gemini/NVIDIA y documento no determinismo, latencia, tokens y fallas de seguridad.
+- El proyecto ya no esta solo en modo demo: empieza a tener evidencia repetible.
+- La decision de abandonar Gemini por cuota/estabilidad es una decision tecnica defendible, no un gusto.
+- Falta que Cristian deje aporte individual visible en GitHub.
+- El riesgo principal sigue siendo medico: una respuesta bien escrita puede ser peligrosa si clasifica mal prioridad, omite informacion o sugiere medicacion.
+
+### Reto de hoy
+
+Conviertan la comparacion de modelos en una decision de ingenieria:
+
+1. En README.md, agreguen Current score, Known failures y Next hypothesis.
+2. En vals/results.md, dejen una tabla con al menos 10 casos, score, fallas y modelo usado.
+3. Elijan una falla de seguridad y propongan una sola mejora para la siguiente corrida.
+
+### Tarea obligatoria: diagrama de arquitectura
+
+Crear docs/arquitectura.md con un diagrama Mermaid que muestre:
+
+`mermaid
+flowchart LR
+  Usuario --> InputSintomas
+  InputSintomas --> Prompt
+  Prompt --> Modelo
+  Modelo --> ValidadorTriage
+  ValidadorTriage --> OutputSeguro
+  ValidadorTriage --> RevisionHumana
+  Evals --> ValidadorTriage
+`
+
+Adapten nombres reales del repo. El diagrama debe responder: que entra, que decide el modelo, que valida el codigo, que se guarda como evidencia y cuando requiere revision humana.
+
+### Criterio de aceptacion
+
+No cuenta si solo corre una vez. Cuenta si pueden explicar con evidencia: baseline, after, falla principal y siguiente hipotesis.
+<!-- MAKERS_REVIEW_2026_08_27_END -->
+
