@@ -76,3 +76,29 @@ Adapten nombres reales del repo. El diagrama debe responder: que entra, que deci
 No cuenta si solo corre una vez. Cuenta si pueden explicar con evidencia: baseline, after, falla principal y siguiente hipotesis.
 <!-- MAKERS_REVIEW_2026_08_27_END -->
 
+
+<!-- MAKERS_CODE_ARCH_REVIEW_2026_09_01_START -->
+## Revision de codigo y arquitectura - 2026-09-01
+
+### Lectura docente
+
+- Hay avance real: evals, decision table y comparacion de modelos empiezan a mostrar criterio de sistema, no solo demo.
+- La arquitectura aparece en origin/dev/Juanjo, pero no esta consolidada en la rama principal ni en una entrega de equipo.
+- Cristian aparece con DECISION_TABLE.md; buen aporte, pero debe conectarse con codigo/evals para que no quede como documento suelto.
+- El riesgo principal sigue siendo de seguridad: triage medico, prioridad, omision de sintomas y recomendaciones que parecen confiables sin evidencia suficiente.
+
+### Revision de principios
+
+- Bien: estan usando evidencia para tomar decisiones de modelo.
+- Falta: separar con claridad modelo, alidacion, vals y decision final.
+- Falta: una tabla ejecutiva que permita revisar rapido score, fallas, latencia y siguiente hipotesis.
+
+### Pendiente de equipo
+
+Consolidar docs/arquitectura.md en la rama de equipo y explicar el flujo real: input de sintomas, prompt/modelo, validador, salida, fallback y revision humana.
+
+### Pendiente por poca evidencia individual
+
+Cristian debe dejar un commit tecnico conectado al sistema: ejecutar evals, ajustar validacion o convertir la decision table en criterio verificable.
+<!-- MAKERS_CODE_ARCH_REVIEW_2026_09_01_END -->
+
