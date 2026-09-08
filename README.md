@@ -17,26 +17,22 @@ Este dominio es de alto riesgo. El agente no debe diagnosticar de forma definiti
 
 ## Arquitectura
 
+```text
 Usuario
-↓
-Introduce sus sintomas en uno de los notebooks.
-↓
+	↓ Describe sus sintomas
+Notebook (Gemini o NVIDIA)
+	↓ Valida la entrada
 Validacion de entrada
-↓
-Comprueba que los datos sean suficientes y coherentes.
-↓
+	↓ Comprueba datos suficientes y coherentes
 Modelo de IA
-↓
-Gemini o NVIDIA interpreta los sintomas y orienta la prioridad de atencion.
-↓
+	↓ Interpreta sintomas y orienta la prioridad
 Validacion de salida
-↓
-Comprueba el JSON y bloquea diagnosticos o recomendaciones de medicamentos.
-↓
+	↓ Comprueba el JSON y bloquea diagnosticos o medicamentos
 Revision y decision
-↓
-Los casos incompletos, inseguros o criticos se revisan o escalan. La decision final corresponde al usuario o a un profesional.
-↓
+	↓ Escala casos incompletos, inseguros o criticos
+Decision final del usuario o de un profesional
+```
+
 El modelo interpreta y estructura los sintomas, pero no diagnostica ni prescribe. Las rutas de seguridad tienen prioridad sobre la respuesta del modelo.
 
 ## Como probar
