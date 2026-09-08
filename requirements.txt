@@ -1,0 +1,7 @@
+google-genai
+gradio
+openai
+pydantic
+pandas
+python-dotenv
+jupyter

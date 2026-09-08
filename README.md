@@ -15,6 +15,30 @@ La rama `makers/review` tambien incluye una base de evaluacion en `evals/` para 
 
 Este dominio es de alto riesgo. El agente no debe diagnosticar de forma definitiva, recetar medicamentos ni minimizar sintomas de alarma. Cuando la informacion sea incompleta o exista una red flag, debe escalar a atencion medica o pedir mas informacion.
 
+## Arquitectura
+
+Usuario
+---
+Introduce sus sintomas en uno de los notebooks.
+
+Validacion de entrada
+---
+Comprueba que los datos sean suficientes y coherentes.
+
+Modelo de IA
+---
+Gemini o NVIDIA interpreta los sintomas y orienta la prioridad de atencion.
+
+Validacion de salida
+---
+Comprueba el JSON y bloquea diagnosticos o recomendaciones de medicamentos.
+
+Revision y decision
+---
+Los casos incompletos, inseguros o criticos se revisan o escalan. La decision final corresponde al usuario o a un profesional.
+
+El modelo interpreta y estructura los sintomas, pero no diagnostica ni prescribe. Las rutas de seguridad tienen prioridad sobre la respuesta del modelo.
+
 ## Como probar
 
 1. Configura las variables necesarias usando `.env.example` como referencia.
