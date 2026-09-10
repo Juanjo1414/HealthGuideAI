@@ -4,47 +4,40 @@ Asistente de triage medico educativo para orientar sintomas iniciales y recomend
 
 ## Estado actual
 
-El repo tiene dos notebooks principales:
+El repo corre sobre un unico notebook, `HealthGuideAI_Nvidia.ipynb` (NVIDIA nemotron-3-super-120b-a12b).
+Hubo una version con Gemini (`HealthGuideAI_Gemini.ipynb`), pero se dio de baja: la
+`GEMINI_API_KEY` del equipo esta en el tier gratuito, con un limite duro de 20 requests/dia por
+modelo, y el flujo completo necesita del orden de 36 llamadas solo para llegar a la Parte 11 de
+evals — no alcanza ni recortando partes no esenciales. El detalle completo (incluyendo tres
+bugs reales que encontramos en el camino) esta en `evals/results.md`.
 
-- `HealthGuideAI_Gemini.ipynb`: implementacion usando Gemini.
-- `HealthGuideAI_Nvidia.ipynb`: implementacion usando NVIDIA.
-
-La rama `makers/review` tambien incluye una base de evaluacion en `evals/` para medir si el sistema maneja casos incompletos, contradicciones, red flags medicas y prompt injection.
+Incluye una base de evaluacion en `evals/` para medir si el sistema maneja casos incompletos,
+contradicciones, red flags medicas y prompt injection, corrida de verdad contra la API real
+(no solo diseñada) — ver `evals/results.md` para los resultados y `docs/arquitectura.md` para
+el diagrama del flujo completo.
 
 ## Riesgo principal
 
 Este dominio es de alto riesgo. El agente no debe diagnosticar de forma definitiva, recetar medicamentos ni minimizar sintomas de alarma. Cuando la informacion sea incompleta o exista una red flag, debe escalar a atencion medica o pedir mas informacion.
 
-## Arquitectura
-
-```text
-Usuario
-	↓ Describe sus sintomas
-Notebook (Gemini o NVIDIA)
-	↓ Valida la entrada
-Validacion de entrada
-	↓ Comprueba datos suficientes y coherentes
-Modelo de IA
-	↓ Interpreta sintomas y orienta la prioridad
-Validacion de salida
-	↓ Comprueba el JSON y bloquea diagnosticos o medicamentos
-Revision y decision
-	↓ Escala casos incompletos, inseguros o criticos
-Decision final del usuario o de un profesional
-```
-
-El modelo interpreta y estructura los sintomas, pero no diagnostica ni prescribe. Las rutas de seguridad tienen prioridad sobre la respuesta del modelo.
-
 ## Como probar
 
 1. Configura las variables necesarias usando `.env.example` como referencia.
-2. Abre uno de los notebooks principales.
+2. Abre `HealthGuideAI_Nvidia.ipynb`.
 3. Ejecuta el flujo del prototipo.
-4. Corre los casos de `evals/triage_eval_cases.csv` y `evals/triage_eval_cases_extended.csv`.
-5. Usa `evals/validate_triage_output.py` como punto de partida para convertir las pruebas manuales en validacion automatizada.
+4. Corre los casos de `evals/triage_eval_cases.csv` y `evals/triage_eval_cases_extended.csv`
+   (la Parte 11 del notebook ya automatiza esto con `run_eval_suite`).
+5. Revisa `evals/results.md` para los resultados reales y `docs/arquitectura.md` para el
+   diagrama del flujo completo.
 
 ## Pendiente
 
 - Documentar requisitos exactos de entorno.
-- Automatizar la ejecucion de evals desde consola.
-- Definir un schema de salida unico entre la version Gemini y la version NVIDIA.
+- Automatizar la ejecucion de evals desde consola (hoy depende de abrir el notebook a mano).
+- Conseguir que alguien con criterio clinico real revise una muestra de respuestas, en vez de
+  seguir ajustando `MEDICATION_KEYWORDS` a ojo.
+- Confirmar que Cristian tenga un aporte individual visible en el historial de GitHub.
+- Consolidar `docs/arquitectura.md` y `DECISION_LOG.md` en la rama de equipo (`main`), no solo
+  en `dev/Juanjo` — pedido explicito de la revision docente del 2026-09-01.
+- Implementar el endpoint `/triage` y la web app de la decision de producto (`DECISION_LOG.md`,
+  decision 2) — hoy la decision esta documentada pero no hay backend ni frontend todavia.

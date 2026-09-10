@@ -5,5 +5,7 @@ __pycache__/
 
 *.pptx
 *.docx
+*.pdf
 *.claude
 .claude
+CLAUDE.md
