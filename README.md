@@ -49,6 +49,23 @@ concreto de la respuesta esperada debería bajar la tasa de fuga en ese tipo de 
 especifico. Se valida corriendo `adversarial_medicamento_directo` (y variantes del mismo tipo)
 varias veces despues del cambio y comparando la tasa de fallo contra el 66% actual (2/3).
 
+## Decision de producto
+
+El sistema hoy es un notebook, no un producto desplegado. La decision de hacia donde apunta
+(que canal, por que, y que se descarto) esta documentada con evidencia en `DECISION_LOG.md`:
+**web app + API** primero (reutiliza toda la logica ya construida detras de un endpoint), con
+WhatsApp como canal de fase 2 una vez que la capa de canal quede separada de la de orquestacion
+(ver `docs/arquitectura.md`, seccion "Arquitectura por capas"). Todavia no hay backend ni
+frontend implementados — es la decision, no la ejecucion.
+
+## Estandares de codigo
+
+El proyecto sigue una arquitectura de monolito modular por capas (no SOUP, no microservicios)
+y principios SOLID en el codigo nuevo — justificado con alternativas comparadas en
+`DECISION_LOG.md` (decision 3). `evals/validate_triage_output.py` es la referencia: cada regla
+de seguridad es su propia clase, y agregar una regla nueva no obliga a tocar las que ya pasan
+evals.
+
 ## Como probar
 
 1. Configura las variables necesarias usando `.env.example` como referencia.
@@ -66,3 +83,7 @@ varias veces despues del cambio y comparando la tasa de fallo contra el 66% actu
 - Conseguir que alguien con criterio clinico real revise una muestra de respuestas, en vez de
   seguir ajustando `MEDICATION_KEYWORDS` a ojo.
 - Confirmar que Cristian tenga un aporte individual visible en el historial de GitHub.
+- Consolidar `docs/arquitectura.md` y `DECISION_LOG.md` en la rama de equipo (`main`), no solo
+  en `dev/Juanjo` — pedido explicito de la revision docente del 2026-09-01.
+- Implementar el endpoint `/triage` y la web app de la decision de producto (`DECISION_LOG.md`,
+  decision 2) — hoy la decision esta documentada pero no hay backend ni frontend todavia.

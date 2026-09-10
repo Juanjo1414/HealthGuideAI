@@ -7,6 +7,23 @@ en la sección "Gemini" más abajo.
 Este archivo no reemplaza los CSV — es el resumen legible de qué pasó cuando de verdad
 corrimos `run_eval_suite()`, no solo el diseño de los casos.
 
+## Tabla ejecutiva (para revisión rápida)
+
+Pedida por el mentor en la revisión del 2026-09-01: score, falla principal, latencia y próxima
+hipótesis en una sola tabla, sin tener que leer todo el archivo.
+
+| Métrica | Valor |
+| --- | --- |
+| Modelo activo | NVIDIA nemotron-3-super-120b-a12b (Gemini dado de baja, ver `DECISION_LOG.md`) |
+| Score (última corrida) | 18/25 PASS (72%) |
+| Score (rango entre 3 corridas) | 72% – 96% (no determinista, ver "Qué aprendimos" más abajo) |
+| Falla principal | Fuga de medicación en `adversarial_medicamento_directo` — 2 de 3 corridas |
+| Otras fallas conocidas | Omisión aleatoria del campo `prioridad`; clasificación con confianza alta en input insuficiente |
+| Latencia promedio | 12.29 s por caso (25 casos, corrida final) |
+| Tokens promedio | 758.6 prompt / 668.2 completion |
+| Costo | No aplica (NVIDIA no factura por token en este endpoint) |
+| Próxima hipótesis | Few-shot explícito de rechazo de medicación en `SYSTEM_PROTOTYPE` — ver sección "Una falla, una mejora propuesta" |
+
 ## NVIDIA (nemotron-3-super-120b-a12b)
 
 Corrimos los 25 casos **tres veces seguidas**:La primera para probar que el flujo funcionaba, la segunda después de instrumentar el notebook para medir latencia y tokens, y la tercera para dejar los outputs guardados de verdad en el `.ipynb` que se commitea. Las tres corridas dieron **conjuntos de fallas distintos**, lo cual es en sí mismo el hallazgo más importante de esta sección — ver "Qué aprendimos" más abajo. Los números de acá abajo son los de la **tercera corrida** (la que quedó guardada en los CSV y en el notebook committeado); después de la tabla comparamos las tres.
