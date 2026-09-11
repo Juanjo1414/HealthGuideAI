@@ -33,8 +33,10 @@ modelo, no de todo el sistema (ver "Frontera IA vs software" en `docs/arquitectu
 
 ## Decisión 2 — Canal de producto: web app + API ahora, WhatsApp como fase 2
 
-**Estado:** decisión documentada esta sesión (2026-09-10). No se implementó código de backend
-ni frontend todavía — es la decisión de hacia dónde apuntar, no la ejecución.
+**Estado:** implementada (2026-09-10). `backend/` (FastAPI) expone `POST /api/triage`
+y `frontend/` (React + Vite) consume ese endpoint — probado de punta a punta con
+llamadas reales a NVIDIA, incluyendo un caso de red flag que escaló correctamente a
+EMERGENCIA + revisión humana. Ver `backend/README.md` y `frontend/README.md`.
 
 El mentor pidió explícitamente elegir una forma de producto (web app, app móvil, API, agente,
 dashboard o workflow) en vez de dejar el sistema solo como notebook. Las opciones reales que
@@ -107,15 +109,13 @@ mismos `pass_fail`, se verificó corriendo casos de control antes y después del
   regla concreta tiene que implementar nada que no necesite.
 - **D — Dependency Inversion:** `TriageValidator` depende de la abstracción `ValidationRule`,
   no de las cinco reglas concretas. Es la misma idea que la capa de modelo intercambiable de
-  `docs/arquitectura.md`: la orquestación no debería depender de si el proveedor es NVIDIA o
-  Gemini, sino de una interfaz común — ese es el siguiente paso pendiente (hoy `run_prototype`
-  todavía llama a `ask_nvidia_json` directamente en el notebook, sin una interfaz `ModelProvider`
-  de por medio).
+  `docs/arquitectura.md`.
 
-**Pendiente, no completado hoy:** extraer `run_prototype`/`ask_nvidia_json` del notebook a una
-interfaz `ModelProvider` real (con `NvidiaProvider` como implementación) queda fuera de esta
-sesión a propósito — el notebook es también la evidencia de las corridas ya documentadas en
-`evals/results.md`, y volver a ejecutarlo después de refactorizarlo cambiaría esos números por
-el no-determinismo del modelo, no por un error. Ese refactor debería hacerse en una sesión
-dedicada, corriendo y documentando una nueva ronda de evals a propósito, no como efecto
-secundario de una limpieza de código.
+**Actualización 2026-09-10 (misma sesión, más tarde):** la interfaz `ModelProvider` sí se
+implementó — pero en `backend/app/providers/`, no en el notebook. `TriageOrchestrator`
+(`backend/app/orchestration/triage_orchestrator.py`) recibe el proveedor inyectado y no sabe
+si es NVIDIA u otro; `NvidiaProvider` es la única implementación real hoy. El notebook
+(`HealthGuideAI_Nvidia.ipynb`) se deja intacto a propósito, por la misma razón de siempre: es
+evidencia de corridas ya documentadas en `evals/results.md`, y refactorizarlo cambiaría esos
+números por el no-determinismo del modelo, no por un error. El backend es código nuevo, no
+un refactor del notebook — por eso no hay conflicto con esa regla.

@@ -1,0 +1,66 @@
+/*
+  Design tokens — generados con la skill ui-ux-pro-max para un producto de
+  salud (calm cyan + health green, estilo "Accessible & Ethical": alto
+  contraste, sin gradientes llamativos, sin animaciones agresivas).
+*/
+
+:root {
+  /* Marca */
+  --color-primary: #0891b2;
+  --color-primary-hover: #0e7490;
+  --color-secondary: #22d3ee;
+  --color-cta: #059669;
+  --color-cta-hover: #047857;
+  --color-bg: #ecfeff;
+  --color-surface: #ffffff;
+  --color-text: #164e63;
+  --color-text-muted: #475569;
+  --color-border: #cbd5e1;
+
+  /* Prioridad — semántico, independiente de la marca */
+  --priority-baja-bg: #ecfdf5;
+  --priority-baja-border: #059669;
+  --priority-baja-text: #065f46;
+
+  --priority-media-bg: #fffbeb;
+  --priority-media-border: #d97706;
+  --priority-media-text: #92400e;
+
+  --priority-alta-bg: #fff7ed;
+  --priority-alta-border: #ea580c;
+  --priority-alta-text: #9a3412;
+
+  --priority-emergencia-bg: #fef2f2;
+  --priority-emergencia-border: #dc2626;
+  --priority-emergencia-text: #991b1b;
+
+  /* Tipografia */
+  --font-heading: "Figtree", system-ui, sans-serif;
+  --font-body: "Noto Sans", system-ui, sans-serif;
+
+  /* Espaciado / radios */
+  --radius-md: 12px;
+  --radius-lg: 20px;
+  --shadow-card: 0 1px 3px rgba(22, 78, 99, 0.08), 0 1px 2px rgba(22, 78, 99, 0.06);
+  --focus-ring: 0 0 0 3px rgba(8, 145, 178, 0.35);
+
+  --transition-fast: 180ms ease;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --color-bg: #0b1a20;
+    --color-surface: #10262e;
+    --color-text: #e6fbff;
+    --color-text-muted: #9fb8c2;
+    --color-border: #1f3b45;
+  }
+}
+
+:root[data-theme="dark"] {
+  --color-bg: #0b1a20;
+  --color-surface: #10262e;
+  --color-text: #e6fbff;
+  --color-text-muted: #9fb8c2;
+  --color-border: #1f3b45;
+}

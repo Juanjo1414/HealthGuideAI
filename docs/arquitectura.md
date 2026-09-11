@@ -176,12 +176,13 @@ resto) sin la sobrecarga de mantener múltiples servicios desplegados por separa
 
 ## 6. Decisión de producto: dónde vive el agente
 
-Documentado con evidencia y alternativas comparadas en `DECISION_LOG.md` (decisión 2). En
-resumen: **web app + API** ahora — reutiliza toda la lógica ya construida detrás de un
-endpoint y permite mostrar prioridad/alertas/revisión humana como estados de UI explícitos —,
-con **WhatsApp como canal de fase 2**, agregado sin reescribir el modelo ni el validador gracias
-a que el canal queda desacoplado de la orquestación en la sección 5. Esta sesión deja la
-decisión y el porqué documentados; el backend y el frontend todavía no están implementados.
+Documentado con evidencia y alternativas comparadas en `DECISION_LOG.md` (decisión 2), y ya
+implementado: **web app + API**, en `backend/` (FastAPI, capas API → orquestación → modelo →
+validación → evidencia) y `frontend/` (React + Vite, la capa de canal), probado de punta a
+punta con llamadas reales a NVIDIA. **WhatsApp queda como canal de fase 2**, agregable sin
+reescribir el modelo ni el validador gracias a que el canal quedó desacoplado de la
+orquestación en la sección 5 — sería un segundo cliente de `POST /api/triage`, no una
+reescritura. Ver `backend/README.md` y `frontend/README.md` para cómo correrlo.
 
 ## 7. Cuándo requiere revisión humana
 

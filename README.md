@@ -51,12 +51,16 @@ varias veces despues del cambio y comparando la tasa de fallo contra el 66% actu
 
 ## Decision de producto
 
-El sistema hoy es un notebook, no un producto desplegado. La decision de hacia donde apunta
-(que canal, por que, y que se descarto) esta documentada con evidencia en `DECISION_LOG.md`:
-**web app + API** primero (reutiliza toda la logica ya construida detras de un endpoint), con
-WhatsApp como canal de fase 2 una vez que la capa de canal quede separada de la de orquestacion
-(ver `docs/arquitectura.md`, seccion "Arquitectura por capas"). Todavia no hay backend ni
-frontend implementados — es la decision, no la ejecucion.
+**Web app + API**, ya implementada en `backend/` (FastAPI) y `frontend/` (React + Vite) —
+ver la decision completa con alternativas comparadas en `DECISION_LOG.md`. WhatsApp queda
+como canal de fase 2: se conectaria al mismo endpoint `/api/triage` sin tocar el modelo ni
+el validador, gracias a que la capa de canal esta separada de la de orquestacion (ver
+`docs/arquitectura.md`, seccion "Arquitectura por capas"). El notebook
+(`HealthGuideAI_Nvidia.ipynb`) no se toco: sigue siendo la evidencia de las corridas de evals
+ya documentadas; el backend reutiliza `evals/validate_triage_output.py` en vez de duplicarlo.
+
+Como correrlo: ver `backend/README.md` y `frontend/README.md` (necesitas el backend corriendo
+para que el frontend tenga con quien hablar).
 
 ## Estandares de codigo
 
@@ -85,5 +89,7 @@ evals.
 - Confirmar que Cristian tenga un aporte individual visible en el historial de GitHub.
 - Consolidar `docs/arquitectura.md` y `DECISION_LOG.md` en la rama de equipo (`main`), no solo
   en `dev/Juanjo` — pedido explicito de la revision docente del 2026-09-01.
-- Implementar el endpoint `/triage` y la web app de la decision de producto (`DECISION_LOG.md`,
-  decision 2) — hoy la decision esta documentada pero no hay backend ni frontend todavia.
+- Agregar tests automatizados al backend (hoy se probo manualmente con curl y con un flujo
+  de navegador real, pero no hay suite de pruebas en el repo).
+- Desplegar `backend/` y `frontend/` en algun lado real (hoy solo corren en local) para poder
+  compartir un link de demo en vez de pedirle a alguien que clone el repo.
