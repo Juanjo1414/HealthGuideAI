@@ -1,66 +1,44 @@
-/*
-  Design tokens — generados con la skill ui-ux-pro-max para un producto de
-  salud (calm cyan + health green, estilo "Accessible & Ethical": alto
-  contraste, sin gradientes llamativos, sin animaciones agresivas).
-*/
-
 :root {
-  /* Marca */
-  --color-primary: #0891b2;
-  --color-primary-hover: #0e7490;
-  --color-secondary: #22d3ee;
-  --color-cta: #059669;
-  --color-cta-hover: #047857;
-  --color-bg: #ecfeff;
-  --color-surface: #ffffff;
-  --color-text: #164e63;
-  --color-text-muted: #475569;
-  --color-border: #cbd5e1;
+  --color-primary: #087eae;
+  --color-primary-hover: #05658d;
+  --color-secondary: #176d91;
+  --color-cta: #b8f47d;
+  --color-cta-hover: #d0ff9f;
+  --color-bg: #edf4f2;
+  --color-surface: #fbfdfc;
+  --color-surface-raised: #f8fcfa;
+  --color-text: #12231f;
+  --color-text-muted: #5d706b;
+  --color-border: #76b8d1;
+  --color-border-soft: #c3e0eb;
 
   /* Prioridad — semántico, independiente de la marca */
-  --priority-baja-bg: #ecfdf5;
-  --priority-baja-border: #059669;
-  --priority-baja-text: #065f46;
+  --priority-baja-bg: #12271e;
+  --priority-baja-border: #74d99c;
+  --priority-baja-text: #b8f4cf;
 
-  --priority-media-bg: #fffbeb;
-  --priority-media-border: #d97706;
-  --priority-media-text: #92400e;
+  --priority-media-bg: #2c2513;
+  --priority-media-border: #e8ba5b;
+  --priority-media-text: #ffe2a0;
 
-  --priority-alta-bg: #fff7ed;
-  --priority-alta-border: #ea580c;
-  --priority-alta-text: #9a3412;
+  --priority-alta-bg: #302016;
+  --priority-alta-border: #ef9c63;
+  --priority-alta-text: #ffc59d;
 
-  --priority-emergencia-bg: #fef2f2;
-  --priority-emergencia-border: #dc2626;
-  --priority-emergencia-text: #991b1b;
+  --priority-emergencia-bg: #fff0f1;
+  --priority-emergencia-border: #f26d7a;
+  --priority-emergencia-text: #b42332;
 
   /* Tipografia */
-  --font-heading: "Figtree", system-ui, sans-serif;
-  --font-body: "Noto Sans", system-ui, sans-serif;
+  --font-heading: "Space Grotesk", "Trebuchet MS", sans-serif;
+  --font-body: "DM Sans", "Segoe UI", sans-serif;
 
   /* Espaciado / radios */
-  --radius-md: 12px;
-  --radius-lg: 20px;
-  --shadow-card: 0 1px 3px rgba(22, 78, 99, 0.08), 0 1px 2px rgba(22, 78, 99, 0.06);
-  --focus-ring: 0 0 0 3px rgba(8, 145, 178, 0.35);
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --shadow-card: 0 16px 38px rgba(29, 75, 62, 0.1);
+  --focus-ring: 0 0 0 3px rgba(8, 126, 174, 0.3);
 
   --transition-fast: 180ms ease;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    --color-bg: #0b1a20;
-    --color-surface: #10262e;
-    --color-text: #e6fbff;
-    --color-text-muted: #9fb8c2;
-    --color-border: #1f3b45;
-  }
-}
-
-:root[data-theme="dark"] {
-  --color-bg: #0b1a20;
-  --color-surface: #10262e;
-  --color-text: #e6fbff;
-  --color-text-muted: #9fb8c2;
-  --color-border: #1f3b45;
-}

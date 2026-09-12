@@ -86,7 +86,6 @@ evals.
 - Automatizar la ejecucion de evals desde consola (hoy depende de abrir el notebook a mano).
 - Conseguir que alguien con criterio clinico real revise una muestra de respuestas, en vez de
   seguir ajustando `MEDICATION_KEYWORDS` a ojo.
-- Confirmar que Cristian tenga un aporte individual visible en el historial de GitHub.
 - Consolidar `docs/arquitectura.md` y `DECISION_LOG.md` en la rama de equipo (`main`), no solo
   en `dev/Juanjo` — pedido explicito de la revision docente del 2026-09-01.
 - Agregar tests automatizados al backend (hoy se probo manualmente con curl y con un flujo
