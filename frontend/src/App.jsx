@@ -60,8 +60,8 @@ export default function App() {
           <div className="sidebar-footer__status">
             <span className="status-dot" />
             <span>
-              <strong>Sistema operativo</strong>
-              <small>Motor de triage conectado</small>
+              <strong>Interfaz disponible</strong>
+              <small>La conectividad se verifica al enviar</small>
             </span>
           </div>
           <p>HealthGuide AI - Makers Fellowship, AI Product Design</p>
@@ -87,8 +87,8 @@ export default function App() {
           <section className="dashboard-stats" aria-label="Resumen del sistema">
             <article className="stat-card stat-card--accent">
               <span className="stat-card__label">Estado del sistema</span>
-              <strong>Operativo</strong>
-              <small>Respuesta disponible</small>
+              <strong>Disponible</strong>
+              <small>Estado del modelo no verificado</small>
               <span className="stat-card__signal" />
             </article>
             <article className="stat-card">
@@ -98,8 +98,8 @@ export default function App() {
             </article>
             <article className="stat-card">
               <span className="stat-card__label">Revisión humana</span>
-              <strong>Siempre activa</strong>
-              <small>Para casos que lo requieren</small>
+              <strong>Recomendada</strong>
+              <small>Sin asignación automática</small>
             </article>
           </section>
 

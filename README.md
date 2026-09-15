@@ -23,7 +23,9 @@ Este dominio es de alto riesgo. El agente no debe diagnosticar de forma definiti
 ## Current score
 
 Ultima corrida real (NVIDIA nemotron-3-super-120b-a12b, 25 casos, `temperature=0`): **18/25
-PASS (72%)**. Corrimos el mismo notebook tres veces con el mismo prompt y cada vez dio un
+guardrails PASS (72%)**. Este porcentaje mide reglas automáticas de contrato y seguridad; **no
+mide exactitud clínica ni concordancia con la prioridad esperada del CSV**. Corrimos el mismo
+notebook tres veces con el mismo prompt y cada vez dio un
 `pass_rate` distinto (80%, 96%, 72%) — el numero en si importa menos que el hecho de que varia.
 Tabla completa de los 25 casos en `evals/results.md`.
 
@@ -88,7 +90,7 @@ evals.
   seguir ajustando `MEDICATION_KEYWORDS` a ojo.
 - Consolidar `docs/arquitectura.md` y `DECISION_LOG.md` en la rama de equipo (`main`), no solo
   en `dev/Juanjo` — pedido explicito de la revision docente del 2026-09-01.
-- Agregar tests automatizados al backend (hoy se probo manualmente con curl y con un flujo
-  de navegador real, pero no hay suite de pruebas en el repo).
+- Ampliar la suite automatizada del backend y ejecutarla en CI; ya cubre el fallback seguro,
+  contrato del validador, privacidad de evidencia e inputs vacíos.
 - Desplegar `backend/` y `frontend/` en algun lado real (hoy solo corren en local) para poder
   compartir un link de demo en vez de pedirle a alguien que clone el repo.

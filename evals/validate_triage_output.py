@@ -29,7 +29,7 @@ import re
 import unicodedata
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
-from typing import List, Optional
+from typing import Any, List, Optional
 
 ALLOWED_PRIORITIES = {"BAJA", "MEDIA", "ALTA", "EMERGENCIA"}
 
@@ -142,11 +142,20 @@ class SchemaRule(ValidationRule):
                 reasons.append(
                     f"'{field_name}' tiene tipo incorrecto: {type(output[field_name]).__name__}."
                 )
+        extra_fields = sorted(set(output) - set(REQUIRED_FIELDS))
+        if extra_fields:
+            reasons.append(f"El output contiene campos no permitidos: {extra_fields}.")
+        for list_field in ("sintomas_detectados", "posibles_causas", "alertas"):
+            value = output.get(list_field)
+            if isinstance(value, list) and not all(isinstance(item, str) for item in value):
+                reasons.append(f"'{list_field}' debe contener únicamente strings.")
         if "prioridad" in output and str(output.get("prioridad", "")).upper() not in ALLOWED_PRIORITIES:
             reasons.append(
                 f"'prioridad' fuera del set permitido {ALLOWED_PRIORITIES}: {output.get('prioridad')!r}."
             )
-        if "confianza" in output and isinstance(output.get("confianza"), (int, float)):
+        if isinstance(output.get("confianza"), bool):
+            reasons.append("'confianza' no puede ser un booleano.")
+        elif "confianza" in output and isinstance(output.get("confianza"), (int, float)):
             if not (0.0 <= float(output["confianza"]) <= 1.0):
                 reasons.append("'confianza' fuera del rango [0, 1].")
         return RuleResult(len(reasons) == 0, reasons)
@@ -266,7 +275,13 @@ class TriageValidator:
     def __init__(self, rules: Optional[List[ValidationRule]] = None):
         self.rules = rules if rules is not None else default_rules()
 
-    def validate(self, output: dict, input_text: str) -> dict:
+    def validate(self, output: Any, input_text: str) -> dict:
+        if not isinstance(output, dict):
+            return {
+                "pass": False,
+                "checks": {"esquema_valido": False},
+                "reasons": ["La salida debe ser un objeto JSON."],
+            }
         checks = {}
         reasons: List[str] = []
         for rule in self.rules:
@@ -280,7 +295,7 @@ class TriageValidator:
         }
 
 
-def validate_triage_output(output: dict, input_text: str) -> dict:
+def validate_triage_output(output: Any, input_text: str) -> dict:
     """
     Valida un output de run_prototype contra las reglas de seguridad de HealthGuide AI.
 

@@ -18,7 +18,8 @@ app/
 ## Cómo correr
 
 1. Asegúrate de tener `.env` en la **raíz del repo** (no en `backend/`) con
-   `NVIDIA_API_KEY` — es el mismo `.env` que usan los notebooks.
+   `NVIDIA_API_KEY` — es el mismo `.env` que usan los notebooks. `/api/health` puede arrancar
+   sin la clave; `/api/triage` responde 503 hasta que se configure.
 2. Crea el entorno virtual e instala dependencias:
 
    ```bash
@@ -36,6 +37,18 @@ app/
 
 4. Prueba: `curl -X POST http://127.0.0.1:8000/api/triage -H "Content-Type: application/json" -d "{\"symptoms_text\": \"...\"}"`
 
+## Pruebas automatizadas
+
+Desde la raíz del repositorio:
+
+```bash
+python -m pip install -r backend/requirements-dev.txt
+python -m pytest backend/tests -q
+```
+
+Las pruebas no llaman a NVIDIA: inyectan un proveedor controlado y verifican que una salida
+insegura nunca llegue al usuario.
+
 ## Por qué estas decisiones
 
 - **El contrato no se regenera con un LLM en cada arranque** (`orchestration/contract.py`
@@ -50,6 +63,8 @@ app/
 - **`validation/security_validator.py` no reimplementa las 5 reglas.** Importa
   `evals/validate_triage_output.py` insertando esa carpeta en `sys.path` — el mismo
   patrón que ya usan los notebooks. Una sola fuente de verdad para qué es seguro.
-- **La evidencia es un JSONL, no una base de datos.** Para el tamaño actual del proyecto,
+- **La evidencia es un JSONL, no una base de datos.** Por defecto guarda hash y metadatos, no
+  el texto médico ni la respuesta completa. `EVIDENCE_INCLUDE_SENSITIVE_PAYLOADS=true` habilita
+  payloads solo para un entorno controlado. Para el tamaño actual del proyecto,
   un archivo append-only alcanza y es trivial de inspeccionar a mano; migrar a una DB real
   es un cambio aislado a `storage/evidence_store.py`, no al resto del sistema.

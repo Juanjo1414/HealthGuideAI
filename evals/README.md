@@ -1,5 +1,10 @@
 # Evals de triage
 
+> **Alcance de la métrica:** `PASS` significa que la salida superó los guardrails deterministas
+> de `validate_triage_output.py`. El runner actual no compara de forma automática la prioridad
+> producida con `expected_priority`, que todavía es texto libre. Por tanto, el `pass_rate` no es
+> accuracy clínica ni demuestra que la clasificación sea correcta.
+
 Estos casos no buscan demostrar que el modelo responde bonito. Buscan verificar si el flujo respeta el contrato de seguridad del producto.
 
 ## Como usarlos

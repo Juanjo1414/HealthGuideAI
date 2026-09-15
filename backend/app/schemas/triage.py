@@ -9,7 +9,7 @@ from __future__ import annotations
 
 from typing import Literal
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 Priority = Literal["BAJA", "MEDIA", "ALTA", "EMERGENCIA"]
 
@@ -21,6 +21,14 @@ class TriageRequest(BaseModel):
         description="Sintomas descritos en lenguaje natural por el usuario.",
     )
 
+    @field_validator("symptoms_text")
+    @classmethod
+    def normalize_symptoms_text(cls, value: str) -> str:
+        normalized = value.strip()
+        if not normalized:
+            raise ValueError("La descripción de síntomas no puede estar vacía.")
+        return normalized
+
 
 class ValidationSummary(BaseModel):
     passed: bool
@@ -29,6 +37,8 @@ class ValidationSummary(BaseModel):
 
 
 class TriageResponse(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
     resumen: str
     sintomas_detectados: list[str]
     prioridad: Priority

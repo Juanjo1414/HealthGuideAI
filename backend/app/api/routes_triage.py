@@ -13,6 +13,7 @@ from ..orchestration.triage_orchestrator import TriageOrchestrator
 from ..providers.base import ModelProviderError
 from ..schemas.triage import TriageRequest, TriageResponse, ValidationSummary
 from ..storage.evidence_store import EvidenceStore
+from ..validation.safe_response import build_safe_fallback
 from ..validation.security_validator import validate_output
 from .dependencies import get_evidence_store, get_triage_orchestrator
 
@@ -28,8 +29,7 @@ def create_triage(
     try:
         model_output = orchestrator.run(request.symptoms_text)
     except ModelProviderError as exc:
-        # Nunca se le muestra al usuario un stacktrace del proveedor —
-        # el mensaje interno queda en el log de evidencia, no en la respuesta.
+        evidence_store.record_provider_error(request.symptoms_text, exc)
         raise HTTPException(
             status_code=502,
             detail="El modelo no pudo procesar la solicitud. Intenta de nuevo en unos segundos.",
@@ -38,14 +38,24 @@ def create_triage(
     validation_result = validate_output(model_output, request.symptoms_text)
     request_id = evidence_store.record(request.symptoms_text, model_output, validation_result)
 
-    requires_human_review = bool(model_output.get("requiere_revision")) or not validation_result["pass"]
+    response_output = (
+        model_output
+        if validation_result["pass"]
+        else build_safe_fallback(validation_result, model_output)
+    )
+    requires_human_review = bool(response_output.get("requiere_revision"))
+    public_reasons = (
+        validation_result["reasons"]
+        if validation_result["pass"]
+        else ["La respuesta automática no superó los controles de seguridad."]
+    )
 
     return TriageResponse(
-        **model_output,
+        **response_output,
         validation=ValidationSummary(
             passed=validation_result["pass"],
             checks=validation_result["checks"],
-            reasons=validation_result["reasons"],
+            reasons=public_reasons,
         ),
         requires_human_review=requires_human_review,
         request_id=request_id,

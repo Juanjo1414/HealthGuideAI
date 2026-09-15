@@ -20,9 +20,11 @@ load_dotenv(REPO_ROOT / ".env")
 
 @dataclass(frozen=True)
 class Settings:
-    nvidia_api_key: str
+    nvidia_api_key: str | None = None
     nvidia_base_url: str = "https://integrate.api.nvidia.com/v1"
     nvidia_model: str = "nvidia/nemotron-3-super-120b-a12b"
+    nvidia_timeout_seconds: float = 30.0
+    nvidia_max_retries: int = 0
     cors_allowed_origins: list[str] = field(
         default_factory=lambda: [
             "http://localhost:5173",
@@ -30,13 +32,16 @@ class Settings:
         ]
     )
     evidence_log_path: Path = REPO_ROOT / "backend" / "data" / "evidence.jsonl"
+    evidence_include_sensitive_payloads: bool = False
 
 
 def get_settings() -> Settings:
-    api_key = os.getenv("NVIDIA_API_KEY")
-    if not api_key:
-        raise RuntimeError(
-            "Falta NVIDIA_API_KEY. Copia .env.example a .env en la raíz del repo "
-            "y agrega tu key real (ver README.md, seccion 'Como correr esto')."
-        )
-    return Settings(nvidia_api_key=api_key)
+    return Settings(
+        nvidia_api_key=os.getenv("NVIDIA_API_KEY") or None,
+        nvidia_timeout_seconds=float(os.getenv("NVIDIA_TIMEOUT_SECONDS", "30")),
+        nvidia_max_retries=int(os.getenv("NVIDIA_MAX_RETRIES", "0")),
+        evidence_include_sensitive_payloads=os.getenv(
+            "EVIDENCE_INCLUDE_SENSITIVE_PAYLOADS", "false"
+        ).lower()
+        in {"1", "true", "yes"},
+    )

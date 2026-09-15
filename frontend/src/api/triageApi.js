@@ -15,17 +15,28 @@ export class TriageApiError extends Error {
  */
 export async function requestTriage(symptomsText) {
   let response;
+  const controller = new AbortController();
+  const timeoutId = window.setTimeout(() => controller.abort(), 35000);
   try {
     response = await fetch(`${API_BASE_URL}/triage`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ symptoms_text: symptomsText }),
+      signal: controller.signal,
     });
   } catch (networkError) {
+    if (networkError?.name === "AbortError") {
+      throw new TriageApiError(
+        "La evaluación tardó demasiado. No esperes esta respuesta si tus síntomas son urgentes.",
+        0
+      );
+    }
     throw new TriageApiError(
       "No se pudo conectar con el servidor. Verifica tu conexion e intenta de nuevo.",
       0
     );
+  } finally {
+    window.clearTimeout(timeoutId);
   }
 
   if (!response.ok) {

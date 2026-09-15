@@ -19,8 +19,20 @@ _JSON_FENCE = re.compile(r"^```json\s*|\s*```$")
 
 
 class NvidiaProvider(ModelProvider):
-    def __init__(self, api_key: str, base_url: str, model: str):
-        self._client = OpenAI(base_url=base_url, api_key=api_key)
+    def __init__(
+        self,
+        api_key: str,
+        base_url: str,
+        model: str,
+        timeout_seconds: float = 30.0,
+        max_retries: int = 0,
+    ):
+        self._client = OpenAI(
+            base_url=base_url,
+            api_key=api_key,
+            timeout=timeout_seconds,
+            max_retries=max_retries,
+        )
         self._model = model
         self.last_usage = {"prompt_tokens": 0, "completion_tokens": 0}
 
@@ -53,6 +65,9 @@ class NvidiaProvider(ModelProvider):
         raw_text = (completion.choices[0].message.content or "").strip()
         cleaned = _JSON_FENCE.sub("", raw_text)
         try:
-            return json.loads(cleaned)
+            parsed = json.loads(cleaned)
         except json.JSONDecodeError as exc:
             raise ModelProviderError(f"NVIDIA devolvio un JSON invalido: {exc}") from exc
+        if not isinstance(parsed, dict):
+            raise ModelProviderError("NVIDIA devolvio JSON valido, pero no un objeto.")
+        return parsed

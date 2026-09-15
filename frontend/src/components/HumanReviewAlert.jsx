@@ -5,8 +5,8 @@ export default function HumanReviewAlert() {
     <div className="human-review-alert" role="alert">
       <IconAlertCircle className="human-review-alert__icon" />
       <p>
-        Este caso necesita revisión de un profesional de salud antes de tomar una
-        decisión. No te bases únicamente en esta orientación.
+        El sistema recomienda valoración por un profesional de salud. HealthGuide AI no
+        contacta ni asigna automáticamente a ese profesional: debes buscar la atención indicada.
       </p>
     </div>
   );

@@ -65,7 +65,7 @@ export default function ResultCard({ result }) {
       </div>
 
       <p className="result-card__confidence">
-        Confianza del modelo: {Math.round(confianza * 100)}%
+        Señal interna del modelo, no calibrada clínicamente: {Math.round(confianza * 100)}%
       </p>
     </section>
   );
