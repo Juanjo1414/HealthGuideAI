@@ -1,18 +1,33 @@
 # HealthGuide AI
 
-Asistente de triage medico educativo para orientar sintomas iniciales y recomendar proximos pasos conservadores.
+Cuando alguien empieza a sentir un síntoma, la alternativa real es buscar en Google o
+preguntarle a un chatbot genérico — información dispersa y contradictoria que genera ansiedad
+en vez de resolver la duda. HealthGuide AI orienta la prioridad de atención (monitorear,
+agendar cita, o ir a urgencias) a partir de una descripción en lenguaje natural, con
+validaciones deterministas que impiden que diagnostique o recomiende medicamentos.
+
+![Arquitectura por capas de HealthGuideAI](docs/arquitectura.png)
+
+Diagrama completo y decisiones de diseño en `docs/arquitectura.md`; decisiones de ingeniería
+con evidencia (qué modelo, qué canal, por qué) en `DECISION_LOG.md`.
 
 ## Estado actual
 
-El repo corre sobre un unico notebook, `HealthGuideAI_Nvidia.ipynb` (NVIDIA nemotron-3-super-120b-a12b).
-Hubo una version con Gemini (`HealthGuideAI_Gemini.ipynb`), pero se dio de baja: la
-`GEMINI_API_KEY` del equipo esta en el tier gratuito, con un limite duro de 20 requests/dia por
+**Web app funcional**: backend (FastAPI) + frontend (React) — ver "Como correr la web app"
+más abajo. El backend expone `POST /api/triage`, reutiliza el mismo validador de seguridad y
+el mismo modelo (NVIDIA nemotron-3-super-120b-a12b) que ya se había probado en el notebook.
+
+El notebook original, `HealthGuideAI_Nvidia.ipynb`, se conserva intacto como evidencia de las
+corridas de evals ya documentadas — no se reescribe ni se re-ejecuta al mismo tiempo que se
+construye la web app, para no invalidar esa evidencia con el no-determinismo del modelo. Hubo
+también una versión con Gemini (`HealthGuideAI_Gemini.ipynb`), dada de baja: la
+`GEMINI_API_KEY` del equipo está en el tier gratuito, con un límite duro de 20 requests/día por
 modelo, y el flujo completo necesita del orden de 36 llamadas solo para llegar a la Parte 11 de
 evals — no alcanza ni recortando partes no esenciales. El detalle completo (incluyendo tres
-bugs reales que encontramos en el camino) esta en `evals/results.md`.
+bugs reales que encontramos en el camino) está en `evals/results.md`.
 
-Incluye una base de evaluacion en `evals/` para medir si el sistema maneja casos incompletos,
-contradicciones, red flags medicas y prompt injection, corrida de verdad contra la API real
+Incluye una base de evaluación en `evals/` para medir si el sistema maneja casos incompletos,
+contradicciones, red flags médicas y prompt injection, corrida de verdad contra la API real
 (no solo diseñada) — ver `evals/results.md` para los resultados y `docs/arquitectura.md` para
 el diagrama del flujo completo.
 
@@ -126,7 +141,9 @@ equipo. Se configura en Settings → Branches del repositorio, y requiere permis
   seguir ajustando `MEDICATION_KEYWORDS` a ojo.
 - Consolidar `docs/arquitectura.md` y `DECISION_LOG.md` en la rama de equipo (`main`), no solo
   en `dev/Juanjo` — pedido explicito de la revision docente del 2026-09-01.
-- Ampliar la suite automatizada del backend y ejecutarla en CI; ya cubre el fallback seguro,
-  contrato del validador, privacidad de evidencia e inputs vacíos.
-- Desplegar `backend/` y `frontend/` en algun lado real (hoy solo corren en local) para poder
-  compartir un link de demo en vez de pedirle a alguien que clone el repo.
+- Antes de servir tráfico real: fijar `CORS_ALLOWED_ORIGINS` al dominio real del frontend
+  desplegado — hoy solo permite `localhost` (puertos de dev y de Docker).
+- Activar "Require status checks to pass before merging" en `main` desde GitHub (ver sección
+  CI/CD) — requiere permisos de admin, no se puede hacer por código.
+- Desplegar `backend/` y `frontend/` en algun lado real (hoy corren en local o con Docker) para
+  poder compartir un link de demo en vez de pedirle a alguien que clone el repo.
