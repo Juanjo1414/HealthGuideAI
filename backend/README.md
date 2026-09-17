@@ -17,6 +17,9 @@ app/
 
 ## Cómo correr
 
+> Esto es para correr el backend solo, en local. Para levantar todo (backend + frontend) de
+> una sola vez con Docker, ver la sección "Como correr la web app" en el `README.md` de la raíz.
+
 1. Asegúrate de tener `.env` en la **raíz del repo** (no en `backend/`) con
    `NVIDIA_API_KEY` — es el mismo `.env` que usan los notebooks. `/api/health` puede arrancar
    sin la clave; `/api/triage` responde 503 hasta que se configure.

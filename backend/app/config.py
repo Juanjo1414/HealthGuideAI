@@ -25,10 +25,15 @@ class Settings:
     nvidia_model: str = "nvidia/nemotron-3-super-120b-a12b"
     nvidia_timeout_seconds: float = 30.0
     nvidia_max_retries: int = 0
+    # 5173 es el puerto de "npm run dev" (Vite); 8080 es el puerto publicado
+    # por el frontend en compose.yml. Configurable por env var para cuando
+    # esto se despliegue en un dominio real — ver backend/README.md.
     cors_allowed_origins: list[str] = field(
         default_factory=lambda: [
             "http://localhost:5173",
             "http://127.0.0.1:5173",
+            "http://localhost:8080",
+            "http://127.0.0.1:8080",
         ]
     )
     evidence_log_path: Path = REPO_ROOT / "backend" / "data" / "evidence.jsonl"
@@ -42,7 +47,18 @@ class Settings:
 
 
 def get_settings() -> Settings:
+    cors_env = os.getenv("CORS_ALLOWED_ORIGINS")
+    settings_kwargs = {}
+    if cors_env:
+        # Antes de un despliegue real hay que fijar esto al dominio real del
+        # frontend — ver README.md, seccion "Pendiente". Formato: origenes
+        # separados por coma, ej. "https://healthguide.miapp.com".
+        settings_kwargs["cors_allowed_origins"] = [
+            origin.strip() for origin in cors_env.split(",") if origin.strip()
+        ]
+
     return Settings(
+        **settings_kwargs,
         nvidia_api_key=os.getenv("NVIDIA_API_KEY") or None,
         nvidia_timeout_seconds=float(os.getenv("NVIDIA_TIMEOUT_SECONDS", "30")),
         nvidia_max_retries=int(os.getenv("NVIDIA_MAX_RETRIES", "0")),

@@ -1,0 +1,26 @@
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    ports:
+      - "8000:8000"
+    env_file: .env
+    volumes:
+      # Persistir evidence.jsonl fuera del contenedor — si el contenedor se
+      # recrea, la evidencia no debería desaparecer con él.
+      - ./backend/data:/app/backend/data
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        # Esta URL la usa el NAVEGADOR del usuario, no la red interna de
+        # Docker — por eso es localhost:8000 (el puerto publicado del
+        # backend en el host), no "http://backend:8000".
+        VITE_API_BASE_URL: "http://localhost:8000/api"
+    ports:
+      - "8080:80"
+    depends_on:
+      - backend

@@ -15,6 +15,10 @@ src/
 
 ## Cómo correr
 
+> Esto es para desarrollo local con hot-reload. Para levantar todo (backend + frontend) de una
+> sola vez con Docker, ver la sección "Como correr la web app" en el `README.md` de la raíz —
+> ahí el frontend se sirve en `http://localhost:8080`, no en `5173`.
+
 1. Copia `.env.example` a `.env` (por defecto apunta a `http://127.0.0.1:8000/api`,
    ajusta `VITE_API_BASE_URL` si el backend corre en otro puerto).
 2. Instala dependencias y levanta el servidor de desarrollo:

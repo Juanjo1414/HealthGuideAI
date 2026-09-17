@@ -80,7 +80,22 @@ y principios SOLID en el codigo nuevo — justificado con alternativas comparada
 de seguridad es su propia clase, y agregar una regla nueva no obliga a tocar las que ya pasan
 evals.
 
-## Como probar
+## Como correr la web app
+
+Hay dos caminos igual de válidos:
+
+**Con Docker (recomendado para probar todo de una vez, sin instalar Python ni Node):**
+
+```bash
+cp .env.example .env   # y completa NVIDIA_API_KEY
+docker compose up --build
+```
+
+Backend en `http://localhost:8000`, frontend en `http://localhost:8080`.
+
+**En local, cada parte por separado:** ver `backend/README.md` y `frontend/README.md`.
+
+## Como probar el prototipo del notebook
 
 1. Configura las variables necesarias usando `.env.example` como referencia.
 2. Abre `HealthGuideAI_Nvidia.ipynb`.
