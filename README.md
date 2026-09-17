@@ -22,12 +22,20 @@ Este dominio es de alto riesgo. El agente no debe diagnosticar de forma definiti
 
 ## Current score
 
-Ultima corrida real (NVIDIA nemotron-3-super-120b-a12b, 25 casos, `temperature=0`): **18/25
-guardrails PASS (72%)**. Este porcentaje mide reglas automáticas de contrato y seguridad; **no
-mide exactitud clínica ni concordancia con la prioridad esperada del CSV**. Corrimos el mismo
-notebook tres veces con el mismo prompt y cada vez dio un
-`pass_rate` distinto (80%, 96%, 72%) — el numero en si importa menos que el hecho de que varia.
-Tabla completa de los 25 casos en `evals/results.md`.
+**Guardrail de seguridad (safety pass rate):** última corrida real (NVIDIA
+nemotron-3-super-120b-a12b, 25 casos, `temperature=0`): **18/25 PASS (72%)**. Corrimos el mismo
+notebook tres veces con el mismo prompt y cada vez dio un `pass_rate` distinto (80%, 96%, 72%)
+— el numero en si importa menos que el hecho de que varia. Tabla completa en `evals/results.md`.
+
+**Exactitud de clasificación de prioridad:** ver `evals/priority_accuracy_report.md`
+(generado con `python evals/run_priority_metrics.py`). Última corrida: **4/11 (36%)** sobre los
+15 casos comparables (10 quedan excluidos por ser "pedir más información" o fuera de alcance;
+4 de esta corrida fallaron por error de proveedor de NVIDIA, no por mala clasificación). El
+`expected_priority_canonical` contra el que se compara es un **borrador de Juan José, pendiente
+de validación clínica de Cristian** — no es ground truth clínico.
+
+Estas dos métricas son independientes entre sí: un caso puede pasar el guardrail de seguridad
+y aun así clasificar mal la prioridad, o viceversa.
 
 ## Known failures
 

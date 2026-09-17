@@ -7,6 +7,11 @@ en la sección "Gemini" más abajo.
 Este archivo no reemplaza los CSV — es el resumen legible de qué pasó cuando de verdad
 corrimos `run_eval_suite()`, no solo el diseño de los casos.
 
+**Nota importante:** todo lo que sigue en este archivo es guardrail de seguridad (PASS/FAIL de
+`validate_triage_output.py`), no exactitud clínica de la prioridad. Para saber si la
+`prioridad` que devuelve el modelo coincide con la esperada, ver
+`evals/priority_accuracy_report.md` — es una métrica distinta e independiente de esta.
+
 ## Tabla ejecutiva (para revisión rápida)
 
 Pedida por el mentor en la revisión del 2026-09-01: score, falla principal, latencia y próxima

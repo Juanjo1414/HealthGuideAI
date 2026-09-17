@@ -1,11 +1,23 @@
 # Evals de triage
 
 > **Alcance de la métrica:** `PASS` significa que la salida superó los guardrails deterministas
-> de `validate_triage_output.py`. El runner actual no compara de forma automática la prioridad
-> producida con `expected_priority`, que todavía es texto libre. Por tanto, el `pass_rate` no es
-> accuracy clínica ni demuestra que la clasificación sea correcta.
+> de `validate_triage_output.py` — no mide si la prioridad clasificada es la correcta. Esa
+> métrica aparte (accuracy de prioridad) ya existe: ver `metrics.py`, `run_priority_metrics.py`
+> y `priority_accuracy_report.md`, más abajo.
 
 Estos casos no buscan demostrar que el modelo responde bonito. Buscan verificar si el flujo respeta el contrato de seguridad del producto.
+
+## Exactitud de clasificación de prioridad (distinto del guardrail de seguridad)
+
+`expected_priority` es texto libre (histórico, pensado para que un humano lo lea, no para
+comparar). Las columnas `expected_priority_canonical` y `expected_priority_status` en los CSV sí
+son comparables contra la `prioridad` real del modelo — ver el esquema completo, la taxonomía de
+casos y quién es dueño de qué en `CLINICAL_SAFETY_CATALOG.md`.
+
+Para generar el reporte de accuracy: `python evals/run_priority_metrics.py` (25 llamadas reales
+a NVIDIA, mismo costo que correr los evals de seguridad). Escribe
+`evals/priority_accuracy_report.md` con accuracy global, matriz de confusión y los casos que no
+coincidieron.
 
 ## Como usarlos
 
