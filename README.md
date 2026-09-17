@@ -105,6 +105,19 @@ Backend en `http://localhost:8000`, frontend en `http://localhost:8080`.
 5. Revisa `evals/results.md` para los resultados reales y `docs/arquitectura.md` para el
    diagrama del flujo completo.
 
+## CI/CD
+
+`.github/workflows/ci.yml` corre en cada push a `dev/Juanjo` y en cada PR hacia `main`: los
+tests del backend (sin llamar a NVIDIA de verdad — usan un proveedor de prueba, así que no
+cuesta nada correrlo en cada push), el build de producción del frontend, y que ambas imágenes
+de Docker sigan construyendo. Es la versión automatizada de la regla "no se toca `main` sin
+verificar que todo funcione" que seguimos manualmente durante este proyecto.
+
+**Pendiente de configurar en GitHub (no es algo que se resuelva por código):** activar
+"Require status checks to pass before merging" en la protección de la rama `main`, con este
+workflow como check obligatorio — así la regla la impone GitHub, no solo la disciplina del
+equipo. Se configura en Settings → Branches del repositorio, y requiere permisos de admin.
+
 ## Pendiente
 
 - Documentar requisitos exactos de entorno.
