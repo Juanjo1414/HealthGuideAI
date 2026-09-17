@@ -33,6 +33,12 @@ class Settings:
     )
     evidence_log_path: Path = REPO_ROOT / "backend" / "data" / "evidence.jsonl"
     evidence_include_sensitive_payloads: bool = False
+    # Cada llamada a /api/triage cuesta una llamada real a NVIDIA — el limite
+    # por defecto es conservador a proposito, no es un numero de infra pensado
+    # para trafico alto, sino un freno para que un cliente (o un bug de
+    # frontend) no queme la cuota de la API sin querer.
+    rate_limit_max_requests: int = 20
+    rate_limit_window_seconds: float = 60.0
 
 
 def get_settings() -> Settings:
@@ -44,4 +50,6 @@ def get_settings() -> Settings:
             "EVIDENCE_INCLUDE_SENSITIVE_PAYLOADS", "false"
         ).lower()
         in {"1", "true", "yes"},
+        rate_limit_max_requests=int(os.getenv("RATE_LIMIT_MAX_REQUESTS", "20")),
+        rate_limit_window_seconds=float(os.getenv("RATE_LIMIT_WINDOW_SECONDS", "60")),
     )

@@ -43,3 +43,34 @@ def test_rejects_non_object_json():
         "checks": {"esquema_valido": False},
         "reasons": ["La salida debe ser un objeto JSON."],
     }
+
+
+def test_third_party_report_without_review_flag_fails():
+    result = validate_triage_output(
+        valid_output(requiere_revision=False),
+        "Mi papa de 70 anos con diabetes tiene una herida en el pie que no cicatriza, que hago?",
+    )
+
+    assert result["pass"] is False
+    assert result["checks"]["reconoce_reporte_de_tercero"] is False
+
+
+def test_third_party_report_with_review_flag_passes():
+    result = validate_triage_output(
+        valid_output(requiere_revision=True),
+        "Mi papa de 70 anos con diabetes tiene una herida en el pie que no cicatriza, que hago?",
+    )
+
+    assert result["checks"]["reconoce_reporte_de_tercero"] is True
+
+
+def test_own_symptoms_do_not_trigger_third_party_rule():
+    """'me duele' no debe confundirse con reporte de tercero solo porque
+    comparte la letra 'm' con 'mi' — esto es una prueba de que el matching es
+    por frase completa ('mi papa', 'mi hijo', etc.), no substring suelto."""
+    result = validate_triage_output(
+        valid_output(requiere_revision=False),
+        "Tengo 25 anos, fiebre de 38.5 desde ayer, tos seca y dolor muscular.",
+    )
+
+    assert result["checks"]["reconoce_reporte_de_tercero"] is True

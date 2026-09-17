@@ -68,3 +68,28 @@ insegura nunca llegue al usuario.
   payloads solo para un entorno controlado. Para el tamaño actual del proyecto,
   un archivo append-only alcanza y es trivial de inspeccionar a mano; migrar a una DB real
   es un cambio aislado a `storage/evidence_store.py`, no al resto del sistema.
+
+## Rate limiting
+
+`POST /api/triage` tiene un límite de `RATE_LIMIT_MAX_REQUESTS` requests (por defecto 20) cada
+`RATE_LIMIT_WINDOW_SECONDS` segundos (por defecto 60), por IP de cliente. Cada request exitosa
+cuesta una llamada real a NVIDIA, así que el límite existe para que un bug de frontend o un
+cliente mal portado no queme la cuota de la API sin querer — no está pensado como protección
+anti-abuso a escala.
+
+**Limitación honesta:** `backend/app/api/rate_limit.py` es un limitador en memoria de un solo
+proceso, sin dependencias nuevas (decisión explícita: el `.venv` de este repo ya demostró ser
+frágil por vivir dentro de OneDrive). Si el backend llega a correr con varios workers o varias
+réplicas, cada uno lleva su propia cuenta — el límite efectivo real sería
+`RATE_LIMIT_MAX_REQUESTS × número de procesos`, no el valor configurado. Para un solo proceso
+(el despliegue actual) esto no es un problema; si el proyecto crece a multi-worker, este
+limitador debe migrar a algo respaldado por Redis o similar.
+
+## Revisión humana — qué es y qué no es
+
+`requiere_revision`/`requires_human_review` es un flag registrado en `evidence.jsonl`, no una
+cola de revisión operativa (sin notificación, sin guardia, sin SLA) — ver `DECISION_LOG.md`
+decisión 4 para el alcance honesto y qué haría falta para que fuera real.
+`backend/scripts/list_flagged_for_review.py` es el único mecanismo que existe hoy: lee la
+evidencia y escribe `backend/data/flagged_for_review.jsonl` con los casos marcados, para que
+alguien los revise a mano.

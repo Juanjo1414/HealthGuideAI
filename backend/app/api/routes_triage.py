@@ -16,11 +16,12 @@ from ..storage.evidence_store import EvidenceStore
 from ..validation.safe_response import build_safe_fallback
 from ..validation.security_validator import validate_output
 from .dependencies import get_evidence_store, get_triage_orchestrator
+from .rate_limit import enforce_rate_limit
 
 router = APIRouter()
 
 
-@router.post("/triage", response_model=TriageResponse)
+@router.post("/triage", response_model=TriageResponse, dependencies=[Depends(enforce_rate_limit)])
 def create_triage(
     request: TriageRequest,
     orchestrator: TriageOrchestrator = Depends(get_triage_orchestrator),

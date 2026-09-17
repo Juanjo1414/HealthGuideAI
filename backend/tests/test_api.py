@@ -3,6 +3,7 @@ import json
 from fastapi.testclient import TestClient
 
 from backend.app.api.dependencies import get_evidence_store, get_triage_orchestrator
+from backend.app.api.rate_limit import InMemoryRateLimiter, get_rate_limiter
 from backend.app.main import app
 from backend.app.storage.evidence_store import EvidenceStore
 
@@ -34,6 +35,12 @@ def client_with_output(tmp_path, output):
     store = EvidenceStore(tmp_path / "evidence.jsonl")
     app.dependency_overrides[get_triage_orchestrator] = lambda: StubOrchestrator(output)
     app.dependency_overrides[get_evidence_store] = lambda: store
+    # Estos tests no evaluan rate limiting — les damos un limitador
+    # generosamente permisivo para que no les afecte el limite real de
+    # produccion (compartido entre tests via @lru_cache en get_rate_limiter).
+    # El comportamiento de 429 en si se prueba aparte, en test_rate_limit.py.
+    permissive_limiter = InMemoryRateLimiter(max_requests=1000, window_seconds=60)
+    app.dependency_overrides[get_rate_limiter] = lambda: permissive_limiter
     return TestClient(app), store
 
 

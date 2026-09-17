@@ -119,3 +119,33 @@ si es NVIDIA u otro; `NvidiaProvider` es la única implementación real hoy. El 
 evidencia de corridas ya documentadas en `evals/results.md`, y refactorizarlo cambiaría esos
 números por el no-determinismo del modelo, no por un error. El backend es código nuevo, no
 un refactor del notebook — por eso no hay conflicto con esa regla.
+
+## Decisión 4 — Alcance honesto de `requiere_revision` ("revisión humana")
+
+**Estado:** documentada y con un mecanismo mínimo real (2026-09-17).
+
+`requiere_revision` (campo del contrato) y `requires_human_review` (campo de la respuesta de
+la API) hoy son **un flag booleano**, nada más: el modelo lo puede marcar, el validador lo
+puede forzar, y `EvidenceStore` lo registra en `evidence.jsonl`. Eso es todo lo que pasa. No
+hay cola de revisión, no hay notificación a nadie, no hay guardia ni SLA — si nadie revisa el
+JSONL a mano, un caso marcado `requiere_revision=true` no le llega a ningún humano.
+
+**Por qué no construimos más que esto ahora:** la audiencia real de este producto en su estado
+actual es un mentor evaluando criterio de ingeniería en un proyecto pre-despliegue, no un
+equipo clínico con guardia 24/7. Construir una cola falsa, un webhook a un canal que nadie
+monitorea, o una "asignación automática" sin nadie del otro lado sería teatro de seguridad —
+exactamente el tipo de cosa que un producto de salud no se puede dar el lujo de fingir. Es más
+honesto (y más profesional) decir con claridad qué existe y qué no.
+
+**Qué haría falta para que fuera real** (fuera de alcance de esta etapa):
+
+| Pieza | Qué resolvería |
+| --- | --- |
+| Cola de revisión persistente (tabla en DB, no un JSONL de solo apéndice) | Que un caso marcado se pueda tomar, cerrar y no revisar dos veces |
+| Notificación (webhook a Slack/email/SMS) | Que un humano se entere de que hay un caso pendiente sin tener que ir a buscarlo |
+| Rotación on-call con SLA definido | Que "revisión humana" tenga un tiempo de respuesta garantizado, no "cuando alguien lo vea" |
+
+**Mecanismo mínimo que sí construimos, y que es honesto sobre lo que es:**
+`backend/scripts/list_flagged_for_review.py` lee `evidence.jsonl` y escribe
+`backend/data/flagged_for_review.jsonl` con los casos marcados. No es una cola, no notifica a
+nadie — es "un humano puede correr esto y ver qué quedó pendiente", ni más ni menos.
