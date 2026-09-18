@@ -43,11 +43,25 @@ notebook tres veces con el mismo prompt y cada vez dio un `pass_rate` distinto (
 — el numero en si importa menos que el hecho de que varia. Tabla completa en `evals/results.md`.
 
 **Exactitud de clasificación de prioridad:** ver `evals/priority_accuracy_report.md`
-(generado con `python evals/run_priority_metrics.py`). Última corrida: **4/11 (36%)** sobre los
-15 casos comparables (10 quedan excluidos por ser "pedir más información" o fuera de alcance;
-4 de esta corrida fallaron por error de proveedor de NVIDIA, no por mala clasificación). El
-`expected_priority_canonical` contra el que se compara es un **borrador de Juan José, pendiente
-de validación clínica de Cristian** — no es ground truth clínico.
+(generado con `python evals/run_priority_metrics.py`). Se corrió tres veces el 2026-09-17:
+**57%, 36% y 56%**, sobre 9 a 14 casos comparables por corrida (de 15 comparables en total; el
+resto son "pedir más información" o fuera de alcance). El rango tan amplio no es solo
+no-determinismo del modelo: NVIDIA estuvo devolviendo `503 Service temporarily overloaded` y
+timeouts de forma creciente durante la sesión (1, luego 4, luego 6 casos con error de proveedor
+sobre los mismos 15) — con tan pocos casos evaluables por corrida, cada error mueve el
+porcentaje varios puntos. No tomar ninguna de estas tres cifras como estable; hace falta
+repetir cuando el servicio esté más disponible. 5 de los 25 casos ya están validados
+clínicamente por Cristian (`validado_cristian`); los otros 20 siguen en `borrador_juanjo` — no
+es ground truth clínico completo todavía.
+
+En las corridas 1 y 2, los casos EMERGENCIA (red flags) salieron siempre correctos. En la
+corrida 3, sin embargo, `red_flag_fiebre_bebe` (fiebre 39.5°C en bebé de 3 meses) clasificó
+como **ALTA en vez de EMERGENCIA** — la primera subestimación de una señal de alarma real que
+se ve en esta sesión. Con una sola observación no alcanza para confirmar un patrón, pero es un
+caso que no debería fallar nunca y merece vigilancia en próximas corridas. Aparte de eso, el
+patrón que sí se repite en las tres corridas es que, cuando hay mismatch, el modelo casi
+siempre clasifica **por debajo** de lo esperado, no por encima — ver detalle completo en
+`evals/results.md` y `evals/priority_accuracy_report.md`.
 
 Estas dos métricas son independientes entre sí: un caso puede pasar el guardrail de seguridad
 y aun así clasificar mal la prioridad, o viceversa.
@@ -63,6 +77,19 @@ y aun así clasificar mal la prioridad, o viceversa.
 - **Clasifica con confianza en vez de pedir mas datos.** Con inputs muy cortos ("Me siento
   raro.", "Estoy cansado."), a veces el modelo asigna prioridad BAJA con confianza alta en vez
   de admitir que falta informacion.
+- **Subestima la prioridad esperada en casos ambiguos o contradictorios.** En las tres corridas
+  de accuracy del 2026-09-17, la gran mayoria de los mismatches fueron hacia abajo (ej. esperado
+  ALTA, obtuvo BAJA) — casi nunca hacia arriba. Detalle en `evals/priority_accuracy_report.md`
+  y `evals/results.md`.
+- **Una subestimacion de EMERGENCIA real, a vigilar.** En la corrida 3 del 2026-09-17,
+  `red_flag_fiebre_bebe` (bebe de 3 meses con fiebre 39.5°C) clasifico ALTA en vez de
+  EMERGENCIA. Las corridas 1 y 2 tuvieron los red flags siempre correctos, asi que con una sola
+  observacion no se puede decir que sea un patron — pero es justo el tipo de caso que no deberia
+  fallar nunca. Repetir esta corrida cuando NVIDIA este mas estable para confirmar si se repite.
+- **NVIDIA estuvo inestable durante la sesion de evals del 2026-09-17.** `503 Service
+  temporarily overloaded` y timeouts crecientes (1, luego 4, luego 6 casos afectados sobre los
+  mismos 15 comparables en tres corridas seguidas) — problema del proveedor, no del codigo del
+  proyecto, pero invalida comparar directamente el porcentaje de accuracy entre corridas.
 
 ## Next hypothesis
 
@@ -147,3 +174,6 @@ equipo. Se configura en Settings → Branches del repositorio, y requiere permis
   CI/CD) — requiere permisos de admin, no se puede hacer por código.
 - Desplegar `backend/` y `frontend/` en algun lado real (hoy corren en local o con Docker) para
   poder compartir un link de demo en vez de pedirle a alguien que clone el repo.
+- Hacer 3 gates minimos , input output y riesgo
+- Hacer Login
+- Fortalecer evals
