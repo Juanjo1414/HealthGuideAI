@@ -7,6 +7,7 @@ from __future__ import annotations
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from .api.routes_auth import router as auth_router
 from .api.routes_triage import router as triage_router
 from .config import get_settings
 
@@ -22,8 +23,14 @@ app.add_middleware(
     allow_origins=settings.cors_allowed_origins,
     allow_methods=["POST", "GET"],
     allow_headers=["*"],
+    # Necesario para que la cookie de sesion viaje en requests cross-origin
+    # (frontend en :5173/:8080, backend en :8000). allow_origins ya lista
+    # dominios exactos (nunca "*"), asi que combinarlo con credentials=True
+    # es seguro.
+    allow_credentials=True,
 )
 
+app.include_router(auth_router, prefix="/api")
 app.include_router(triage_router, prefix="/api")
 
 

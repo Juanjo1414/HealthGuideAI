@@ -1,11 +1,15 @@
 from fastapi.testclient import TestClient
 
-from backend.app.api.dependencies import get_evidence_store, get_triage_orchestrator
+from backend.app.api.dependencies import (
+    get_evidence_store,
+    get_triage_orchestrator,
+    require_authenticated,
+)
 from backend.app.api.rate_limit import InMemoryRateLimiter, get_rate_limiter
 from backend.app.main import app
 from backend.app.storage.evidence_store import EvidenceStore
 
-from backend.tests.test_api import StubOrchestrator, model_output
+from backend.tests.test_api import STUB_USER, StubOrchestrator, model_output
 
 
 def teardown_function():
@@ -23,6 +27,7 @@ def test_exceeding_limit_returns_429(tmp_path):
     # request), el estado nunca se acumularia y el limite jamas se activaria.
     limiter = InMemoryRateLimiter(max_requests=2, window_seconds=60)
     app.dependency_overrides[get_rate_limiter] = lambda: limiter
+    app.dependency_overrides[require_authenticated] = lambda: STUB_USER
     client = TestClient(app)
     payload = {"symptoms_text": "Tengo un sintoma cualquiera desde ayer."}
 

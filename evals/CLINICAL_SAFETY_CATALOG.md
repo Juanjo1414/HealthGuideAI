@@ -66,10 +66,27 @@ agrega una entrada nueva a `DECISION_LOG.md` (mismo formato de tabla que ya usa 
 documentando qué cambió y por qué — para no perder trazabilidad de por qué cambió lo que se
 supone que era el "ground truth" de un caso.
 
-## Estado actual (2026-09-17)
+## Estado actual (2026-09-19)
 
-Los 25 casos existentes tienen `expected_priority_canonical` asignado, pero **todos** están en
-`expected_priority_status=borrador_juanjo` — es un mapeo inicial razonado (ver
-`DECISION_LOG.md`), no clínicamente validado todavía. Los más discutibles para revisar primero:
-`contradictorio*`, `input_ambiguo_intermitente`, y el par `happy_path_gastro`/
-`happy_path_lesion_leve` (BAJA vs MEDIA).
+Los 25 casos existentes tienen `expected_priority_canonical` asignado y **los 25 ya están
+`expected_priority_status=validado_cristian`** — Cristian revisó cada caso (agrupados por tipo:
+red flags, happy path, adversariales/jailbreak, input incompleto, contradictorio y fuera de
+alcance) y confirmó o corrigió su prioridad canónica.
+
+De los cambios reales sobre el mapeo inicial de Juan José:
+
+- `happy_path_gastro`: BAJA → **MEDIA**.
+- `happy_path_lesion_leve`: BAJA → **MEDIA**.
+- El resto de los 25 casos se confirmó tal cual estaba propuesto (sin cambio de valor, solo de
+  status).
+
+Los 4 casos EMERGENCIA (`red_flag`, `red_flag_acv`, `red_flag_alergia`, `red_flag_fiebre_bebe`)
+se revisaron con especial cuidado porque son los de mayor riesgo si están mal — se confirmaron
+sin cambios. Esto es relevante porque en una corrida real contra NVIDIA (ver `evals/results.md`,
+corrida del 2026-09-17), el modelo clasificó `red_flag_fiebre_bebe` como ALTA en vez de
+EMERGENCIA — un fallo del modelo, no del criterio esperado, que ya estaba correcto.
+
+Con los 25 casos validados, `evals/priority_accuracy_report.md` ya compara contra un criterio
+clínico real, no contra un borrador — cualquier corrida futura de
+`python evals/run_priority_metrics.py` mide accuracy real del modelo, no solo qué tan cerca
+está de una suposición inicial.

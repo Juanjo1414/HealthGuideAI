@@ -22,6 +22,7 @@ export async function requestTriage(symptomsText) {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ symptoms_text: symptomsText }),
+      credentials: "include",
       signal: controller.signal,
     });
   } catch (networkError) {

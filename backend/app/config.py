@@ -44,6 +44,23 @@ class Settings:
     # frontend) no queme la cuota de la API sin querer.
     rate_limit_max_requests: int = 20
     rate_limit_window_seconds: float = 60.0
+    # Base de datos de usuarios/sesiones. SQLite (stdlib, sin ORM) por la
+    # misma razon que evidence_store.py usa un JSONL plano: para el tamano
+    # actual del proyecto no hace falta un motor de base de datos aparte.
+    auth_db_path: Path = REPO_ROOT / "backend" / "data" / "auth.db"
+    # "Sesion que nunca se cierra" en la practica: una cookie de vida muy
+    # larga (1 año), no una sesion sin expiracion real (los navegadores no
+    # soportan eso). El logout manual si invalida la sesion en el servidor
+    # borrando la fila de session_store — es el unico mecanismo de cierre.
+    session_ttl_seconds: float = 60 * 60 * 24 * 365
+    session_cookie_name: str = "healthguide_session"
+    # Credencial de la cuenta admin de arranque. Deliberadamente NO
+    # hardcodeada en el codigo: sale de ADMIN_PASSWORD en el .env de la raiz
+    # (que ya esta en .gitignore) para poder "borrarla facil" antes de salir
+    # a produccion sin dejar rastro permanente en el historial de git. El
+    # default solo existe para no bloquear desarrollo local.
+    admin_username: str = "admin"
+    admin_password: str = "12345"
 
 
 def get_settings() -> Settings:
@@ -68,4 +85,7 @@ def get_settings() -> Settings:
         in {"1", "true", "yes"},
         rate_limit_max_requests=int(os.getenv("RATE_LIMIT_MAX_REQUESTS", "20")),
         rate_limit_window_seconds=float(os.getenv("RATE_LIMIT_WINDOW_SECONDS", "60")),
+        session_ttl_seconds=float(os.getenv("SESSION_TTL_SECONDS", str(60 * 60 * 24 * 365))),
+        admin_username=os.getenv("ADMIN_USERNAME", "admin"),
+        admin_password=os.getenv("ADMIN_PASSWORD", "12345"),
     )

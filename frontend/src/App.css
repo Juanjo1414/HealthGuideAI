@@ -151,3 +151,42 @@
   .button { width: 100%; }
   .app-footer span { display: block; margin-top: 7px; }
 }
+
+/* Pantallas de autenticacion (login / signup) */
+.auth-shell {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: var(--color-bg);
+}
+
+.auth-card {
+  width: 100%;
+  max-width: 420px;
+  padding: 32px 28px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: var(--shadow-card);
+  animation: rise-in 500ms ease both;
+}
+
+.auth-card__brand { padding: 0 0 22px; justify-content: flex-start; }
+.auth-card__title { margin: 0 0 8px; color: var(--color-text); font-size: 24px; font-weight: 600; letter-spacing: -0.03em; }
+.auth-card__subtitle { margin: 0 0 22px; color: var(--color-text-muted); font-size: 14px; }
+
+.auth-form { display: flex; flex-direction: column; gap: 16px; }
+.auth-form__field { display: flex; flex-direction: column; gap: 8px; }
+.auth-form__input { min-height: auto; resize: none; }
+.auth-form .symptom-form__footer { flex-direction: column; align-items: stretch; gap: 14px; }
+.auth-form .symptom-form__hint { text-align: center; }
+.auth-form .symptom-form__hint a { color: var(--color-primary); font-weight: 700; text-decoration: none; }
+.auth-form .symptom-form__hint a:hover { text-decoration: underline; }
+.auth-form .button { width: 100%; }
+
+.user-menu { display: flex; align-items: center; gap: 10px; }
+.user-menu__email { color: var(--color-text-muted); font-size: 12px; }
+.user-menu__logout { background: transparent; border: 1px solid var(--color-border); color: var(--color-text); }
+.user-menu__logout:hover:not(:disabled) { background: #eaf8fd; }

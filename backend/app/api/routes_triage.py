@@ -15,15 +15,21 @@ from ..schemas.triage import TriageRequest, TriageResponse, ValidationSummary
 from ..storage.evidence_store import EvidenceStore
 from ..validation.safe_response import build_safe_fallback
 from ..validation.security_validator import validate_output
-from .dependencies import get_evidence_store, get_triage_orchestrator
+from ..storage.user_store import User
+from .dependencies import get_evidence_store, get_triage_orchestrator, require_authenticated
 from .rate_limit import enforce_rate_limit
 
 router = APIRouter()
 
 
-@router.post("/triage", response_model=TriageResponse, dependencies=[Depends(enforce_rate_limit)])
+@router.post(
+    "/triage",
+    response_model=TriageResponse,
+    dependencies=[Depends(enforce_rate_limit)],
+)
 def create_triage(
     request: TriageRequest,
+    current_user: User = Depends(require_authenticated),
     orchestrator: TriageOrchestrator = Depends(get_triage_orchestrator),
     evidence_store: EvidenceStore = Depends(get_evidence_store),
 ) -> TriageResponse:

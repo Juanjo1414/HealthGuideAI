@@ -2,10 +2,17 @@ import json
 
 from fastapi.testclient import TestClient
 
-from backend.app.api.dependencies import get_evidence_store, get_triage_orchestrator
+from backend.app.api.dependencies import (
+    get_evidence_store,
+    get_triage_orchestrator,
+    require_authenticated,
+)
 from backend.app.api.rate_limit import InMemoryRateLimiter, get_rate_limiter
 from backend.app.main import app
 from backend.app.storage.evidence_store import EvidenceStore
+from backend.app.storage.user_store import User
+
+STUB_USER = User(id=1, email="paciente@example.com", password_hash="x", role="user", created_at="")
 
 
 class StubOrchestrator:
@@ -41,6 +48,11 @@ def client_with_output(tmp_path, output):
     # El comportamiento de 429 en si se prueba aparte, en test_rate_limit.py.
     permissive_limiter = InMemoryRateLimiter(max_requests=1000, window_seconds=60)
     app.dependency_overrides[get_rate_limiter] = lambda: permissive_limiter
+    # /api/triage requiere sesion desde que se agrego login/signup. Estos
+    # tests no ejercitan auth en si (eso vive en test_auth.py) — se simula
+    # un usuario ya autenticado con el mismo patron de dependency_overrides
+    # que ya usa el resto del archivo.
+    app.dependency_overrides[require_authenticated] = lambda: STUB_USER
     return TestClient(app), store
 
 
