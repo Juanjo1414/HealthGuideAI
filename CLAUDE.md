@@ -299,6 +299,11 @@ no un asistente. Evitar comentarios que expliquen lo obvio línea por línea; so
 entiende con solo leer el código (por qué se tomó una decisión, qué caso raro se está cubriendo,
 qué se intentó antes y no funcionó).
 
+**Autoría de commits:** los commits quedan a nombre de la persona del equipo que está trabajando
+(autor y committer), sin línea `Co-Authored-By` ni ningún otro rastro de que un agente de IA
+participó. El estándar del curso (sección 10) pide evidencia individual real en GitHub — un
+commit compartido con la IA no cuenta como eso.
+
 ## 13. Estándares de código (SOLID y buenas prácticas)
 
 Decisión de arquitectura tomada en `DECISION_LOG.md` (decisión 3): el proyecto usa un monolito

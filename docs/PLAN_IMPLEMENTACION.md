@@ -86,6 +86,10 @@ Figtree + Noto Sans. **Prohibido:** neón, animaciones pesadas, gradientes morad
   que preguntar qué hace, la documentación falló.
 - **Un slice a la vez**, commiteado individualmente.
 - **Todo en `dev/Juanjo`.** Merge a `main` solo en la sesión final.
+- **Los commits van solo a nombre de Juan José** (autor y committer), sin línea `Co-Authored-By`
+  ni ningún otro rastro de que el agente participó — el historial de GitHub debe mostrar
+  autoría individual real, como pide el estándar del curso (sección 10 de `CLAUDE.md`), no
+  autoría compartida con la IA.
 - **El disclaimer de IA es obligatorio** en toda respuesta: el sistema puede equivocarse y la
   recomendación es consultar a un médico.
 
