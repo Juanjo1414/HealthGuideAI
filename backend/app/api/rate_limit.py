@@ -11,7 +11,18 @@ lleva su propia cuenta — el límite real efectivo sería
 `rate_limit_max_requests * numero_de_procesos`, no el valor configurado. Para
 el tamaño actual del despliegue (un solo proceso) esto no es un problema,
 pero si el proyecto crece a correr con varios workers, este limitador deja de
-ser suficiente y hay que migrar a algo respaldado por Redis o similar.
+ser suficiente y hay que migrar a algo respaldado por Redis o similar (ver
+Sesión 4 del plan).
+
+Segunda limitación, agregada al montar el gateway de la Sesión 3
+(`gateway/nginx.conf`): `request.client.host` es la IP de quien le habla
+directo al backend. Si el tráfico entra por el gateway, esa IP es la del
+contenedor del gateway, no la del cliente real — todo el tráfico que pasa
+por el gateway queda bucketed junto. Arreglarlo bien (confiar en
+`X-Forwarded-For` solo cuando viene de un proxy conocido) es trabajo para
+cuando el gateway sea el camino de entrada real, no antes — confiar en ese
+header sin validar de dónde viene es abrir la puerta a que cualquiera
+falsifique su IP.
 """
 
 from __future__ import annotations

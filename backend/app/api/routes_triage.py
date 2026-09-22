@@ -26,6 +26,16 @@ router = APIRouter()
     "/triage",
     response_model=TriageResponse,
     dependencies=[Depends(enforce_rate_limit)],
+    summary="Clasifica la prioridad de atención a partir de síntomas en texto libre",
+    description=(
+        "Nunca diagnostica una enfermedad específica ni recomienda medicamentos — orienta, "
+        "la decisión final es humana. Ver CLAUDE.md sección 2 para las reglas completas."
+    ),
+    responses={
+        401: {"description": "No hay sesión activa — hace falta login."},
+        429: {"description": "Se superó el límite de solicitudes por IP en la ventana configurada."},
+        502: {"description": "El proveedor del modelo no respondió correctamente."},
+    },
 )
 def create_triage(
     request: TriageRequest,

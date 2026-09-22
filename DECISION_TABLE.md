@@ -1,5 +1,13 @@
 # Evidencia Consolidada: Decisión Técnica Gemini vs NVIDIA
 
+**Estado (Sesión 3, 2026-09-22):** decisión cerrada de forma retroactiva a nivel de código. El
+backend (`backend/app/providers/`) nunca implementó un `GeminiProvider` — la evidencia de este
+archivo es la razón por la que no se molestó en hacerlo. `ModelProvider` sigue siendo una
+interfaz abstracta (Liskov/Dependency Inversion, ver `CLAUDE.md` sección 13); si algún día se
+agrega un segundo proveedor, no necesariamente tiene que ser Gemini. `GEMINI_API_KEY` se
+mantiene en `.env.example` únicamente para quien quiera correr `HealthGuideAI_Gemini.ipynb`
+(evidencia congelada, no parte activa del proyecto).
+
 ## Tabla Comparativa (Resumen Ejecutivo)
 
 | Métrica | NVIDIA nemotron-3-super | Gemini (flash) | Ganador |

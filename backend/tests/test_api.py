@@ -61,9 +61,11 @@ def teardown_function():
 
 
 def test_health_does_not_require_provider_key(monkeypatch):
+    # /health es liveness puro (Sesion 3): no depende de que haya API key de
+    # NVIDIA configurada, a diferencia de /ready.
     monkeypatch.delenv("NVIDIA_API_KEY", raising=False)
 
-    response = TestClient(app).get("/api/health")
+    response = TestClient(app).get("/health")
 
     assert response.status_code == 200
 

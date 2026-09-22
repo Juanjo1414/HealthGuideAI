@@ -15,7 +15,7 @@ tomadas.
 |---|---|---|---|
 | 1 | Higiene: login + contexto real | Fundamentos | ✅ Hecha |
 | 2 | Estándar de calidad (`/constraints` + `/spec`) | Fundamentos | ✅ Hecha |
-| 3 | API Gateway + consolidación en NVIDIA | Backend | ⬜ Pendiente |
+| 3 | API Gateway + consolidación en NVIDIA | Backend | ✅ Hecha |
 | 4 | Escalabilidad horizontal (Postgres + Redis) | Backend | ⬜ Pendiente |
 | 5 | Seguridad de la aplicación | Backend | ⬜ Pendiente |
 | 6 | Motor de triage híbrido (reglas + few-shot) | Clínico | ⬜ Pendiente |
@@ -130,9 +130,11 @@ silencio.
 2. [`docs/PANTALLAS.md`](PANTALLAS.md): inventario de las 6 pantallas (login, signup, triage,
    historial, perfil, revisión humana) con criterio de aceptación por una. Encontró dos bloqueos
    reales de backend que no estaban en el radar: **Historial** y **Revisión humana** necesitan
-   endpoints que no existen todavía (`GET /api/triage/history` filtrado por usuario, y
-   `GET /api/admin/flagged` + un concepto de rol admin que `UserStore` no tiene hoy) — se agregan
-   como tarea explícita de la Sesión 11 más abajo, en vez de descubrirse a mitad de esa sesión.
+   endpoints que no existen todavía (`GET /api/v1/triage/history` filtrado por usuario, y
+   `GET /api/v1/admin/flagged`) — se agregan como tarea explícita de la Sesión 11 más abajo, en
+   vez de descubrirse a mitad de esa sesión. **Corrección de la Sesión 3:** la autorización por
+   rol admin (`require_admin`) ya existía en `backend/app/api/dependencies.py`, no hacía falta
+   agregarla — el bloqueo real es solo el endpoint en sí.
 
 **Verificación:** cada constraint tiene una forma automática de medirse; si no se puede medir, no
 es un constraint — confirmado corriendo `pytest backend/tests --cov` de verdad en vez de inventar
@@ -144,25 +146,44 @@ un número.
 
 # FASE 1 — Backend sólido
 
-## Sesión 3 — API Gateway estructurado + consolidación en NVIDIA
+## Sesión 3 — API Gateway estructurado + consolidación en NVIDIA ✅
 
 **Objetivo:** que la capa de API sea una frontera real, no un conjunto de rutas sueltas.
 
-1. **Eliminar Gemini**: quitar rastros del código y config, dejando `ModelProvider` como ABC con
-   `NvidiaProvider` única. Registrar la decisión en `DECISION_TABLE.md` (no borrar la comparativa
-   histórica: es evidencia de por qué se eligió NVIDIA).
-2. **Versionado**: `/api/v1/...` con estrategia de deprecación escrita.
-3. **Stack de middleware ordenado**: request ID → logging estructurado → CORS → rate limit →
-   auth → manejo de errores.
-4. **Sobre de error consistente** para toda la API (código, mensaje humano, request ID para
-   soporte). Sin filtrar stack traces ni detalles internos al cliente.
-5. **Health y readiness separados**: `/health` (el proceso vive) vs `/ready` (Postgres y Redis
-   responden) — esto es lo que el balanceador va a consultar cuando haya varias instancias.
-6. **Reverse proxy** (nginx o Traefik) en `compose.yml` como gateway real delante del backend.
-7. OpenAPI documentado con ejemplos reales.
+1. **Gemini:** confirmado que el backend nunca implementó `GeminiProvider` — no había nada que
+   eliminar en código. Se dejó constancia formal en `DECISION_TABLE.md` y se limpió el
+   comentario duplicado de `.env.example`.
+2. **Versionado:** `/api/v1/*` es la ruta canónica; `/api/*` sigue funcionando idéntico, marcado
+   `deprecated` en OpenAPI (`include_router(..., deprecated=True)`). Política de deprecación
+   escrita en `backend/app/main.py`: se retira cuando el frontend migre (Sesiones 9-11), no antes.
+3. **Middleware:** `RequestIdMiddleware` y `AccessLogMiddleware` (nuevos,
+   `backend/app/api/middleware.py`) junto a `CORSMiddleware` (ya existía). Orden documentado
+   explícitamente en el código (Starlette monta el stack en reversa — el último agregado queda
+   más afuera).
+4. **Sobre de error consistente** (`backend/app/api/errors.py`): `{"detail", "error": {"code",
+   "request_id"}}` en todo error, sin romper `frontend/src/api/*.js` que ya lee `detail`. El
+   catch-all nunca expone un stack trace — loguea server-side con el `request_id`, responde
+   genérico al cliente.
+5. **`/health` y `/ready`** (`backend/app/api/routes_health.py`), sin prefijo `/api`. `/ready`
+   chequea lo que hoy es real (`NVIDIA_API_KEY` + base de auth) — los checks de Postgres/Redis se
+   agregan en la Sesión 4, no antes (un check contra un servicio que no existe sería falso).
+6. **Gateway reverse proxy** (`gateway/nginx.conf` + servicio `gateway` en `compose.yml`, puerto
+   `8888`): aditivo, probado end-to-end (health/ready/api/frontend enrutan bien). Honesto en el
+   propio comentario del archivo: el bundle del frontend todavía no pasa por él (sigue llamando
+   a `:8000` directo vía `VITE_API_BASE_URL`) — el cableado de origen único es de la Sesión 14.
+7. **OpenAPI con ejemplos reales**: `json_schema_extra` en los schemas de auth/triage, `summary`
+   y `responses` con casos de error en cada ruta.
 
-**Verificación:** tests de contrato por endpoint; `/ready` debe fallar si se apaga Postgres o
-Redis.
+**Verificación real (no solo "los tests pasan"):** 33 tests backend en verde (89% cobertura, subió
+de 85%), suite completa corrida tras reconstruir la imagen Docker del backend — el mismo error de
+"contenedor con imagen vieja" que causó el bug de login de la Sesión 1 se volvió a chequear acá a
+propósito. Probado en vivo contra contenedores reales: `/health`, `/ready`, `/api/v1/auth/me` y el
+frontend, los cuatro a través del gateway en `:8888` y también directo en `:8000`/`:8080`.
+
+**Deuda que queda anotada, no escondida:** si el tráfico entra por el gateway, el rate limiter
+(`rate_limit.py`) cuenta por la IP del contenedor del gateway, no la del cliente real —
+documentado en el propio archivo, se resuelve cuando el gateway sea el camino de entrada real
+(confiar en `X-Forwarded-For` solo de proxies conocidos).
 
 ---
 
@@ -349,12 +370,13 @@ allá del default de shadcn, y es fácil perderla copiando componentes "de fábr
    breakpoints propios).
 3. Implementar las pantallas faltantes del inventario. **Ojo:** dos de ellas necesitan trabajo de
    backend primero, según `docs/PANTALLAS.md` — no es solo frontend:
-   - **Historial de consultas** requiere `GET /api/triage/history` filtrado por `user_id` (hoy
+   - **Historial de consultas** requiere `GET /api/v1/triage/history` filtrado por `user_id` (hoy
      `EvidenceStore` guarda evidencia pero nada la expone por usuario vía API).
-   - **Revisión humana** requiere `GET /api/admin/flagged` protegido por rol admin, más agregar
-     un campo de rol a `UserStore` (hoy no existe la noción de admin) — y su alcance es
-     deliberadamente el de un visor de la lista, no una cola con asignación/SLA (ver
-     `DECISION_LOG.md`, Decisión 4, y no contradecirla "de paso").
+   - **Revisión humana** requiere `GET /api/v1/admin/flagged` protegido con
+     `Depends(require_admin)` — esa dependencia **ya existe** (`backend/app/api/dependencies.py`,
+     confirmado en la Sesión 3), solo falta el endpoint. Alcance deliberadamente el de un visor
+     de la lista, no una cola con asignación/SLA (ver `DECISION_LOG.md`, Decisión 4, y no
+     contradecirla "de paso").
    - **Perfil** no necesita endpoints nuevos para la versión mínima (usa `/api/auth/me` y
      `/api/auth/logout`, que ya existen).
 4. **Responsive real probado en dispositivo**, no solo redimensionando el navegador: 375px /

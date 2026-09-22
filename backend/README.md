@@ -21,8 +21,8 @@ app/
 > una sola vez con Docker, ver la sección "Como correr la web app" en el `README.md` de la raíz.
 
 1. Asegúrate de tener `.env` en la **raíz del repo** (no en `backend/`) con
-   `NVIDIA_API_KEY` — es el mismo `.env` que usan los notebooks. `/api/health` puede arrancar
-   sin la clave; `/api/triage` responde 503 hasta que se configure.
+   `NVIDIA_API_KEY` — es el mismo `.env` que usan los notebooks. `/health` puede arrancar
+   sin la clave; `/api/v1/triage` responde 503 hasta que se configure.
 2. Crea el entorno virtual e instala dependencias:
 
    ```bash
@@ -87,6 +87,36 @@ réplicas, cada uno lleva su propia cuenta — el límite efectivo real sería
 `RATE_LIMIT_MAX_REQUESTS × número de procesos`, no el valor configurado. Para un solo proceso
 (el despliegue actual) esto no es un problema; si el proyecto crece a multi-worker, este
 limitador debe migrar a algo respaldado por Redis o similar.
+
+También honesto: si el tráfico entra por el gateway de la Sesión 3 (`:8888`), `request.client.host`
+es la IP del contenedor del gateway, no la del cliente real — todo ese tráfico queda bucketed
+junto hasta que se agregue soporte de `X-Forwarded-For` confiando solo en proxies conocidos
+(ver comentario en `rate_limit.py`).
+
+## API Gateway (Sesión 3)
+
+- **Versionado:** `/api/v1/*` es la ruta canónica. `/api/*` (sin versión) sigue funcionando
+  idéntico — marcado `deprecated` en `/docs` — porque el frontend actual todavía le pega a esas
+  rutas (`VITE_API_BASE_URL`). Se retira cuando el frontend migre, no antes.
+- **`/health` vs `/ready`:** ninguno lleva prefijo `/api` (son de infraestructura, no de negocio).
+  `/health` es liveness puro (el proceso vive). `/ready` chequea lo que hoy es real — que haya
+  `NVIDIA_API_KEY` configurada y que la base de auth responda — y devuelve 503 si algo falla.
+  Los checks de Postgres/Redis se agregan en la Sesión 4, cuando esos servicios existan de
+  verdad en `compose.yml`.
+- **Sobre de error consistente:** toda respuesta de error trae `{"detail": "...", "error":
+  {"code": "...", "request_id": "..."}}`. `detail` se mantiene por compatibilidad con
+  `frontend/src/api/*.js`; `error.code` es un identificador estable (`unauthorized`,
+  `validation_error`, etc.) y `error.request_id` coincide con el header `X-Request-ID` de la
+  respuesta, para cruzar un reporte de bug contra el log del servidor. Ver `app/api/errors.py`.
+- **`X-Request-ID`:** cada respuesta lo trae. Si el caller ya manda ese header, se respeta (así
+  el gateway de abajo puede propagar un ID de correlación en vez de generar uno nuevo en cada
+  salto). Log de acceso estructurado (método, ruta, status, duración) en `app/api/middleware.py`
+  — nunca loguea texto de síntomas, eso vive solo en `EvidenceStore` con su propia política.
+- **Gateway reverse proxy** (`gateway/nginx.conf`, servicio `gateway` en `compose.yml`, puerto
+  `8888`): aditivo, no reemplaza el acceso directo a `:8000`/`:8080`. Enruta `/health`, `/ready`
+  y `/api/*` al backend, todo lo demás al frontend. Hoy el bundle del frontend sigue llamando a
+  `:8000` directo (no pasa por el gateway) — ese cableado de origen único es trabajo de la
+  Sesión 14, cuando haya un dominio real y las cookies `Secure` lo exijan.
 
 ## Revisión humana — qué es y qué no es
 

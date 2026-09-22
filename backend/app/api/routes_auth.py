@@ -31,7 +31,13 @@ def _set_session_cookie(response: Response, token: str) -> None:
     )
 
 
-@router.post("/auth/signup", response_model=UserResponse, status_code=201)
+@router.post(
+    "/auth/signup",
+    response_model=UserResponse,
+    status_code=201,
+    summary="Crea una cuenta y deja la sesión iniciada",
+    responses={409: {"description": "Ya existe una cuenta con ese correo."}},
+)
 def signup(
     payload: SignupRequest,
     response: Response,
@@ -52,7 +58,12 @@ def signup(
     return UserResponse(id=user.id, email=user.email, role=user.role)
 
 
-@router.post("/auth/login", response_model=UserResponse)
+@router.post(
+    "/auth/login",
+    response_model=UserResponse,
+    summary="Inicia sesión con email y contraseña",
+    responses={401: {"description": "Correo o contraseña incorrectos."}},
+)
 def login(
     payload: LoginRequest,
     response: Response,
@@ -68,7 +79,7 @@ def login(
     return UserResponse(id=user.id, email=user.email, role=user.role)
 
 
-@router.post("/auth/logout", status_code=204)
+@router.post("/auth/logout", status_code=204, summary="Cierra la sesión actual")
 def logout(
     response: Response,
     healthguide_session: str | None = Cookie(default=None),
@@ -84,6 +95,11 @@ def logout(
     response.delete_cookie(key=settings.session_cookie_name)
 
 
-@router.get("/auth/me", response_model=UserResponse)
+@router.get(
+    "/auth/me",
+    response_model=UserResponse,
+    summary="Devuelve el usuario de la sesión activa",
+    responses={401: {"description": "No hay sesión activa."}},
+)
 def me(current_user: User = Depends(require_authenticated)) -> UserResponse:
     return UserResponse(id=current_user.id, email=current_user.email, role=current_user.role)

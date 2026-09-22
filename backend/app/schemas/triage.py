@@ -15,6 +15,17 @@ Priority = Literal["BAJA", "MEDIA", "ALTA", "EMERGENCIA"]
 
 
 class TriageRequest(BaseModel):
+    model_config = ConfigDict(
+        json_schema_extra={
+            "example": {
+                "symptoms_text": (
+                    "Tengo dolor de cabeza fuerte desde ayer y algo de fiebre, "
+                    "39 grados esta mañana."
+                )
+            }
+        }
+    )
+
     symptoms_text: str = Field(
         min_length=1,
         max_length=4000,
@@ -37,7 +48,27 @@ class ValidationSummary(BaseModel):
 
 
 class TriageResponse(BaseModel):
-    model_config = ConfigDict(extra="forbid")
+    model_config = ConfigDict(
+        extra="forbid",
+        json_schema_extra={
+            "example": {
+                "resumen": "Dolor de cabeza con fiebre moderada desde hace un día.",
+                "sintomas_detectados": ["dolor de cabeza", "fiebre"],
+                "prioridad": "MEDIA",
+                "posibles_causas": ["infección viral común"],
+                "alertas": [],
+                "recomendacion": (
+                    "Descansa, mantente hidratado y consulta a un médico si "
+                    "los síntomas empeoran o persisten más de 3 días."
+                ),
+                "requiere_revision": False,
+                "confianza": 0.72,
+                "validation": {"passed": True, "checks": {"no_diagnostica": True}, "reasons": []},
+                "requires_human_review": False,
+                "request_id": "9f1c2e7a4b3d4e8f8a1b2c3d4e5f6a7b",
+            }
+        },
+    )
 
     resumen: str
     sintomas_detectados: list[str]

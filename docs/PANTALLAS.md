@@ -131,20 +131,20 @@ hoy es un script de línea de comandos (`backend/scripts/list_flagged_for_review
 **Criterio de aceptación:**
 - Lista los casos con `requiere_revision=true` o que fallaron el validador (mismo criterio que
   `_is_flagged()` en el script actual), con fecha, resumen y prioridad asignada.
-- **Solo accesible para un usuario admin** — necesita un control de autorización nuevo en el
-  backend (hoy `require_authenticated` no distingue admin de usuario normal). No se expone a
-  cualquier usuario logueado.
+- **Solo accesible para un usuario admin** — la corrección de este mismo spec: `UserStore` ya
+  tiene `role` (`"user"`/`"admin"`) y `backend/app/api/dependencies.py` ya expone
+  `require_admin`, así que este control **ya existe**, solo falta usarlo en el endpoint nuevo
+  (confirmado en la Sesión 3). No se expone a cualquier usuario logueado.
 - Deja explícito en la UI que esto es una lista para revisar a mano, no un sistema con
   seguimiento — mismo mensaje honesto que ya imprime el script por consola.
 - No tiene botones de "asignar", "resolver" ni "marcar como visto" en esta versión — agregar eso
   sería expandir el alcance más allá de lo que Decisión 4 decidió, y debería ser su propia
   decisión documentada, no algo que se cuela por hacer la pantalla "más completa".
 
-**Depende de:** **no existe el endpoint todavía.** Hace falta un `GET /api/admin/flagged` (o
-similar) protegido por rol admin, que exponga lo mismo que hoy escribe
-`backend/data/flagged_for_review.jsonl` — y una noción real de "usuario admin" en el modelo de
-auth, que hoy no existe (`UserStore` no tiene un campo de rol). Es trabajo de backend antes de
-que esta pantalla pueda construirse.
+**Depende de:** **no existe el endpoint todavía**, pero la autorización sí (`require_admin`).
+Hace falta un `GET /api/v1/admin/flagged` protegido con `Depends(require_admin)` que exponga lo
+mismo que hoy escribe `backend/data/flagged_for_review.jsonl`. Es trabajo de backend, pero más
+chico de lo que este spec asumía originalmente — no hay que tocar el modelo de auth.
 
 ---
 
@@ -155,8 +155,8 @@ nuevo primero:
 
 | Pantalla | Falta en backend |
 |---|---|
-| Historial de consultas | `GET /api/triage/history` filtrado por usuario |
-| Revisión humana | `GET /api/admin/flagged` + noción de rol admin en `UserStore` |
+| Historial de consultas | `GET /api/v1/triage/history` filtrado por usuario |
+| Revisión humana | `GET /api/v1/admin/flagged` (la autorización por rol ya existe: `require_admin`) |
 
 Esto se agrega como tarea explícita cuando se detalle la Sesión 11 en el plan, no se improvisa
 en medio de esa sesión.
