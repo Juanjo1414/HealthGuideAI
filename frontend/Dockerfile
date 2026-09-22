@@ -7,7 +7,19 @@ WORKDIR /app
 # package*.json antes que el resto del codigo, mismo criterio de cacheo que
 # el Dockerfile del backend con requirements.txt.
 COPY package.json package-lock.json ./
-RUN npm ci
+
+# npm tiene un bug conocido (npm/cli#4028, "Exit handler never called!") que
+# en redes inestables deja `npm ci` a medias SIN devolver exit code != 0 —
+# el layer queda en verde pero node_modules/.bin/vite nunca se instala, y el
+# build del bundle final termina sirviendo una app vieja sin avisar. Subimos
+# los reintentos/timeouts de npm para tolerar la red, y sobre todo agregamos
+# una verificacion explicita despues del install: si vite no quedo instalado,
+# la imagen falla en vez de construirse "exitosamente" a medias.
+RUN npm config set fetch-retries 5 \
+    && npm config set fetch-retry-mintimeout 20000 \
+    && npm config set fetch-retry-maxtimeout 120000 \
+    && npm ci \
+    && test -x node_modules/.bin/vite || (echo "ERROR: vite no se instalo (ver bug npm/cli#4028)" && exit 1)
 
 COPY . .
 

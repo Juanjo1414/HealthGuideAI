@@ -9,7 +9,8 @@ validaciones deterministas que impiden que diagnostique o recomiende medicamento
 ![Arquitectura por capas de HealthGuideAI](docs/arquitectura.png)
 
 Diagrama completo y decisiones de diseño en `docs/arquitectura.md`; decisiones de ingeniería
-con evidencia (qué modelo, qué canal, por qué) en `DECISION_LOG.md`.
+con evidencia (qué modelo, qué canal, por qué) en `DECISION_LOG.md`; roadmap de lo que falta,
+dividido en sesiones de trabajo, en [`docs/PLAN_IMPLEMENTACION.md`](docs/PLAN_IMPLEMENTACION.md).
 
 ## Estado actual
 
@@ -175,5 +176,8 @@ equipo. Se configura en Settings → Branches del repositorio, y requiere permis
 - Desplegar `backend/` y `frontend/` en algun lado real (hoy corren en local o con Docker) para
   poder compartir un link de demo en vez de pedirle a alguien que clone el repo.
 - Hacer 3 gates minimos , input output y riesgo
-- Hacer Login
+- ~~Hacer Login~~ — hecho (commit `545d272`).
 - Fortalecer evals
+
+El detalle completo de esto y lo que sigue, dividido en sesiones de trabajo ejecutables, está en
+[`docs/PLAN_IMPLEMENTACION.md`](docs/PLAN_IMPLEMENTACION.md).
