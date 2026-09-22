@@ -10,7 +10,7 @@ from __future__ import annotations
 
 from fastapi.testclient import TestClient
 
-from backend.app.api.dependencies import get_db
+from backend.app.api.dependencies import get_db, get_redis_client
 from backend.app.main import app
 
 
@@ -26,7 +26,7 @@ def test_ready_reports_ok_when_dependencies_available(monkeypatch):
     assert response.status_code == 200
     body = response.json()
     assert body["status"] == "ok"
-    assert body["checks"] == {"nvidia_configured": True, "auth_db": True}
+    assert body["checks"] == {"nvidia_configured": True, "postgres": True, "redis": True}
 
 
 def test_ready_reports_not_ready_when_nvidia_key_missing(monkeypatch):
@@ -40,19 +40,34 @@ def test_ready_reports_not_ready_when_nvidia_key_missing(monkeypatch):
     assert body["checks"]["nvidia_configured"] is False
 
 
-def test_ready_reports_not_ready_when_auth_db_fails(monkeypatch):
+def test_ready_reports_not_ready_when_postgres_fails(monkeypatch):
     monkeypatch.setenv("NVIDIA_API_KEY", "clave-de-prueba")
 
     class BrokenDb:
         def query_one(self, *_args, **_kwargs):
-            raise RuntimeError("simulando la base de auth caida")
+            raise RuntimeError("simulando Postgres caido")
 
     app.dependency_overrides[get_db] = lambda: BrokenDb()
 
     response = TestClient(app).get("/ready")
 
     assert response.status_code == 503
-    assert response.json()["checks"]["auth_db"] is False
+    assert response.json()["checks"]["postgres"] is False
+
+
+def test_ready_reports_not_ready_when_redis_fails(monkeypatch):
+    monkeypatch.setenv("NVIDIA_API_KEY", "clave-de-prueba")
+
+    class BrokenRedis:
+        def ping(self):
+            raise ConnectionError("simulando Redis caido")
+
+    app.dependency_overrides[get_redis_client] = lambda: BrokenRedis()
+
+    response = TestClient(app).get("/ready")
+
+    assert response.status_code == 503
+    assert response.json()["checks"]["redis"] is False
 
 
 def test_v1_prefix_behaves_identical_to_legacy_alias():

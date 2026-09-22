@@ -28,29 +28,29 @@ class SessionStore:
 
     def create(self, user_id: int) -> Session:
         token = secrets.token_urlsafe(32)
-        expires_at = (
-            datetime.now(timezone.utc) + timedelta(seconds=self._ttl_seconds)
-        ).isoformat()
+        expires_at_dt = datetime.now(timezone.utc) + timedelta(seconds=self._ttl_seconds)
+        # psycopg2 adapta datetime -> TIMESTAMPTZ directamente, sin pasar
+        # por .isoformat() a mano como hacía la versión SQLite.
         self._db.execute(
-            "INSERT INTO sessions (token, user_id, expires_at) VALUES (?, ?, ?)",
-            (token, user_id, expires_at),
+            "INSERT INTO sessions (token, user_id, expires_at) VALUES (%s, %s, %s)",
+            (token, user_id, expires_at_dt),
         )
-        return Session(token=token, user_id=user_id, expires_at=expires_at)
+        return Session(token=token, user_id=user_id, expires_at=expires_at_dt.isoformat())
 
     def get_valid(self, token: str) -> Session | None:
         row = self._db.query_one(
-            "SELECT token, user_id, expires_at FROM sessions WHERE token = ?",
+            "SELECT token, user_id, expires_at FROM sessions WHERE token = %s",
             (token,),
         )
         if row is None:
             return None
-        expires_at = datetime.fromisoformat(row["expires_at"])
+        expires_at: datetime = row["expires_at"]
         if expires_at.tzinfo is None:
             expires_at = expires_at.replace(tzinfo=timezone.utc)
         if expires_at < datetime.now(timezone.utc):
             self.delete(token)
             return None
-        return Session(token=row["token"], user_id=row["user_id"], expires_at=row["expires_at"])
+        return Session(token=row["token"], user_id=row["user_id"], expires_at=expires_at.isoformat())
 
     def delete(self, token: str) -> None:
-        self._db.execute("DELETE FROM sessions WHERE token = ?", (token,))
+        self._db.execute("DELETE FROM sessions WHERE token = %s", (token,))

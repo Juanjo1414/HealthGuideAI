@@ -1,66 +1,99 @@
 """
-Conexion a la base de datos de auth (usuarios + sesiones). SQLite via
-stdlib, sin ORM — mismo criterio que evidence_store.py: para el tamano
-actual del proyecto un archivo simple alcanza y es trivial de inspeccionar
-a mano. Si el proyecto crece a necesitar Postgres o similar, este es el
-unico archivo que habria que tocar (storage/user_store.py y
-storage/session_store.py no saben de SQL crudo, solo de esta conexion).
+Conexion a Postgres (Sesion 4 — reemplaza el SQLite de las sesiones
+anteriores, ver docs/PLAN_IMPLEMENTACION.md). Sigue sin ORM a propósito
+(mismo criterio que antes): las queries de user_store.py/session_store.py/
+evidence_store.py son simples, un ORM agregaría una capa de abstracción que
+nadie va a aprovechar. Lo que sí cambia es que ahora hay un pool de
+conexiones real (`psycopg2.pool.ThreadedConnectionPool`) en vez de una sola
+conexión con lock propio — Postgres soporta concurrencia real, SQLite no.
+
+El esquema (`CREATE TABLE`) ya no vive acá — lo versiona Alembic
+(backend/alembic/versions/). Esta clase asume que las tablas ya existen
+cuando se instancia; correr las migraciones es responsabilidad de quien
+arranca el proceso (ver backend/README.md).
+
+Soporte de `schema` (no `public` a secas): existe para que los tests puedan
+correr contra el mismo Postgres real sin pisarse entre sí — cada test toma
+un schema Postgres propio (creado y borrado en el fixture), no un archivo
+temporal como hacía `tmp_path` con SQLite. Un test contra un Postgres real
+prueba algo que un mock no prueba: que el SQL en sí es válido.
 """
 
 from __future__ import annotations
 
-import sqlite3
-import threading
-from pathlib import Path
+from contextlib import contextmanager
 
-_SCHEMA = """
-CREATE TABLE IF NOT EXISTS users (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    email TEXT NOT NULL UNIQUE,
-    password_hash TEXT NOT NULL,
-    role TEXT NOT NULL DEFAULT 'user',
-    created_at TEXT NOT NULL DEFAULT (datetime('now'))
-);
-
-CREATE TABLE IF NOT EXISTS sessions (
-    token TEXT PRIMARY KEY,
-    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    created_at TEXT NOT NULL DEFAULT (datetime('now')),
-    expires_at TEXT NOT NULL
-);
-"""
+import psycopg2
+import psycopg2.extras
+from psycopg2.pool import ThreadedConnectionPool
 
 
 class Database:
-    """Wrapper delgado sobre sqlite3. Una conexion por proceso, con lock
-    propio porque sqlite3 en modo por defecto no es thread-safe para
-    escrituras concurrentes desde varios hilos (FastAPI con TestClient/
-    Uvicorn puede despachar requests en threads distintos)."""
+    def __init__(
+        self,
+        dsn: str,
+        schema: str = "public",
+        min_connections: int = 1,
+        max_connections: int = 5,
+    ):
+        self._schema = schema
+        # `options=-c search_path=...` fija el search_path en el momento en
+        # que psycopg2 abre cada conexión física del pool — como las
+        # conexiones son persistentes (se reciclan, no se recrean por
+        # checkout), esto alcanza con hacerse una vez acá, no en cada query.
+        self._pool = ThreadedConnectionPool(
+            min_connections,
+            max_connections,
+            dsn=dsn,
+            options=f"-c search_path={schema}",
+        )
+        if schema != "public":
+            self._create_schema_if_missing(dsn, schema)
 
-    def __init__(self, db_path: Path):
-        self._db_path = db_path
-        self._db_path.parent.mkdir(parents=True, exist_ok=True)
-        self._lock = threading.Lock()
-        self._connection = sqlite3.connect(str(db_path), check_same_thread=False)
-        self._connection.row_factory = sqlite3.Row
-        with self._lock:
-            self._connection.executescript(_SCHEMA)
-            self._connection.commit()
+    @staticmethod
+    def _create_schema_if_missing(dsn: str, schema: str) -> None:
+        # Conexión aparte, sin search_path propio: crear el schema es lo
+        # único que hace falta antes de que el pool empiece a usarlo.
+        conn = psycopg2.connect(dsn)
+        try:
+            conn.autocommit = True
+            with conn.cursor() as cur:
+                cur.execute(f'CREATE SCHEMA IF NOT EXISTS "{schema}"')
+        finally:
+            conn.close()
 
-    def execute(self, query: str, params: tuple = ()) -> sqlite3.Cursor:
-        with self._lock:
-            cursor = self._connection.execute(query, params)
-            self._connection.commit()
-            return cursor
+    @contextmanager
+    def _cursor(self):
+        conn = self._pool.getconn()
+        try:
+            with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+                yield cur
+            conn.commit()
+        except Exception:
+            conn.rollback()
+            raise
+        finally:
+            self._pool.putconn(conn)
 
-    def query_one(self, query: str, params: tuple = ()) -> sqlite3.Row | None:
-        with self._lock:
-            return self._connection.execute(query, params).fetchone()
+    def execute(self, query: str, params: tuple = ()) -> None:
+        with self._cursor() as cur:
+            cur.execute(query, params)
 
-    def query_all(self, query: str, params: tuple = ()) -> list[sqlite3.Row]:
-        with self._lock:
-            return self._connection.execute(query, params).fetchall()
+    def query_one(self, query: str, params: tuple = ()) -> psycopg2.extras.RealDictRow | None:
+        with self._cursor() as cur:
+            cur.execute(query, params)
+            return cur.fetchone()
+
+    def query_all(self, query: str, params: tuple = ()) -> list[psycopg2.extras.RealDictRow]:
+        with self._cursor() as cur:
+            cur.execute(query, params)
+            return cur.fetchall()
+
+    def drop_schema(self) -> None:
+        """Solo para tests: borra el schema completo (CASCADE) al terminar,
+        para no dejar basura acumulándose en el Postgres de desarrollo."""
+        with self._cursor() as cur:
+            cur.execute(f'DROP SCHEMA IF EXISTS "{self._schema}" CASCADE')
 
     def close(self) -> None:
-        with self._lock:
-            self._connection.close()
+        self._pool.closeall()

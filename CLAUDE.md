@@ -124,16 +124,18 @@ HealthGuideAI_Gemini.ipynb        -> mismo flujo con Gemini, dado de baja (cuota
 
 backend/                          -> FastAPI, monolito modular por capas (ver sección 13)
   app/
-    api/                          -> routers HTTP: triage, auth, rate limiting, dependencias compartidas
+    api/                          -> routers HTTP: triage, auth, health/ready, middleware, errors, rate limiting (Redis)
     auth/                         -> hashing y verificación de contraseñas
     orchestration/                -> triage_orchestrator, contract, prompt_builder — el "cerebro" del flujo
     providers/                    -> ModelProvider (ABC) + NvidiaProvider (única implementación concreta)
     schemas/                      -> contratos Pydantic (triage, auth)
-    storage/                      -> persistencia: usuarios, sesiones, evidencia de cada consulta
+    storage/                      -> Postgres: users/sessions/evidence, db.py (pool), schema.py (DDL compartido con Alembic)
     validation/                   -> puente hacia evals/validate_triage_output.py (no lo duplica)
-    config.py                     -> settings, incluye credenciales admin y TTL de sesión
-  tests/                          -> pytest, usa un StubOrchestrator (no llama a NVIDIA real)
-  Dockerfile, README.md
+    config.py                     -> settings: NVIDIA, Postgres, Redis, credenciales admin, TTL de sesión
+  alembic/                        -> migraciones de esquema versionadas (Sesión 4)
+  scripts/                        -> list_flagged_for_review.py, migrate_sqlite_to_postgres.py (datos de sesiones viejas)
+  tests/                          -> pytest, usa un StubOrchestrator (no llama a NVIDIA real) + Postgres/Redis reales para storage
+  Dockerfile, docker-entrypoint.sh (corre migraciones antes de levantar el server), README.md
 
 frontend/                         -> React 18 + Vite + react-router-dom, CSS con custom properties
   src/
@@ -157,7 +159,8 @@ docs/
   arquitectura.md, arquitectura.png -> diagrama y decisiones de diseño de la web app
   PLAN_IMPLEMENTACION.md            -> roadmap multi-sesión de lo que falta (léelo primero)
 
-compose.yml                       -> orquesta backend + frontend con Docker
+gateway/nginx.conf                -> gateway reverse proxy opcional (Sesión 3), aditivo, puerto 8888
+compose.yml                       -> orquesta backend + frontend + Postgres + Redis + gateway con Docker
 .github/workflows/ci.yml          -> backend-tests, frontend-build, docker-build
 DECISION_LOG.md                   -> decisiones de producto con alternativas comparadas (proveedor, canal, arquitectura, alcance de requiere_revision)
 DECISION_TABLE.md                 -> comparativa NVIDIA vs Gemini con datos reales
@@ -179,7 +182,10 @@ cp .env.example .env   # y completa NVIDIA_API_KEY
 docker compose up --build
 ```
 
-Backend en `http://localhost:8000`, frontend en `http://localhost:8080`.
+Esto también levanta Postgres y Redis (Sesión 4) y corre las migraciones de esquema solo, al
+arrancar el contenedor (`backend/docker-entrypoint.sh`) — no hace falta ningún paso manual.
+Backend en `http://localhost:8000`, frontend en `http://localhost:8080`, gateway opcional en
+`http://localhost:8888`.
 
 **Importante — trampa real que ya pasó:** Docker reutiliza imágenes cacheadas si no le pedís
 que reconstruya. Si hiciste `git pull` y el código cambió (por ejemplo, se agregó auth y el
@@ -234,6 +240,14 @@ prompt o se cambia de proveedor sin pensarlo dos veces:
   `frontend/Dockerfile`: reintentos de npm más generosos + una verificación explícita de que
   `node_modules/.bin/vite` exista después del install, para que la imagen falle ruidosamente en
   vez de construirse a medias otra vez.
+- **Postgres del contenedor "no aceptaba" la contraseña correcta (sep-2026, Sesión 4).** Causa
+  real: un Postgres nativo instalado por fuera de Docker en la máquina de desarrollo ya estaba
+  escuchando en el puerto 5432 — Windows deja que dos procesos aparezcan "escuchando" el mismo
+  puerto, y el cliente terminaba hablando con el que no era. Encima, `psycopg2` en Windows con
+  locale en español no pudo ni mostrar el error real (`UnicodeDecodeError` en vez de "falló la
+  autenticación") — hubo que probar con el driver `psycopg` v3 para ver el mensaje de verdad.
+  Se arregló publicando Postgres en el puerto **5433** en `compose.yml`, documentado ahí mismo
+  para que no le vuelva a pasar a nadie del equipo.
 
 ## 9. Sistema de evals
 
@@ -285,9 +299,10 @@ su estado. Resumen rápido de lo ya hecho vs. lo que falta:
 - [x] `ModelProvider` como interfaz abstracta (`backend/app/providers/base.py`), no deuda pendiente.
 - [x] Los 25 casos de evals corridos contra NVIDIA real, documentados en `evals/results.md`.
 - [x] Rate limiting y filtro de contenido fuera de alcance implementados en el backend.
+- [x] API Gateway: versionado (`/api/v1`), middleware, sobre de error, `/health`+`/ready`.
+- [x] Escalabilidad horizontal real: Postgres + Redis, migraciones con Alembic, rate limiting
+      distribuido, probado con 2 instancias independientes compartiendo sesión y límite de tasa.
 - [ ] Ground truth clínico completo (solo 5/25 casos validados por Cristian hoy).
-- [ ] Escalabilidad horizontal real (hoy SQLite en disco + rate limit en memoria, no sobrevive
-      a 2+ instancias).
 - [ ] Blindaje explícito contra prompt injection sobre el modelo (más allá del validador de
       salida que ya existe).
 - [ ] Migración del frontend a TypeScript + Tailwind + shadcn/ui.

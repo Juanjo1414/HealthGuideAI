@@ -2,13 +2,11 @@ from fastapi.testclient import TestClient
 
 from backend.app.api.dependencies import get_db, get_session_store, get_user_store
 from backend.app.main import app
-from backend.app.storage.db import Database
 from backend.app.storage.session_store import SessionStore
 from backend.app.storage.user_store import UserStore
 
 
-def client_with_fresh_db(tmp_path):
-    db = Database(tmp_path / "auth.db")
+def client_with_fresh_db(db):
     app.dependency_overrides[get_db] = lambda: db
     app.dependency_overrides[get_user_store] = lambda: UserStore(db)
     app.dependency_overrides[get_session_store] = lambda: SessionStore(db, ttl_seconds=3600)
@@ -19,8 +17,8 @@ def teardown_function():
     app.dependency_overrides.clear()
 
 
-def test_signup_creates_user_and_sets_session_cookie(tmp_path):
-    client, _ = client_with_fresh_db(tmp_path)
+def test_signup_creates_user_and_sets_session_cookie(db):
+    client, _ = client_with_fresh_db(db)
 
     response = client.post(
         "/api/auth/signup", json={"email": "hola@gmail.com", "password": "clave123"}
@@ -33,8 +31,8 @@ def test_signup_creates_user_and_sets_session_cookie(tmp_path):
     assert "healthguide_session" in response.cookies
 
 
-def test_signup_with_duplicate_email_returns_409(tmp_path):
-    client, _ = client_with_fresh_db(tmp_path)
+def test_signup_with_duplicate_email_returns_409(db):
+    client, _ = client_with_fresh_db(db)
     client.post("/api/auth/signup", json={"email": "hola@gmail.com", "password": "clave123"})
 
     response = client.post(
@@ -44,8 +42,8 @@ def test_signup_with_duplicate_email_returns_409(tmp_path):
     assert response.status_code == 409
 
 
-def test_login_with_correct_credentials_succeeds(tmp_path):
-    client, _ = client_with_fresh_db(tmp_path)
+def test_login_with_correct_credentials_succeeds(db):
+    client, _ = client_with_fresh_db(db)
     client.post("/api/auth/signup", json={"email": "hola@gmail.com", "password": "clave123"})
 
     response = client.post(
@@ -56,8 +54,8 @@ def test_login_with_correct_credentials_succeeds(tmp_path):
     assert "healthguide_session" in response.cookies
 
 
-def test_login_with_wrong_password_returns_401(tmp_path):
-    client, _ = client_with_fresh_db(tmp_path)
+def test_login_with_wrong_password_returns_401(db):
+    client, _ = client_with_fresh_db(db)
     client.post("/api/auth/signup", json={"email": "hola@gmail.com", "password": "clave123"})
 
     response = client.post(
@@ -67,16 +65,16 @@ def test_login_with_wrong_password_returns_401(tmp_path):
     assert response.status_code == 401
 
 
-def test_me_without_session_returns_401(tmp_path):
-    client, _ = client_with_fresh_db(tmp_path)
+def test_me_without_session_returns_401(db):
+    client, _ = client_with_fresh_db(db)
 
     response = client.get("/api/auth/me")
 
     assert response.status_code == 401
 
 
-def test_me_with_valid_session_returns_user(tmp_path):
-    client, _ = client_with_fresh_db(tmp_path)
+def test_me_with_valid_session_returns_user(db):
+    client, _ = client_with_fresh_db(db)
     client.post("/api/auth/signup", json={"email": "hola@gmail.com", "password": "clave123"})
 
     response = client.get("/api/auth/me")
@@ -85,8 +83,8 @@ def test_me_with_valid_session_returns_user(tmp_path):
     assert response.json()["email"] == "hola@gmail.com"
 
 
-def test_logout_invalidates_session(tmp_path):
-    client, _ = client_with_fresh_db(tmp_path)
+def test_logout_invalidates_session(db):
+    client, _ = client_with_fresh_db(db)
     client.post("/api/auth/signup", json={"email": "hola@gmail.com", "password": "clave123"})
 
     logout_response = client.post("/api/auth/logout")
@@ -96,8 +94,8 @@ def test_logout_invalidates_session(tmp_path):
     assert me_response.status_code == 401
 
 
-def test_triage_without_session_requires_login(tmp_path):
-    client, _ = client_with_fresh_db(tmp_path)
+def test_triage_without_session_requires_login(db):
+    client, _ = client_with_fresh_db(db)
 
     response = client.post("/api/triage", json={"symptoms_text": "Tengo fiebre desde ayer."})
 

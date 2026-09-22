@@ -10,9 +10,16 @@ from backend.app.api.dependencies import (
 from backend.app.api.rate_limit import InMemoryRateLimiter, get_rate_limiter
 from backend.app.main import app
 from backend.app.storage.evidence_store import EvidenceStore
-from backend.app.storage.user_store import User
+from backend.app.storage.user_store import UserStore
 
-STUB_USER = User(id=1, email="paciente@example.com", password_hash="x", role="user", created_at="")
+
+def make_stub_user(db):
+    """Un usuario real en el schema de test, no un objeto armado a mano —
+    evidence.user_id tiene FK contra users(id), asi que STUB_USER tiene que
+    existir de verdad en la base para que el INSERT de evidencia no falle."""
+    return UserStore(db).create_user(
+        email="paciente@example.com", password_hash="x", role="user"
+    )
 
 
 class StubOrchestrator:
@@ -38,8 +45,9 @@ def model_output(**overrides):
     return output
 
 
-def client_with_output(tmp_path, output):
-    store = EvidenceStore(tmp_path / "evidence.jsonl")
+def client_with_output(db, output):
+    store = EvidenceStore(db)
+    stub_user = make_stub_user(db)
     app.dependency_overrides[get_triage_orchestrator] = lambda: StubOrchestrator(output)
     app.dependency_overrides[get_evidence_store] = lambda: store
     # Estos tests no evaluan rate limiting — les damos un limitador
@@ -52,7 +60,7 @@ def client_with_output(tmp_path, output):
     # tests no ejercitan auth en si (eso vive en test_auth.py) — se simula
     # un usuario ya autenticado con el mismo patron de dependency_overrides
     # que ya usa el resto del archivo.
-    app.dependency_overrides[require_authenticated] = lambda: STUB_USER
+    app.dependency_overrides[require_authenticated] = lambda: stub_user
     return TestClient(app), store
 
 
@@ -70,13 +78,13 @@ def test_health_does_not_require_provider_key(monkeypatch):
     assert response.status_code == 200
 
 
-def test_unsafe_model_output_is_replaced_by_safe_fallback(tmp_path):
+def test_unsafe_model_output_is_replaced_by_safe_fallback(db):
     unsafe = model_output(
         prioridad="BAJA",
         recomendacion="Tome ibuprofeno 400 mg cada 8 horas.",
         confianza=0.9,
     )
-    client, _ = client_with_output(tmp_path, unsafe)
+    client, _ = client_with_output(db, unsafe)
 
     response = client.post(
         "/api/triage",
@@ -91,9 +99,9 @@ def test_unsafe_model_output_is_replaced_by_safe_fallback(tmp_path):
     assert "ibuprofeno" not in json.dumps(body).lower()
 
 
-def test_undertriaged_red_flag_uses_emergency_fallback(tmp_path):
+def test_undertriaged_red_flag_uses_emergency_fallback(db):
     client, _ = client_with_output(
-        tmp_path,
+        db,
         model_output(prioridad="BAJA", confianza=0.9),
     )
 
@@ -108,9 +116,9 @@ def test_undertriaged_red_flag_uses_emergency_fallback(tmp_path):
     assert body["requires_human_review"] is True
 
 
-def test_fallback_never_downgrades_model_emergency(tmp_path):
+def test_fallback_never_downgrades_model_emergency(db):
     client, _ = client_with_output(
-        tmp_path,
+        db,
         model_output(
             prioridad="EMERGENCIA",
             recomendacion="Tome ibuprofeno mientras busca atención.",
@@ -127,21 +135,25 @@ def test_fallback_never_downgrades_model_emergency(tmp_path):
     assert response.json()["prioridad"] == "EMERGENCIA"
 
 
-def test_evidence_omits_sensitive_payloads_by_default(tmp_path):
+def test_evidence_omits_sensitive_payloads_by_default(db):
     symptoms = "Tengo un síntoma privado desde ayer y necesito orientación."
-    client, store = client_with_output(tmp_path, model_output())
+    client, _ = client_with_output(db, model_output())
 
     response = client.post("/api/triage", json={"symptoms_text": symptoms})
 
     assert response.status_code == 200
-    log_contents = store._log_path.read_text(encoding="utf-8")
-    assert symptoms not in log_contents
-    assert "causa general" not in log_contents
-    assert "input_sha256" in log_contents
+    request_id = response.json()["request_id"]
+    row = db.query_one(
+        "SELECT symptoms_text, model_output, input_sha256 FROM evidence WHERE request_id = %s",
+        (request_id,),
+    )
+    assert row["symptoms_text"] is None
+    assert row["model_output"] is None
+    assert row["input_sha256"] is not None
 
 
-def test_whitespace_only_input_is_rejected(tmp_path):
-    client, _ = client_with_output(tmp_path, model_output())
+def test_whitespace_only_input_is_rejected(db):
+    client, _ = client_with_output(db, model_output())
 
     response = client.post("/api/triage", json={"symptoms_text": "   "})
 

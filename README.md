@@ -134,7 +134,12 @@ cp .env.example .env   # y completa NVIDIA_API_KEY
 docker compose up --build
 ```
 
-Backend en `http://localhost:8000`, frontend en `http://localhost:8080`.
+Esto también levanta Postgres y Redis (Sesión 4 — ver `docs/PLAN_IMPLEMENTACION.md`): el backend
+ya no arranca sin ellos, y corre las migraciones de esquema solo al iniciar (ver
+`backend/docker-entrypoint.sh`) — no hace falta ningún paso manual.
+
+Backend en `http://localhost:8000`, frontend en `http://localhost:8080`, gateway opcional en
+`http://localhost:8888` (ver `backend/README.md`, sección "API Gateway").
 
 **En local, cada parte por separado:** ver `backend/README.md` y `frontend/README.md`.
 

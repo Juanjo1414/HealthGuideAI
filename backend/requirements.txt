@@ -6,3 +6,12 @@ openai>=1.50
 passlib>=1.7,<2
 bcrypt>=4.0,<4.1
 email-validator>=2.2,<3
+# Sesion 4: escalabilidad horizontal. psycopg2 (no async) porque el resto del
+# backend ya es sincrono (rutas def, no async def) — introducir un driver
+# async aca solo para la DB mezclaria dos modelos de concurrencia sin
+# necesidad real. alembic trae SQLAlchemy como dependencia transitiva, pero
+# el proyecto sigue sin usar un ORM (ver storage/db.py) — alembic aca es solo
+# el versionador de esquema, las queries siguen siendo SQL crudo.
+psycopg2-binary>=2.9,<3
+redis>=5.0,<6
+alembic>=1.13,<2

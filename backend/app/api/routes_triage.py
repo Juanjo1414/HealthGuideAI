@@ -46,14 +46,16 @@ def create_triage(
     try:
         model_output = orchestrator.run(request.symptoms_text)
     except ModelProviderError as exc:
-        evidence_store.record_provider_error(request.symptoms_text, exc)
+        evidence_store.record_provider_error(request.symptoms_text, exc, user_id=current_user.id)
         raise HTTPException(
             status_code=502,
             detail="El modelo no pudo procesar la solicitud. Intenta de nuevo en unos segundos.",
         ) from exc
 
     validation_result = validate_output(model_output, request.symptoms_text)
-    request_id = evidence_store.record(request.symptoms_text, model_output, validation_result)
+    request_id = evidence_store.record(
+        request.symptoms_text, model_output, validation_result, user_id=current_user.id
+    )
 
     response_output = (
         model_output

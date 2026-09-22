@@ -8,6 +8,7 @@ from __future__ import annotations
 
 from functools import lru_cache
 
+import redis
 from fastapi import Cookie, Depends, HTTPException
 
 from ..auth.security import hash_password
@@ -42,7 +43,7 @@ def get_triage_orchestrator() -> TriageOrchestrator:
 def get_evidence_store() -> EvidenceStore:
     settings = get_settings()
     return EvidenceStore(
-        settings.evidence_log_path,
+        get_db(),
         include_sensitive_payloads=settings.evidence_include_sensitive_payloads,
     )
 
@@ -50,7 +51,10 @@ def get_evidence_store() -> EvidenceStore:
 @lru_cache
 def get_db() -> Database:
     settings = get_settings()
-    db = Database(settings.auth_db_path)
+    # schema="public": el esquema real de produccion/desarrollo. Los tests
+    # pasan su propio Database con un schema aislado via
+    # app.dependency_overrides — ver conftest.py.
+    db = Database(settings.database_url)
     _ensure_admin_seeded(db)
     return db
 
@@ -72,6 +76,12 @@ def _ensure_admin_seeded(db: Database) -> None:
             )
         except EmailAlreadyRegisteredError:
             pass
+
+
+@lru_cache
+def get_redis_client() -> redis.Redis:
+    settings = get_settings()
+    return redis.from_url(settings.redis_url)
 
 
 @lru_cache

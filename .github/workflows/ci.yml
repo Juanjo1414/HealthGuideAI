@@ -13,6 +13,37 @@ on:
 jobs:
   backend-tests:
     runs-on: ubuntu-latest
+    # Postgres y Redis reales (Sesion 4), no mockeados — los tests de
+    # storage/rate limiting corren contra la misma clase que usa produccion
+    # (ver CONSTRAINTS.md: "un mock que pasa mientras produccion falla es
+    # peor que no tener test"). Contenedores efimeros del propio job, se
+    # tiran al terminar — no es el Postgres/Redis de compose.yml.
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: healthguide
+          POSTGRES_PASSWORD: healthguide_dev_only
+          POSTGRES_DB: healthguide
+        ports:
+          - 5433:5432
+        options: >-
+          --health-cmd "pg_isready -U healthguide -d healthguide"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+    env:
+      DATABASE_URL: "postgresql://healthguide:healthguide_dev_only@localhost:5433/healthguide"
+      REDIS_URL: "redis://localhost:6379/0"
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -20,10 +51,13 @@ jobs:
           python-version: "3.13"
       - name: Instalar dependencias
         run: pip install -r backend/requirements.txt -r backend/requirements-dev.txt
+      - name: Correr migraciones
+        working-directory: backend
+        run: python -m alembic upgrade head
       - name: Correr tests
-        # Los tests usan un StubOrchestrator (ver backend/tests/test_api.py) —
-        # nunca llaman a NVIDIA de verdad, asi que esto no necesita secrets
-        # ni cuesta dinero en cada push.
+        # Los tests de orquestacion usan un StubOrchestrator (ver
+        # backend/tests/test_api.py) — nunca llaman a NVIDIA de verdad, asi
+        # que esto no necesita secrets ni cuesta dinero en cada push.
         run: python -m pytest backend/tests -q
 
   frontend-build:

@@ -1,6 +1,6 @@
 # Constraints
 
-Last reviewed: 2026-09-22 — Sesión 3 de [`docs/PLAN_IMPLEMENTACION.md`](docs/PLAN_IMPLEMENTACION.md)
+Last reviewed: 2026-09-22 — Sesión 4 de [`docs/PLAN_IMPLEMENTACION.md`](docs/PLAN_IMPLEMENTACION.md)
 
 Este es el nivel de calidad que HealthGuideAI tiene que cumplir para considerarse "listo", con
 números concretos y el comando que los verifica — no una intención en prosa. Ninguna sesión del
@@ -32,8 +32,10 @@ filtrado no son el tipo de cosas que uno quiere descubrir después.
 |---|---|---|---|
 | Tests backend | Toda la suite pasa | `python -m pytest backend/tests -q` | cada edit, CI |
 | Cobertura backend | ≥ 80% de líneas (hoy en 89%, no puede bajar de ahí — ratchet) | `python -m pytest backend/tests --cov=backend/app --cov-report=term-missing` | fin de sesión, CI |
-| Readiness real | `/ready` en 503 si falta `NVIDIA_API_KEY` o la base de auth no responde | `curl -f http://localhost:8000/ready` | Sesión 3 en adelante, se amplía con Postgres/Redis en Sesión 4 |
+| Readiness real | `/ready` en 503 si falta `NVIDIA_API_KEY`, Postgres o Redis no responden | `curl -f http://localhost:8000/ready` | cada edit, CI |
 | Sobre de error | Toda respuesta de error trae `detail` + `error.code` + `error.request_id` | `backend/tests/test_gateway.py` | cada edit, CI |
+| Escalabilidad horizontal | 2 instancias del backend comparten sesión y rate limit (no las inventa cada una por su cuenta) | Prueba manual documentada en la Sesión 4 del plan (`docker run` de 2 instancias + curl cruzado) | verificado una vez; automatizar como test de integración en la Sesión 12 |
+| Migraciones | El esquema se aplica solo, `alembic upgrade head` es idempotente | `backend/docker-entrypoint.sh` corre en cada arranque del contenedor | cada `docker compose up`, CI |
 | Seguridad de salida (5 reglas) | Ningún caso viola esquema / diagnóstico / medicación / input incompleto / red flags | `evals/validate_triage_output.py` vía `run_eval_suite()` | cada sesión que toque el prompt o el proveedor |
 | Accuracy clínico | ≥ 90% PASS en los 25 casos, accuracy de prioridad ≥ 80% | `evals/run_priority_metrics.py` sobre `evals/triage_eval_cases*.csv` | Sesiones 6-7, luego `evals.yml` (Sesión 13) |
 | Red flags de EMERGENCIA | **Cero** falsos negativos — ninguna EMERGENCIA real clasificada por debajo | mismo run de evals, columna `expected_priority` vs `prioridad` en casos con `red_flag=true` | igual que arriba — bloqueante duro, no es negociable como estadística |
@@ -53,7 +55,7 @@ Cada fila nombra el comando que produce el veredicto. Una fila con número y sin
 
 | Métrica | Hoy | Dirección |
 |---|---|---|
-| Cobertura backend | 89% (33 tests, medido 2026-09-22, Sesión 3) | no debe bajar |
+| Cobertura backend | 89% (37 tests, medido 2026-09-22, Sesión 4 — corre contra Postgres/Redis reales, no mocks) | no debe bajar |
 | Bundle JS frontend | ~197 KB / ~64 KB gzip | se fija presupuesto duro (Lighthouse/`size-limit`) después de la migración a Tailwind+shadcn (Sesiones 9-11) — poner un número ahora quedaría obsoleto de inmediato |
 | Bundle CSS frontend | ~13 KB / ~3.5 KB gzip | igual que arriba |
 | Cobertura frontend | 0% (no hay test runner instalado — Vitest llega en la Sesión 12) | se establece un piso cuando exista |

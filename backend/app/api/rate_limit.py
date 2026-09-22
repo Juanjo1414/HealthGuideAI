@@ -1,18 +1,14 @@
 """
-Limitador de tasa en memoria — decidimos no sumar una dependencia nueva
-(tipo slowapi) porque el `.venv` de este repo ya demostró ser frágil por
-vivir dentro de OneDrive, y una ventana deslizante simple resuelve el
-problema real: que un bug de frontend o un cliente mal portado no queme la
-cuota de NVIDIA a fuerza de reintentos.
-
-Limitación honesta, no oculta: este limitador vive en la memoria de un solo
-proceso. Si el backend corre con varios workers o varias réplicas, cada uno
-lleva su propia cuenta — el límite real efectivo sería
-`rate_limit_max_requests * numero_de_procesos`, no el valor configurado. Para
-el tamaño actual del despliegue (un solo proceso) esto no es un problema,
-pero si el proyecto crece a correr con varios workers, este limitador deja de
-ser suficiente y hay que migrar a algo respaldado por Redis o similar (ver
-Sesión 4 del plan).
+Rate limiting. Desde la Sesión 4, la implementación real es
+`RedisRateLimiter` — la ventana deslizante ya no vive en la memoria de un
+solo proceso (esa era la limitación honesta documentada en las sesiones
+anteriores: no sobrevivía a un segundo worker/réplica). `InMemoryRateLimiter`
+se mantiene, pero solo como el fake que usan los tests (mismo patrón que
+`StubOrchestrator` para el proveedor de modelo) — no correr Redis real por
+cada test unitario es una decisión de velocidad, no de "no importa si
+funciona", así que igual hay un test de integración contra Redis real (ver
+test_rate_limit.py) para no caer en el anti-patrón "el mock pasa aunque
+producción falle".
 
 Segunda limitación, agregada al montar el gateway de la Sesión 3
 (`gateway/nginx.conf`): `request.client.host` es la IP de quien le habla
@@ -29,16 +25,29 @@ from __future__ import annotations
 
 import threading
 import time
+import uuid
 from collections import defaultdict, deque
 from functools import lru_cache
+from typing import Protocol
 
 from fastapi import Depends, HTTPException, Request
 
 from ..config import get_settings
+from .dependencies import get_redis_client
+
+
+class RateLimiter(Protocol):
+    """Interfaz chica a propósito (Interface Segregation, CLAUDE.md sección
+    13): lo único que un limitador necesita exponer es "¿se permite esta
+    clave ahora?". `InMemoryRateLimiter` y `RedisRateLimiter` la cumplen
+    sin que `enforce_rate_limit` sepa (ni le importe) cuál es cuál."""
+
+    def check(self, key: str) -> bool: ...
 
 
 class InMemoryRateLimiter:
-    """Ventana deslizante por clave (en la práctica, IP del cliente)."""
+    """Ventana deslizante en memoria de un solo proceso — solo para tests,
+    ver el docstring del módulo."""
 
     def __init__(self, max_requests: int, window_seconds: float):
         self._max_requests = max_requests
@@ -47,7 +56,6 @@ class InMemoryRateLimiter:
         self._lock = threading.Lock()
 
     def check(self, key: str) -> bool:
-        """True si se permite la request (y la registra). False si excede el límite."""
         now = time.monotonic()
         with self._lock:
             hits = self._hits[key]
@@ -59,10 +67,47 @@ class InMemoryRateLimiter:
             return True
 
 
+class RedisRateLimiter:
+    """Ventana deslizante real, compartida entre cualquier número de
+    procesos/instancias del backend — el sorted set de Redis reemplaza al
+    `deque` en memoria. Cada miembro es único (timestamp + uuid) para que
+    dos hits en el mismo milisegundo no se pisen entre sí en el set.
+
+    Nota de atomicidad, honesta: el trim (ZREMRANGEBYSCORE) + conteo
+    (ZCARD) + inserción (ZADD) no corren como una sola operación atómica —
+    hay una ventana muy chica donde dos requests concurrentes del mismo
+    cliente podrían leer el mismo conteo antes de que cualquiera de las dos
+    inserte. Para un freno de cuota (no una garantía de seguridad exacta),
+    ese margen es aceptable; si algún día hiciera falta exactitud estricta,
+    la forma correcta es un script Lua evaluado atómicamente en el server.
+    """
+
+    def __init__(self, client: redis.Redis, max_requests: int, window_seconds: float):
+        self._client = client
+        self._max_requests = max_requests
+        self._window_seconds = window_seconds
+
+    def check(self, key: str) -> bool:
+        redis_key = f"ratelimit:{key}"
+        now = time.time()
+        window_start = now - self._window_seconds
+        self._client.zremrangebyscore(redis_key, 0, window_start)
+        current_count = self._client.zcard(redis_key)
+        if current_count >= self._max_requests:
+            return False
+        member = f"{now}:{uuid.uuid4().hex}"
+        self._client.zadd(redis_key, {member: now})
+        # +1 de margen sobre la ventana: si nadie vuelve a pegarle a esta
+        # clave, Redis limpia la llave sola en vez de acumular para siempre.
+        self._client.expire(redis_key, int(self._window_seconds) + 1)
+        return True
+
+
 @lru_cache
-def get_rate_limiter() -> InMemoryRateLimiter:
+def get_rate_limiter() -> RateLimiter:
     settings = get_settings()
-    return InMemoryRateLimiter(
+    return RedisRateLimiter(
+        get_redis_client(),
         max_requests=settings.rate_limit_max_requests,
         window_seconds=settings.rate_limit_window_seconds,
     )
@@ -70,7 +115,7 @@ def get_rate_limiter() -> InMemoryRateLimiter:
 
 def enforce_rate_limit(
     request: Request,
-    limiter: InMemoryRateLimiter = Depends(get_rate_limiter),
+    limiter: RateLimiter = Depends(get_rate_limiter),
 ) -> None:
     """Dependencia de FastAPI. `limiter` llega inyectado vía Depends(get_rate_limiter)
     — es lo que permite a los tests reemplazarlo con `app.dependency_overrides`

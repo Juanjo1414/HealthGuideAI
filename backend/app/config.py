@@ -36,7 +36,6 @@ class Settings:
             "http://127.0.0.1:8080",
         ]
     )
-    evidence_log_path: Path = REPO_ROOT / "backend" / "data" / "evidence.jsonl"
     evidence_include_sensitive_payloads: bool = False
     # Cada llamada a /api/triage cuesta una llamada real a NVIDIA — el limite
     # por defecto es conservador a proposito, no es un numero de infra pensado
@@ -44,10 +43,17 @@ class Settings:
     # frontend) no queme la cuota de la API sin querer.
     rate_limit_max_requests: int = 20
     rate_limit_window_seconds: float = 60.0
-    # Base de datos de usuarios/sesiones. SQLite (stdlib, sin ORM) por la
-    # misma razon que evidence_store.py usa un JSONL plano: para el tamano
-    # actual del proyecto no hace falta un motor de base de datos aparte.
-    auth_db_path: Path = REPO_ROOT / "backend" / "data" / "auth.db"
+    # Postgres (Sesion 4 — reemplaza el SQLite/JSONL de sesiones anteriores).
+    # El default apunta a localhost:5433 (no 5432: ver el comentario en
+    # compose.yml sobre el conflicto con un Postgres nativo instalado por
+    # fuera de Docker) — es el puerto que compose.yml publica para el
+    # servicio `postgres`, sirve para correr el backend o los tests desde
+    # el host sin Docker, siempre que `docker compose up -d postgres redis`
+    # este corriendo. Dentro de un contenedor, compose.yml sobreescribe
+    # esto a "postgres:5432" (el hostname/puerto interno de Docker).
+    database_url: str = "postgresql://healthguide:healthguide_dev_only@localhost:5433/healthguide"
+    # Redis (Sesion 4): rate limiting distribuido, ver api/rate_limit.py.
+    redis_url: str = "redis://localhost:6379/0"
     # "Sesion que nunca se cierra" en la practica: una cookie de vida muy
     # larga (1 año), no una sesion sin expiracion real (los navegadores no
     # soportan eso). El logout manual si invalida la sesion en el servidor
@@ -85,6 +91,11 @@ def get_settings() -> Settings:
         in {"1", "true", "yes"},
         rate_limit_max_requests=int(os.getenv("RATE_LIMIT_MAX_REQUESTS", "20")),
         rate_limit_window_seconds=float(os.getenv("RATE_LIMIT_WINDOW_SECONDS", "60")),
+        database_url=os.getenv(
+            "DATABASE_URL",
+            "postgresql://healthguide:healthguide_dev_only@localhost:5433/healthguide",
+        ),
+        redis_url=os.getenv("REDIS_URL", "redis://localhost:6379/0"),
         session_ttl_seconds=float(os.getenv("SESSION_TTL_SECONDS", str(60 * 60 * 24 * 365))),
         admin_username=os.getenv("ADMIN_USERNAME", "admin"),
         admin_password=os.getenv("ADMIN_PASSWORD", "12345"),

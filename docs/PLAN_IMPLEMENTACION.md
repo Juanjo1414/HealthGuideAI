@@ -16,7 +16,7 @@ tomadas.
 | 1 | Higiene: login + contexto real | Fundamentos | ✅ Hecha |
 | 2 | Estándar de calidad (`/constraints` + `/spec`) | Fundamentos | ✅ Hecha |
 | 3 | API Gateway + consolidación en NVIDIA | Backend | ✅ Hecha |
-| 4 | Escalabilidad horizontal (Postgres + Redis) | Backend | ⬜ Pendiente |
+| 4 | Escalabilidad horizontal (Postgres + Redis) | Backend | ✅ Hecha |
 | 5 | Seguridad de la aplicación | Backend | ⬜ Pendiente |
 | 6 | Motor de triage híbrido (reglas + few-shot) | Clínico | ⬜ Pendiente |
 | 7 | Base de conocimiento (RAG) | Clínico | ⬜ Pendiente |
@@ -187,24 +187,52 @@ documentado en el propio archivo, se resuelve cuando el gateway sea el camino de
 
 ---
 
-## Sesión 4 — Escalabilidad horizontal real: PostgreSQL + Redis
+## Sesión 4 — Escalabilidad horizontal real: PostgreSQL + Redis ✅
 
 **Objetivo:** que cualquier instancia pueda atender cualquier request. Es la sesión que hace
 posible escalar.
 
-1. Postgres y Redis como servicios en `compose.yml`, con healthchecks.
-2. **Migraciones con Alembic** desde el inicio — nada de crear tablas a mano.
-3. Migrar de SQLite a Postgres: `user_store.py`, `session_store.py`, `evidence_store.py`.
-4. **Rate limiting distribuido en Redis**, reemplazando la ventana en memoria de
-   `backend/app/api/rate_limit.py` (que ya documenta su propia limitación multi-worker).
-5. Pool de conexiones configurado, y el backend corriendo con **múltiples workers** para probar
-   de verdad.
-6. Script o guía de migración de los datos existentes en `backend/data/auth.db`.
+1. **Postgres y Redis en `compose.yml`**, con healthchecks. Postgres publica en el puerto
+   **5433**, no 5432 — durante esta sesión un Postgres nativo instalado por fuera de Docker en
+   la máquina de desarrollo ya estaba escuchando en 5432, y el cliente terminaba hablando con
+   ese en vez de con el del contenedor (`password authentication failed`, un error que además
+   psycopg2 reportaba mal en Windows con locale en español — mensaje en `UnicodeDecodeError` en
+   vez del "falló la autenticación" real, hubo que probar con `psycopg` v3 para ver el mensaje
+   de verdad). Documentado en `compose.yml` para que no vuelva a confundir a nadie del equipo.
+2. **Migraciones con Alembic** (`backend/alembic/`), sin ORM — el DDL vive en
+   `backend/app/storage/schema.py`, una sola lista de sentencias que usan tanto la migración
+   como el fixture de tests (`db` en `conftest.py`), para no tener el esquema escrito en dos
+   lugares que se puedan desincronizar. Corren solas al arrancar el contenedor
+   (`backend/docker-entrypoint.sh`), no como paso manual — probado de verdad borrando el schema
+   `public` completo y confirmando que el backend se automigra al recrearse.
+3. **Migrado de SQLite a Postgres**: `user_store.py`, `session_store.py`,
+   `evidence_store.py` (que además dejó de ser un JSONL — ahora es la tabla `evidence`, con
+   `user_id` agregado de una vez porque la pantalla de Historial de la Sesión 11 lo va a
+   necesitar). `backend/scripts/list_flagged_for_review.py` se actualizó para consultar Postgres
+   en vez de leer un archivo que ya no se escribe.
+4. **Rate limiting distribuido en Redis** (`RedisRateLimiter`, ventana deslizante con sorted
+   sets). `InMemoryRateLimiter` se mantiene solo como fake de tests rápidos — hay un test
+   dedicado contra Redis real para no caer en "el mock pasa aunque producción falle".
+5. **Pool de conexiones** (`ThreadedConnectionPool`, min 1/max 5 por proceso) y
+   **`--workers 2`** en el Dockerfile del backend.
+6. **`backend/scripts/migrate_sqlite_to_postgres.py`**: no quedó como guion teórico — se corrió
+   de verdad contra los datos reales que había en `backend/data/auth.db`/`evidence.jsonl` de
+   sesiones anteriores (2 usuarios, 1 sesión, 19 entradas de evidencia, mezclando el formato
+   viejo pre-hardening de privacidad y el nuevo). Confirmado idempotente corriéndolo dos veces.
 
-**Verificación (la prueba de fuego):** levantar **2 instancias** del backend detrás del gateway y
-confirmar que (a) una sesión abierta en la instancia A es válida en la B, y (b) el rate limit
-cuenta de forma agregada, no por proceso. Si eso no pasa, la sesión no está terminada.
-**Riesgo:** perder datos al migrar — backup del SQLite antes de tocar nada.
+**Verificación (la prueba de fuego), corrida de verdad, no simulada:** dos contenedores del
+backend completamente independientes (`docker run`, misma imagen, mismo Postgres/Redis, puertos
+distintos):
+
+- (a) `signup` en la instancia A, `GET /auth/me` con la misma cookie contra la instancia B →
+  200. `logout` en B, `GET /auth/me` contra A → 401. Sesión compartida de punta a punta.
+- (b) Con `RATE_LIMIT_MAX_REQUESTS=3` en ambas instancias: 2 requests contra A + 1 contra B →
+  las 3 pasan (contadas juntas). La 4ª (por B) y la 5ª (por A) → ambas 429. El límite es
+  agregado, no por proceso — exactamente lo que esta sesión existía para probar.
+
+**Riesgo que se cumplió parcialmente:** no hubo pérdida de datos (la migración es idempotente y
+se probó dos veces), pero sí un bloqueo real de 40+ minutos por el conflicto de puerto de
+Postgres — quedó documentado para que no le pase al resto del equipo.
 
 ---
 
