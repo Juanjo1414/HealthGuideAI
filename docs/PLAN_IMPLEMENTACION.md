@@ -14,7 +14,7 @@ tomadas.
 | # | Sesión | Fase | Estado |
 |---|---|---|---|
 | 1 | Higiene: login + contexto real | Fundamentos | ✅ Hecha |
-| 2 | Estándar de calidad (`/constraints` + `/spec`) | Fundamentos | ⬜ Pendiente |
+| 2 | Estándar de calidad (`/constraints` + `/spec`) | Fundamentos | ✅ Hecha |
 | 3 | API Gateway + consolidación en NVIDIA | Backend | ⬜ Pendiente |
 | 4 | Escalabilidad horizontal (Postgres + Redis) | Backend | ⬜ Pendiente |
 | 5 | Seguridad de la aplicación | Backend | ⬜ Pendiente |
@@ -117,31 +117,28 @@ real del repo; `git status` confirma `CLAUDE.md` y este plan trackeados.
 
 ---
 
-## Sesión 2 — Definir el estándar antes de construir
+## Sesión 2 — Definir el estándar antes de construir ✅
 
 **Objetivo:** escribir el nivel de calidad exigido, para que ninguna sesión posterior lo baje en
 silencio.
 
-1. `CONSTRAINTS.md` con umbrales concretos y verificables:
-   - **Clínico:** ≥ 90% de los 25 casos en PASS; accuracy de prioridad ≥ 80%; **cero** falsos
-     negativos en EMERGENCIA (un caso de emergencia clasificado bajo es un fallo bloqueante, no
-     una estadística).
-   - **Seguridad del modelo:** 100% de los intentos de prompt injection del set adversarial
-     deben ser rechazados (ver Sesión 8).
-   - **Cobertura:** mínimo por definir para backend y frontend, medido en CI.
-   - **Accesibilidad:** WCAG AA verificado con axe, contraste 4.5:1, navegación completa por
-     teclado.
-   - **Responsive:** funcional y probado en 375px, 768px, 1024px, 1440px.
-   - **Seguridad de app:** sin secretos en el repo, cookies `Secure`+`HttpOnly`+`SameSite`, CSRF
-     cubierto, dependencias sin CVEs críticos.
-   - **Performance:** presupuesto de latencia del endpoint de triage y del bundle del frontend.
-2. Spec de las pestañas: qué significa exactamente "todas funcionales" — inventario de pantallas
-   (login, signup, triage, historial, perfil, revisión humana) con su criterio de aceptación.
+1. [`CONSTRAINTS.md`](../CONSTRAINTS.md) con umbrales concretos y verificables — política de
+   bloqueo sin excepciones, floor, tabla de dimensiones con comando de verificación, línea base
+   medida (backend: 26 tests, 85% cobertura; bundle frontend: ~197KB JS / ~13KB CSS antes de la
+   migración), y gaps honestos (todavía no hay ningún check 100% externo, eso llega en las
+   Sesiones 5/10/13).
+2. [`docs/PANTALLAS.md`](PANTALLAS.md): inventario de las 6 pantallas (login, signup, triage,
+   historial, perfil, revisión humana) con criterio de aceptación por una. Encontró dos bloqueos
+   reales de backend que no estaban en el radar: **Historial** y **Revisión humana** necesitan
+   endpoints que no existen todavía (`GET /api/triage/history` filtrado por usuario, y
+   `GET /api/admin/flagged` + un concepto de rol admin que `UserStore` no tiene hoy) — se agregan
+   como tarea explícita de la Sesión 11 más abajo, en vez de descubrirse a mitad de esa sesión.
 
 **Verificación:** cada constraint tiene una forma automática de medirse; si no se puede medir, no
-es un constraint.
-**Riesgo:** inventar umbrales imposibles y luego bajarlos. Mejor fijar el mínimo honesto y
-subirlo después.
+es un constraint — confirmado corriendo `pytest backend/tests --cov` de verdad en vez de inventar
+un número.
+**Riesgo evitado:** el plan original iba a inventar un umbral de cobertura; se midió primero
+(85% real) y se fijó el número sano de la skill (80%) con ratchet a lo ya logrado.
 
 ---
 
@@ -350,8 +347,16 @@ allá del default de shadcn, y es fácil perderla copiando componentes "de fábr
    **datos reales** — hoy son texto estático que dice "Disponible" sin verificar nada.
 2. `LoginPage`/`SignupPage` a `Card` + `Form`, con el responsive extendido (hoy no tienen
    breakpoints propios).
-3. Implementar las pantallas faltantes del inventario (historial de consultas, perfil, revisión
-   humana).
+3. Implementar las pantallas faltantes del inventario. **Ojo:** dos de ellas necesitan trabajo de
+   backend primero, según `docs/PANTALLAS.md` — no es solo frontend:
+   - **Historial de consultas** requiere `GET /api/triage/history` filtrado por `user_id` (hoy
+     `EvidenceStore` guarda evidencia pero nada la expone por usuario vía API).
+   - **Revisión humana** requiere `GET /api/admin/flagged` protegido por rol admin, más agregar
+     un campo de rol a `UserStore` (hoy no existe la noción de admin) — y su alcance es
+     deliberadamente el de un visor de la lista, no una cola con asignación/SLA (ver
+     `DECISION_LOG.md`, Decisión 4, y no contradecirla "de paso").
+   - **Perfil** no necesita endpoints nuevos para la versión mínima (usa `/api/auth/me` y
+     `/api/auth/logout`, que ya existen).
 4. **Responsive real probado en dispositivo**, no solo redimensionando el navegador: 375px /
    768px / 1024px / 1440px. Touch targets de 44x44px mínimo.
 5. Seguridad de frontend: manejo del token CSRF, sanitización de todo lo que se renderiza (la
@@ -441,7 +446,7 @@ deben.
 ## Archivos críticos
 
 - `CLAUDE.md` · `.gitignore` · `docs/PLAN_IMPLEMENTACION.md` (este archivo)
-- `CONSTRAINTS.md` (nuevo, Sesión 2) · `compose.yml` · `DECISION_TABLE.md`
+- `CONSTRAINTS.md` · `docs/PANTALLAS.md` · `compose.yml` · `DECISION_TABLE.md` · `DECISION_LOG.md`
 - `backend/app/config.py:57-63,89-90` · `backend/app/api/rate_limit.py` · `backend/app/providers/`
 - `backend/app/storage/{user_store,session_store,evidence_store}.py` · `backend/app/auth/security.py`
 - `backend/app/orchestration/{prompt_builder,contract}.py` · `evals/validate_triage_output.py`

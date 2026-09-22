@@ -11,6 +11,9 @@ asumir que fue un descuido.
 [`docs/PLAN_IMPLEMENTACION.md`](docs/PLAN_IMPLEMENTACION.md) — léelo antes de arrancar una sesión
 de trabajo nueva, y actualiza su estado por sesión cuando termines una.
 
+**Nivel de calidad exigido:** leer [`CONSTRAINTS.md`](CONSTRAINTS.md) antes de escribir código.
+No se debilita ese archivo para que un cambio pase — se discute y se cambia en su propio commit.
+
 ---
 
 ## 1. Qué problema resuelve esto
