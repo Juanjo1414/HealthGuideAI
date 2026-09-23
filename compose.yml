@@ -1,0 +1,92 @@
+services:
+  # Postgres y Redis (Sesion 4): lo que hace posible que el backend corra
+  # con mas de una instancia. Antes de esto, la sesion de usuario vivia en
+  # un archivo SQLite local y el rate limit en la memoria de un solo
+  # proceso — ninguno de los dos sobrevivia a una segunda instancia. Ver
+  # docs/PLAN_IMPLEMENTACION.md Sesion 4 para la prueba real de que esto
+  # funciona con 2 instancias del backend.
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: healthguide
+      POSTGRES_PASSWORD: healthguide_dev_only
+      POSTGRES_DB: healthguide
+    ports:
+      # 5433, no 5432: hay maquinas de desarrollo con un Postgres nativo ya
+      # instalado y escuchando en el 5432 por fuera de Docker (nos paso en
+      # esta misma sesion — Windows deja que dos procesos "escuchen" el
+      # mismo puerto y el cliente termina hablando con el que no es, con un
+      # error de autenticacion dificil de diagnosticar). Publicado para
+      # poder correr pytest en el host (fuera de Docker) — ver
+      # backend/README.md. Adentro de la red de Docker el puerto sigue
+      # siendo el 5432 de siempre (el backend le habla a postgres:5432).
+      - "5433:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U healthguide -d healthguide"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    ports:
+      - "8000:8000"
+    env_file: .env
+    environment:
+      # DSN de la red interna de Docker — distinto al que usa pytest desde
+      # el host (localhost:5432), mismo criterio que ya se documenta para
+      # VITE_API_BASE_URL mas abajo: adentro del contenedor el nombre del
+      # servicio ES el hostname.
+      DATABASE_URL: "postgresql://healthguide:healthguide_dev_only@postgres:5432/healthguide"
+      REDIS_URL: "redis://redis:6379/0"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        # Esta URL la usa el NAVEGADOR del usuario, no la red interna de
+        # Docker — por eso es localhost:8000 (el puerto publicado del
+        # backend en el host), no "http://backend:8000".
+        VITE_API_BASE_URL: "http://localhost:8000/api"
+    ports:
+      - "8080:80"
+    depends_on:
+      - backend
+
+  # Gateway de API (Sesion 3, ver gateway/nginx.conf): punto de entrada
+  # unico opcional en :8888, aditivo al acceso directo de arriba. No hace
+  # falta para desarrollar dia a dia (seguis usando :8000/:8080), pero
+  # existe para poder probar localmente el mismo patron de enrutamiento
+  # que se va a necesitar en el despliegue de la Sesion 14.
+  gateway:
+    image: nginx:alpine
+    volumes:
+      - ./gateway/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    ports:
+      - "8888:80"
+    depends_on:
+      - backend
+      - frontend
+
+volumes:
+  postgres-data:

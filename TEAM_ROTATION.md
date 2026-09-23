@@ -2,13 +2,19 @@
 
 Objetivo: que todos entiendan todo el sistema, no que cada persona quede encerrada en una parte.
 
+Roadmap de trabajo por sesiones (qué sigue, en qué orden) en
+[`docs/PLAN_IMPLEMENTACION.md`](docs/PLAN_IMPLEMENTACION.md).
+
 ## Semana actual
+
+Ownership real según la evidencia ya documentada en `evals/CLINICAL_SAFETY_CATALOG.md` y el
+historial de commits — no son roles rotativos improvisados, son los que ya se venían ejerciendo:
 
 | Rol temporal | Responsable | Que lidera | Quien debe poder explicarlo |
 |---|---|---|---|
-| Build owner | TBD | Cambio tecnico en notebook/script, prompt, modelo o flujo principal | TBD |
-| Evaluate owner | TBD | Evals, baseline, expected vs actual, pass/fail | TBD |
-| Explain owner | TBD | README, resultados, decisiones y demo tecnica | TBD |
+| Build owner | Juan José | Backend, frontend, Docker/CI, pipeline de evals y flujo principal | Cristian |
+| Evaluate owner | Cristian | Ground truth clínico: valida `expected_priority` caso por caso en `evals/CLINICAL_SAFETY_CATALOG.md` | Juan José |
+| Explain owner | Juan José | README, resultados, decisiones (`DECISION_LOG.md`) y demo técnica | Cristian |
 
 ## Reglas
 

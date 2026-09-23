@@ -2,6 +2,11 @@
 __pycache__/
 *.pyc
 .ipynb_checkpoints/
+.coverage
+htmlcov/
 
-HealthGuide_AI_DemoDay.pptx
-HealthGuide_AI_Guion_y_Guia.docx
+*.pptx
+*.docx
+*.pdf
+*.claude
+.claude

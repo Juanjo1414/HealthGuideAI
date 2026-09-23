@@ -1,0 +1,7 @@
+# Sin esto, un checkout en Windows con core.autocrlf=true (el default de
+# muchas instalaciones de Git) convierte los saltos de linea de los scripts
+# de shell a CRLF — y un shebang "#!/bin/sh" con CRLF rompe adentro de un
+# contenedor Linux ("bad interpreter"). docker-entrypoint.sh (Sesion 4) es
+# justamente el tipo de archivo que se copia tal cual a la imagen de Docker,
+# asi que esto no es opcional.
+*.sh text eol=lf
