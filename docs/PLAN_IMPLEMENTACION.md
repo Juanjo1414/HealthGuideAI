@@ -30,6 +30,64 @@ tomadas.
 
 ---
 
+## Feedback de mentoría (`MAKERS_ACCEPTANCE.md`, rama `makers/review`, 2026-09-23)
+
+Emmanuel (mentor) dejó 6 gates de aceptación en `makers/review`, revisando la integración de
+`dev/Juanjo` + `dev/Cristian` a esa fecha. Quedan mapeados acá para que no se pierdan como un
+archivo aparte que nadie vuelve a mirar — cada uno con dónde se atiende en este roadmap.
+
+| Gate | Estado del mentor | Dónde se atiende |
+|---|---|---|
+| Arquitectura atribuible | PASS — falta el PR | Sesión 14 pasa a hacerse vía PR (ver nota de proceso abajo) |
+| Uso de IA + evals | PARCIAL — 5/9 accuracy, 6 errores de proveedor | Sesiones 6-7, con el detalle nuevo de abajo sobre fallos de proveedor |
+| Jailbreak y safety | PARCIAL — falta cero falsos negativos + fallback ante timeout/503 | Sesión 6, requisito explícito agregado |
+| Mantenibilidad | PARCIAL — `validate_triage_output.py` pasa 300 líneas | Sesión 6, paso 0 (refactor antes de agregar red flags) |
+| Producto ejecutable | PASS — probar con usuarios, sin más infraestructura | Ver nota de prioridad abajo |
+| Git profesional | PARCIAL — PRs chicos, consolidar ramas, docs contradictoria | Ver nota de proceso abajo |
+
+**Lo que cambia en sesiones concretas:**
+
+- **Sesión 6** gana un paso 0: partir `evals/validate_triage_output.py` (364 líneas hoy,
+  confirmado) en parsing / reglas / reporting **antes** de agregarle la capa de red flags
+  determinista — agregar más lógica a un archivo que el mentor ya marcó como difícil de mantener
+  sería ignorar el gate en vez de cerrarlo.
+- **Sesión 6** gana un requisito explícito de diseño: hoy, si NVIDIA responde 503/timeout,
+  `routes_triage.py` devuelve un 502 genérico sin haber corrido ningún chequeo — el usuario se
+  queda sin nada. Con los red flags corriendo **antes** de llamar al modelo (ya era el diseño
+  planeado), un fallo del proveedor con un red flag ya detectado no puede terminar en un 502
+  mudo: tiene que devolver igual una prioridad ALTA/EMERGENCIA con `requiere_revision=true`,
+  aunque la elaboración del LLM nunca haya llegado. Eso es literalmente el "gate de salida" que
+  escribió el mentor: *"ningún fallo del proveedor puede convertirse en una recomendación
+  tranquilizadora ni omitir revisión humana"* — un 502 sin respuesta no es tranquilizador, pero
+  tampoco es seguro si había un red flag real y nadie se entera.
+- **Sesiones 6-7**: la cifra "5/9, 6 errores de proveedor" es un dato nuevo — la mayoría de los
+  fallos de la corrida que vio el mentor no fueron de calidad de clasificación sino de
+  disponibilidad de NVIDIA. Reforzar esto en la Sesión 7: además de RAG/few-shot, revisar
+  `NVIDIA_MAX_RETRIES` (hoy en 0 por defecto) y si conviene subirlo antes de gastar esfuerzo en
+  el prompt — una corrida "inestable" por 503s no dice nada confiable sobre el prompt en sí.
+
+**Nota de proceso (no es código, es una decisión del equipo):** el mentor pide PRs chicos y
+"consolidar ramas" en vez de fast-forward directo a `main` (que es como venimos mergeando hasta
+ahora, por pedido explícito de Juan José en la Sesión 3). Esto es un cambio de flujo de trabajo,
+no algo que se decida solo — ver la pregunta al equipo más abajo.
+
+**Sobre "consolidar ramas":** revisado — `dev/Cristian` (remota) no tiene trabajo en conflicto,
+está exactamente en el commit `545d272`, el mismo punto donde arrancó este plan en la Sesión 1.
+No hay nada que "resolver" en el sentido de choques de código; simplemente no tiene las Sesiones
+1-4 todavía. Lo que sí hace falta es que Cristian actualice su rama (`git merge dev/Juanjo` o
+`main`) antes de seguir trabajando ahí, para no divergir más de lo necesario. También existe
+`codex/revision-healthguide-confiabilidad` (remota), sin revisar en esta pasada — si nadie sabe
+para qué es, es candidata a limpiar.
+
+**Nota de prioridad:** el mentor marca "Producto ejecutable" como PASS pero con la observación de
+probar con usuarios reales *"sin ampliar infraestructura"* — una señal de que, después de dos
+sesiones seguidas de infraestructura (3 y 4), toca priorizar validación real antes de seguir
+construyendo. Session 5 (seguridad) no es "más infraestructura" en el mismo sentido — es
+endurecer lo que ya existe — pero vale la pena que el equipo decida esto explícitamente en vez de
+que quede implícito.
+
+---
+
 ## Contexto
 
 El proyecto migró de notebooks a una web app real (FastAPI + React), pero quedó a medio camino
@@ -263,6 +321,12 @@ debe fallar; un POST sin token CSRF debe ser rechazado.
 
 **Objetivo:** que la seguridad clínica no dependa de que el LLM "adivine bien".
 
+0. **Refactor primero, agregar lógica después** (gate de Mantenibilidad del mentor,
+   `MAKERS_ACCEPTANCE.md`): `evals/validate_triage_output.py` ya tiene 364 líneas. Separar en
+   parsing (leer y normalizar la salida del modelo) / reglas (cada `ValidationRule`, que ya están
+   razonablemente aisladas) / reporting (armar el resultado agregado para `run_eval_suite`).
+   Se hace **antes** del paso 1 — agregarle la capa de red flags a un archivo que ya está marcado
+   como difícil de mantener sería empeorar exactamente lo que el gate señala.
 1. **Capa determinista de red flags** que corre **antes** del LLM: dolor de pecho, dificultad
    respiratoria, pérdida de conciencia, signos de ACV, etc. Si dispara, fuerza ALTA/EMERGENCIA y
    `requiere_revision=true`, y el LLM ya no puede bajar esa clasificación. Reglas auditables y
@@ -275,11 +339,20 @@ debe fallar; un POST sin token CSRF debe ser rechazado.
    queda inflado y mentiroso.
 4. **Reforzar el disclaimer** en el contrato de salida: el sistema puede equivocarse, la
    recomendación es consultar a un médico.
-5. Mantener intactas las reglas que ya funcionan: no diagnosticar, no medicar, pedir más info si
+5. **Fallback seguro ante timeout/503 del proveedor** (gate de Jailbreak/Safety del mentor —
+   es literalmente su "gate de salida": *"ningún fallo del proveedor puede convertirse en una
+   recomendación tranquilizadora ni omitir revisión humana"*). Hoy `routes_triage.py` devuelve un
+   502 mudo si NVIDIA falla, sin importar si el input tenía un red flag. Como los red flags del
+   paso 1 corren **antes** de llamar al modelo, un fallo del proveedor con un red flag ya
+   detectado tiene que devolver igual ALTA/EMERGENCIA + `requiere_revision=true` — la
+   elaboración del LLM puede faltar, la escalada no.
+6. Mantener intactas las reglas que ya funcionan: no diagnosticar, no medicar, pedir más info si
    el input es insuficiente.
 
-**Verificación:** tests unitarios de cada regla de red flag; re-correr los 25 casos y comparar
-accuracy contra la línea base (36-57%) documentando la mejora en `evals/results.md`.
+**Verificación:** tests unitarios de cada regla de red flag, incluido el camino de fallback ante
+`ModelProviderError` con y sin red flag presente; re-correr los 25 casos y comparar accuracy
+contra la línea base (36-57%, y contra el 5/9 con 6 errores de proveedor que reportó el mentor)
+documentando la mejora en `evals/results.md`.
 
 ---
 
@@ -296,7 +369,12 @@ accuracy contra la línea base (36-57%) documentando la mejora en `evals/results
    sea auditable.
 4. **Regla de seguridad que no se toca:** el RAG amplía el contexto de orientación, **no**
    habilita diagnosticar ni recomendar medicamentos. El validador sigue siendo el juez final.
-5. Iterar hasta cumplir el umbral de la Sesión 2. **Si no se llega, se documenta honestamente en
+5. **Revisar `NVIDIA_MAX_RETRIES` (hoy 0 por defecto) antes de tocar el prompt.** El mentor
+   reportó una corrida con 5/9 de accuracy pero 6 de esos fallos eran errores de proveedor
+   (503/timeout), no de calidad de clasificación — una corrida así de inestable no dice nada
+   confiable sobre qué tan bueno es el prompt. Subir los reintentos (con backoff) es más barato
+   que iterar el prompt a ciegas contra ruido de infraestructura.
+6. Iterar hasta cumplir el umbral de la Sesión 2. **Si no se llega, se documenta honestamente en
    vez de maquillar el número.**
 
 **Verificación:** correr el set completo; medir latencia agregada por el RAG contra el
