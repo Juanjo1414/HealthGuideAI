@@ -277,3 +277,46 @@ confianza antes que escalar o pedir más información.
 **Lectura honesta:** con solo 5 de 25 casos ya en `validado_cristian` (el resto sigue en
 `borrador_juanjo`), estos porcentajes todavía miden mayormente contra un criterio provisional,
 no contra un ground truth clínico completo. Quedan 20 casos por validar clínicamente.
+
+## Sesión 6 (2026-09-28) — motor híbrido: dos corridas reales, el hallazgo de `red_flag_fiebre_bebe` cerrado
+
+Contexto: el mentor (`MAKERS_ACCEPTANCE.md`, gate de Jailbreak/Safety) pidió cero falsos
+negativos de emergencia y un fallback seguro ante fallo del proveedor. Se agregó una capa
+determinista de red flags que corre **antes** de llamar al modelo (fuerza ALTA/EMERGENCIA +
+`requiere_revision=true` sin importar lo que responda el LLM, y da una respuesta segura si el
+proveedor falla y ya se detectó una señal de alarma) más rúbrica explícita, few-shot y
+disclaimer reforzado en el prompt. Detalle técnico en
+`docs/PLAN_IMPLEMENTACION.md`, Sesión 6.
+
+Dos corridas de `python evals/run_priority_metrics.py` contra el motor híbrido nuevo, misma
+sesión, antes y después de un fix encontrado en la primera corrida:
+
+| Corrida | Accuracy | Casos con error de proveedor | Nota |
+| --- | --- | --- | --- |
+| 1 (motor híbrido, antes del fix de fiebre pediátrica) | 6/12 (50%) | 3 | `red_flag_fiebre_bebe` volvió a clasificar ALTA en vez de EMERGENCIA |
+| 2 (motor híbrido, después del fix) | 6/8 (75%) | 7 | Los 3 casos EMERGENCIA evaluados (incluido `red_flag_fiebre_bebe`) salieron correctos |
+
+**El hallazgo que se venía arrastrando desde la corrida 3 del 2026-09-17 ya está cerrado.**
+`red_flag_fiebre_bebe` volvió a fallar en la corrida 1 de hoy — confirmando que no era ruido de
+una sola observación, era un gap real: `RED_FLAG_KEYWORDS` (la lista de keywords que usa tanto
+el chequeo previo al modelo como el validador de salida) solo cubría síntomas agudos dramáticos
+(dolor de pecho, convulsión, etc.), nunca un patrón combinatorio como "fiebre alta + edad de
+riesgo". Se agregó `PEDIATRIC_FEVER_PATTERN` (`evals/triage_rules.py`) — acotado a propósito a
+este caso evidenciado, no pretende ser detección clínica general de riesgo pediátrico — y en la
+corrida 2, con exactamente el mismo modelo y el mismo caso, el sistema clasificó EMERGENCIA
+correctamente. No es una garantía permanente (sigue siendo una regla de keywords, con el mismo
+límite conocido que ya documenta `CLAUDE.md` sección 9), pero es evidencia real de que el gap
+específico que preocupaba se cerró, no solo una promesa de que se arregló.
+
+**NVIDIA sigue inestable** — la corrida 2 tuvo *más* errores de proveedor que la 1 (7 vs. 3
+sobre 15 casos comparables), consistente con el patrón ya documentado en la corrida del
+2026-09-17. El accuracy de 75% de la corrida 2 se mide sobre solo 8 casos evaluables — no es un
+número estable, hace falta repetir cuando NVIDIA esté más disponible para confirmarlo con una
+muestra mayor. Ver la Sesión 7 del plan: se agregó como tarea explícita revisar
+`NVIDIA_MAX_RETRIES` (hoy en 0) antes de seguir iterando el prompt a ciegas contra este ruido.
+
+**Mismatches de la corrida 2** (no son fallos de seguridad, son clasificación de prioridad):
+`contradictorio_tiempo` (esperado ALTA, obtuvo BAJA) y `input_extenso_irrelevante` (esperado
+MEDIA, obtuvo BAJA) — ambos por debajo de lo esperado, mismo patrón ya documentado arriba de que
+el modelo tiende a subestimar antes que sobreestimar. Quedan para la Sesión 7 (RAG + ajuste de
+prompt), no se tocan acá porque no son casos de seguridad (ninguno tiene red flag).

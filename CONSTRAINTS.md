@@ -1,6 +1,6 @@
 # Constraints
 
-Last reviewed: 2026-09-28 — Sesión 5 de [`docs/PLAN_IMPLEMENTACION.md`](docs/PLAN_IMPLEMENTACION.md)
+Last reviewed: 2026-09-28 — Sesión 6 de [`docs/PLAN_IMPLEMENTACION.md`](docs/PLAN_IMPLEMENTACION.md)
 
 Este es el nivel de calidad que HealthGuideAI tiene que cumplir para considerarse "listo", con
 números concretos y el comando que los verifica — no una intención en prosa. Ninguna sesión del
@@ -32,14 +32,14 @@ filtrado no son el tipo de cosas que uno quiere descubrir después.
 | Dimensión | Regla | Verificado por | Corre en |
 |---|---|---|---|
 | Tests backend | Toda la suite pasa | `python -m pytest backend/tests -q` | cada edit, CI |
-| Cobertura backend | ≥ 80% de líneas (hoy en 89%, no puede bajar de ahí — ratchet) | `python -m pytest backend/tests --cov=backend/app --cov-report=term-missing` | fin de sesión, CI |
+| Cobertura backend | ≥ 80% de líneas (hoy en 91%, no puede bajar de ahí — ratchet) | `python -m pytest backend/tests --cov=backend/app --cov-report=term-missing` | fin de sesión, CI |
 | Readiness real | `/ready` en 503 si falta `NVIDIA_API_KEY`, Postgres o Redis no responden | `curl -f http://localhost:8000/ready` | cada edit, CI |
 | Sobre de error | Toda respuesta de error trae `detail` + `error.code` + `error.request_id` | `backend/tests/test_gateway.py` | cada edit, CI |
 | Escalabilidad horizontal | 2 instancias del backend comparten sesión y rate limit (no las inventa cada una por su cuenta) | Prueba manual documentada en la Sesión 4 del plan (`docker run` de 2 instancias + curl cruzado) | verificado una vez; automatizar como test de integración en la Sesión 12 |
 | Migraciones | El esquema se aplica solo, `alembic upgrade head` es idempotente | `backend/docker-entrypoint.sh` corre en cada arranque del contenedor | cada `docker compose up`, CI |
 | Seguridad de salida (5 reglas) | Ningún caso viola esquema / diagnóstico / medicación / input incompleto / red flags | `evals/validate_triage_output.py` vía `run_eval_suite()` | cada sesión que toque el prompt o el proveedor |
-| Accuracy clínico | ≥ 90% PASS en los 25 casos, accuracy de prioridad ≥ 80% | `evals/run_priority_metrics.py` sobre `evals/triage_eval_cases*.csv` | Sesiones 6-7, luego `evals.yml` (Sesión 13) |
-| Red flags de EMERGENCIA | **Cero** falsos negativos — ninguna EMERGENCIA real clasificada por debajo | mismo run de evals, columna `expected_priority` vs `prioridad` en casos con `red_flag=true` | igual que arriba — bloqueante duro, no es negociable como estadística |
+| Accuracy clínico | ≥ 90% PASS en los 25 casos, accuracy de prioridad ≥ 80% — hoy en 75% (6/8) sobre una muestra chica y con ruido de proveedor, todavía no cumple | `evals/run_priority_metrics.py` sobre `evals/triage_eval_cases*.csv` | Sesión 7, luego `evals.yml` (Sesión 13) |
+| Red flags de EMERGENCIA | **Cero** falsos negativos — ninguna EMERGENCIA real clasificada por debajo | mismo run de evals, columna `expected_priority` vs `prioridad` en casos con `red_flag=true` — **cumplido en la corrida de la Sesión 6** (3/3 EMERGENCIA correctos, incluido el caso `red_flag_fiebre_bebe` que había fallado antes) | bloqueante duro; repetir con muestra mayor cuando NVIDIA esté más estable |
 | Seguridad del modelo | 100% del set adversarial de prompt injection rechazado | set adversarial de la Sesión 8 (aún no existe — ver Gaps) | desde que exista, luego `evals.yml` |
 | Secretos | Ninguno en el código fuente | grep de patrones de secretos (Sesión 5); `gitleaks` real queda pendiente para CI (Sesión 13) | manual hoy, CI en Sesión 13 |
 | Dependencias (Python) | Nada en `high` o superior | `pip-audit -r backend/requirements.txt` — corrido en Sesión 5, limpio | manual hoy, CI en Sesión 13 |
@@ -60,7 +60,7 @@ Cada fila nombra el comando que produce el veredicto. Una fila con número y sin
 
 | Métrica | Hoy | Dirección |
 |---|---|---|
-| Cobertura backend | 90% (51 tests, medido 2026-09-28, Sesión 5 — corre contra Postgres/Redis reales, no mocks) | no debe bajar |
+| Cobertura backend | 91% (72 tests, medido 2026-09-28, Sesión 6 — corre contra Postgres/Redis reales, no mocks) | no debe bajar |
 | Bundle JS frontend | ~197 KB / ~64 KB gzip | se fija presupuesto duro (Lighthouse/`size-limit`) después de la migración a Tailwind+shadcn (Sesiones 9-11) — poner un número ahora quedaría obsoleto de inmediato |
 | Bundle CSS frontend | ~13 KB / ~3.5 KB gzip | igual que arriba |
 | Cobertura frontend | 0% (no hay test runner instalado — Vitest llega en la Sesión 12) | se establece un piso cuando exista |
@@ -80,6 +80,13 @@ Ser honesto en vez de aparentar que esto ya está completo:
   comando real todavía.
 - **El frontend no tiene linter ni type-checker instalado.** Llega con la migración a TypeScript
   (Sesión 9): `tsc --noEmit` se vuelve parte del floor en cuanto exista `tsconfig.json`.
+- **Los 4 ejemplos few-shot del prompt (`contract.FEW_SHOT_EXAMPLES`, Sesión 6) no están
+  validados clínicamente por Cristian todavía** — son un punto de partida razonable, escritos
+  deliberadamente fuera del catálogo de evals para no contaminar el accuracy, pero no tienen el
+  mismo nivel de revisión que `evals/CLINICAL_SAFETY_CATALOG.md`. Pendiente, sin dueño asignado.
+- **`PEDIATRIC_FEVER_PATTERN` (Sesión 6) es un regex acotado a un solo caso evidenciado**
+  (fiebre combinada con bebé/lactante), no detección clínica general de riesgo pediátrico —
+  mismo límite honesto que ya declara `CLAUDE.md` sección 9 sobre el validador completo.
 
 ## Exceptions
 

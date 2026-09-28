@@ -47,3 +47,137 @@ OUTPUT_FIELDS: dict[str, str] = {
     "requiere_revision": "boolean - true si un humano debe revisar el caso",
     "confianza": "number entre 0 y 1",
 }
+
+# Rubrica explicita por nivel (Sesion 6): antes el prompt solo decia "si
+# detectas sintomas criticos, escala" sin definir que hace que algo sea
+# critico — cada nivel queda con criterios observables, no adjetivos
+# vagos ("grave", "importante"). "Si hay duda, usar el nivel mas severo"
+# es el mismo criterio que ya sigue evals/CLINICAL_SAFETY_CATALOG.md para
+# los 25 casos validados por Cristian, no una regla nueva inventada aca.
+PRIORITY_RUBRIC: dict[str, str] = {
+    "EMERGENCIA": (
+        "Peligro inmediato para la vida o una funcion vital. Criterios observables: "
+        "dolor en el pecho, dificultad seria para respirar, perdida de conciencia, "
+        "convulsion, sangrado que no se controla con presion directa, signos de "
+        "accidente cerebrovascular (cara caida, dificultad para hablar o mover un "
+        "lado del cuerpo), reaccion alergica grave con hinchazon en cara o garganta. "
+        "Accion esperada: urgencias ahora mismo."
+    ),
+    "ALTA": (
+        "Sintomas significativos que necesitan evaluacion medica pronto (en horas, "
+        "no en minutos), sin un signo de peligro inmediato de los de EMERGENCIA. "
+        "Criterios observables: fiebre alta persistente en un bebe o adulto mayor, "
+        "dolor intenso que no cede, sintomas que empeoran rapido, un antecedente de "
+        "riesgo relevante (embarazo, enfermedad cronica, edad muy temprana o "
+        "avanzada) combinado con un sintoma nuevo. Accion esperada: buscar atencion "
+        "medica en las proximas horas, no esperar dias."
+    ),
+    "MEDIA": (
+        "Sintomas molestos o persistentes que ameritan consulta medica pero pueden "
+        "esperar dias sin peligro evidente. Criterios observables: fiebre moderada "
+        "de pocos dias sin señales de alarma, dolor leve a moderado estable, un "
+        "cuadro tipico y manejable (gripe comun, migraña habitual del paciente). "
+        "Accion esperada: agendar cita, monitorear evolucion."
+    ),
+    "BAJA": (
+        "Sintomas leves y estables, manejables con autocuidado general "
+        "(hidratacion, reposo), sin señales de alarma ni empeoramiento. Accion "
+        "esperada: monitorear en casa, consultar si no mejora o si aparece algo nuevo."
+    ),
+}
+
+# Disclaimer reforzado (Sesion 6): antes vivia implicito en "no ejecutes la
+# decision humana final". Se lo hace explicito y se le pide que quede
+# reflejado en la propia recomendacion, no solo como una regla que el
+# modelo cumple sin decirlo — el usuario tiene que leerlo en la respuesta.
+DISCLAIMER = (
+    "Esta orientacion puede no ser exacta y no reemplaza una evaluacion medica "
+    "profesional. Ante cualquier duda, o si los sintomas empeoran, consulta a un "
+    "profesional de la salud."
+)
+
+# Ejemplos few-shot (Sesion 6) — ilustrativos, escritos para esta sesion,
+# deliberadamente DISTINTOS a los 25 casos de evals/triage_eval_cases*.csv:
+# usarlos como ejemplo y despues evaluarlos con esos mismos casos inflaria
+# el accuracy sin que signifique nada real (ver docs/PLAN_IMPLEMENTACION.md,
+# Sesion 6). Todavia NO estan validados clinicamente por Cristian — son un
+# punto de partida razonable, no un reemplazo de esa revision. Si Cristian
+# los corrige, se actualizan aca, no en el catalogo de evals (no son casos
+# de evaluacion, son ejemplos de prompt).
+FEW_SHOT_EXAMPLES: list[dict] = [
+    {
+        "input": (
+            "Tengo un resfriado leve desde ayer, estornudos y la nariz tapada, "
+            "pero me siento bien en general y puedo hacer mis actividades normales."
+        ),
+        "output": {
+            "resumen": "Resfriado leve de un dia de evolucion, con estornudos y "
+            "congestion nasal, sin afectar las actividades diarias.",
+            "sintomas_detectados": ["estornudos", "congestion nasal"],
+            "prioridad": "BAJA",
+            "posibles_causas": ["infeccion viral leve de vias respiratorias altas"],
+            "alertas": [],
+            "recomendacion": "Descansa, mantente hidratado y monitorea tus sintomas. "
+            "Si aparece fiebre alta, dificultad para respirar o los sintomas empeoran, "
+            f"busca atencion medica. {DISCLAIMER}",
+            "requiere_revision": False,
+            "confianza": 0.8,
+        },
+    },
+    {
+        "input": (
+            "Tengo 35 anos y llevo 3 dias con dolor de garganta y fiebre de 37.9, "
+            "sin tos ni otros sintomas. Puedo comer y tomar liquidos sin problema."
+        ),
+        "output": {
+            "resumen": "Dolor de garganta y fiebre baja de 3 dias de evolucion, sin "
+            "dificultad para tragar ni otros sintomas asociados.",
+            "sintomas_detectados": ["dolor de garganta", "fiebre"],
+            "prioridad": "MEDIA",
+            "posibles_causas": ["infeccion viral o bacteriana de garganta"],
+            "alertas": [],
+            "recomendacion": "Agenda una consulta medica para evaluacion, "
+            "especialmente si el dolor de garganta persiste mas de una semana o la "
+            f"fiebre sube. Mientras tanto, descansa e hidratate. {DISCLAIMER}",
+            "requiere_revision": False,
+            "confianza": 0.7,
+        },
+    },
+    {
+        "input": (
+            "Soy diabetico y desde esta mañana tengo una herida en el pie que se ve "
+            "enrojecida, caliente e hinchada, y no habia notado eso antes."
+        ),
+        "output": {
+            "resumen": "Persona con diabetes que presenta una herida en el pie con "
+            "signos de enrojecimiento, calor e hinchazon de aparicion reciente.",
+            "sintomas_detectados": ["herida en el pie", "enrojecimiento", "hinchazon", "calor local"],
+            "prioridad": "ALTA",
+            "posibles_causas": ["posible infeccion de la herida, con mayor riesgo por la diabetes"],
+            "alertas": ["antecedente de diabetes combinado con signos de infeccion"],
+            "recomendacion": "Busca atencion medica en las proximas horas, dado el "
+            f"riesgo aumentado de complicaciones en personas con diabetes. {DISCLAIMER}",
+            "requiere_revision": True,
+            "confianza": 0.75,
+        },
+    },
+    {
+        "input": (
+            "Desde hace unos minutos tengo un sangrado abundante en la mano por un "
+            "corte profundo y no logro que pare con presion."
+        ),
+        "output": {
+            "resumen": "Sangrado abundante en la mano por un corte profundo que no "
+            "cede con presion directa.",
+            "sintomas_detectados": ["sangrado abundante", "corte profundo en la mano"],
+            "prioridad": "EMERGENCIA",
+            "posibles_causas": [],
+            "alertas": ["sangrado que no se controla con presion directa"],
+            "recomendacion": "Acude de inmediato a urgencias o llama a la linea de "
+            "emergencias local. Mientras tanto, manten presion firme y constante "
+            f"sobre la herida y eleva la mano si es posible. {DISCLAIMER}",
+            "requiere_revision": True,
+            "confianza": 0.9,
+        },
+    },
+]

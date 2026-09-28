@@ -18,7 +18,7 @@ tomadas.
 | 3 | API Gateway + consolidación en NVIDIA | Backend | ✅ Hecha |
 | 4 | Escalabilidad horizontal (Postgres + Redis) | Backend | ✅ Hecha |
 | 5 | Seguridad de la aplicación | Backend | ✅ Hecha |
-| 6 | Motor de triage híbrido (reglas + few-shot) | Clínico | ⬜ Pendiente |
+| 6 | Motor de triage híbrido (reglas + few-shot) | Clínico | ✅ Hecha |
 | 7 | Base de conocimiento (RAG) | Clínico | ⬜ Pendiente |
 | 8 | Blindaje del modelo (prompt injection) | Clínico | ⬜ Pendiente |
 | 9 | Setup TypeScript + Tailwind + shadcn/ui | Frontend | ⬜ Pendiente |
@@ -342,42 +342,56 @@ más un smoke test manual contra el contenedor Docker reconstruido con el usuari
 
 # FASE 2 — Calidad y blindaje clínico (el corazón del producto)
 
-## Sesión 6 — Motor de triage híbrido: reglas + rúbrica + few-shot
+## Sesión 6 — Motor de triage híbrido: reglas + rúbrica + few-shot ✅
 
 **Objetivo:** que la seguridad clínica no dependa de que el LLM "adivine bien".
 
-0. **Refactor primero, agregar lógica después** (gate de Mantenibilidad del mentor,
-   `MAKERS_ACCEPTANCE.md`): `evals/validate_triage_output.py` ya tiene 364 líneas. Separar en
-   parsing (leer y normalizar la salida del modelo) / reglas (cada `ValidationRule`, que ya están
-   razonablemente aisladas) / reporting (armar el resultado agregado para `run_eval_suite`).
-   Se hace **antes** del paso 1 — agregarle la capa de red flags a un archivo que ya está marcado
-   como difícil de mantener sería empeorar exactamente lo que el gate señala.
-1. **Capa determinista de red flags** que corre **antes** del LLM: dolor de pecho, dificultad
-   respiratoria, pérdida de conciencia, signos de ACV, etc. Si dispara, fuerza ALTA/EMERGENCIA y
-   `requiere_revision=true`, y el LLM ya no puede bajar esa clasificación. Reglas auditables y
-   testeadas una por una.
-2. **Rúbrica explícita por nivel** en el prompt: qué distingue BAJA de MEDIA de ALTA de
-   EMERGENCIA, con criterios observables, no adjetivos vagos.
-3. **Few-shot con los casos ya validados clínicamente** por Cristian en
-   `evals/CLINICAL_SAFETY_CATALOG.md`. Cuidado metodológico: **no usar como ejemplo un caso que
-   después se evalúa** — separar conjunto de ejemplos y conjunto de evaluación, o el accuracy
-   queda inflado y mentiroso.
-4. **Reforzar el disclaimer** en el contrato de salida: el sistema puede equivocarse, la
-   recomendación es consultar a un médico.
-5. **Fallback seguro ante timeout/503 del proveedor** (gate de Jailbreak/Safety del mentor —
-   es literalmente su "gate de salida": *"ningún fallo del proveedor puede convertirse en una
-   recomendación tranquilizadora ni omitir revisión humana"*). Hoy `routes_triage.py` devuelve un
-   502 mudo si NVIDIA falla, sin importar si el input tenía un red flag. Como los red flags del
-   paso 1 corren **antes** de llamar al modelo, un fallo del proveedor con un red flag ya
-   detectado tiene que devolver igual ALTA/EMERGENCIA + `requiere_revision=true` — la
-   elaboración del LLM puede faltar, la escalada no.
-6. Mantener intactas las reglas que ya funcionan: no diagnosticar, no medicar, pedir más info si
-   el input es insuficiente.
+0. **Refactor primero** (gate de Mantenibilidad del mentor): `evals/validate_triage_output.py`
+   (364 líneas confirmadas) se partió en `evals/triage_parsing.py` (normalización),
+   `evals/triage_rules.py` (las 6 reglas + detección de red flags) y el archivo original, que
+   quedó como punto de entrada estable (`validate_triage_output()`, sin cambiar su firma).
+   Import robusto con try/except porque el notebook y el backend cargan el módulo de formas
+   distintas (top-level vs. paquete `evals.X`) — comprobado en un proceso aislado antes de
+   confiar en el fallback, no asumido. Cero cambio de comportamiento (mismos tests, mismo
+   resultado en los dos caminos de import).
+1. **Capa determinista de red flags** (`backend/app/orchestration/red_flags.py`) que corre
+   **antes** del LLM. Reutiliza `detect_red_flags()` de `evals/triage_rules.py` — una sola
+   fuente de verdad entre el chequeo de entrada y la regla de salida (`RedFlagEscalationRule`).
+   Si dispara, `TriageOrchestrator` fuerza ALTA/EMERGENCIA + `requiere_revision=true` **antes**
+   de que la respuesta llegue al validador — el LLM ya no puede bajar esa clasificación.
+2. **Rúbrica explícita por nivel** (`contract.PRIORITY_RUBRIC`) con criterios observables por
+   nivel, no adjetivos vagos — inyectada en el prompt (`prompt_builder.py`).
+3. **Few-shot** (`contract.FEW_SHOT_EXAMPLES`, 4 ejemplos, uno por nivel): escritos para esta
+   sesión, **deliberadamente distintos** a los 25 casos de `evals/triage_eval_cases*.csv` para
+   no contaminar el accuracy. Todavía sin validar clínicamente por Cristian — punto de partida
+   razonable, no un reemplazo de esa revisión (pendiente, no se le adjudicó a nadie ni se marcó
+   como cerrado).
+4. **Disclaimer reforzado** (`contract.DISCLAIMER`): explícito en el prompt y exigido en el
+   texto de la propia `recomendacion`, no solo como regla cumplida en silencio.
+5. **Fallback seguro ante fallo del proveedor** (`build_provider_error_fallback()`, gate de
+   salida del mentor). Si NVIDIA falla (timeout/503) y ya se detectó un red flag en el paso 1,
+   `TriageOrchestrator` devuelve una respuesta EMERGENCIA + `requiere_revision=true` en vez de
+   dejar que el error suba como 502 mudo. Sin red flag, el fallo sigue siendo un 502 honesto —
+   no se inventa una clasificación sin evidencia.
+6. Reglas que ya funcionaban (no diagnosticar, no medicar, pedir más info) — intactas, con test
+   dedicado de que el prompt nuevo no perdió ese lenguaje.
 
-**Verificación:** tests unitarios de cada regla de red flag, incluido el camino de fallback ante
-`ModelProviderError` con y sin red flag presente; re-correr los 25 casos y comparar accuracy
-contra la línea base (36-57%, y contra el 5/9 con 6 errores de proveedor que reportó el mentor)
-documentando la mejora en `evals/results.md`.
+**Hallazgo real corrido contra NVIDIA de verdad, no solo en tests unitarios:** la primera corrida
+post-motor-híbrido (6/12, 50%) mostró que `red_flag_fiebre_bebe` (bebé de 3 meses con fiebre de
+39.5°C) **seguía** clasificando ALTA en vez de EMERGENCIA — el mismo caso que ya preocupaba desde
+la corrida del 2026-09-17. Causa real: `RED_FLAG_KEYWORDS` solo cubre síntomas agudos dramáticos
+(dolor de pecho, convulsión), nunca patrones combinatorios como "fiebre + edad de riesgo". Se
+agregó `PEDIATRIC_FEVER_PATTERN` (regex acotado a este caso evidenciado, no detección clínica
+general) en `evals/triage_rules.py`, compartido por el chequeo de entrada y la regla de salida.
+Segunda corrida (6/8, 75%): los 3 casos EMERGENCIA evaluados, incluido `red_flag_fiebre_bebe`,
+salieron correctos. Detalle completo con ambas corridas en `evals/results.md`, sección "Sesión 6".
+
+**Verificación real:** 72 tests backend (19 nuevos), 91% de cobertura — incluye el motor híbrido
+con un `ModelProvider` falso (red flag + LLM exitoso pero desactualizado, red flag + fallo de
+proveedor, sin red flag en ambos casos), el fix de fiebre pediátrica, y que el prompt realmente
+incluya rúbrica/few-shot/disclaimer. Más dos corridas reales contra NVIDIA (no solo unitarias) —
+ver arriba. `NVIDIA_MAX_RETRIES` queda anotado en la Sesión 7 (sigue en 0, la corrida 2 tuvo 7
+errores de proveedor sobre 15 casos comparables — más ruido, no menos, que la corrida 1).
 
 ---
 

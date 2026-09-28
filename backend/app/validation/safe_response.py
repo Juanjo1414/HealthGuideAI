@@ -1,6 +1,38 @@
-"""Respuesta determinista usada cuando la salida del modelo no es segura."""
+"""Respuestas deterministas para cuando no se puede confiar en el modelo —
+ni en lo que contestó (build_safe_fallback) ni en que haya contestado del
+todo (build_provider_error_fallback)."""
 
 from __future__ import annotations
+
+
+def build_provider_error_fallback() -> dict:
+    """Sesion 6, gate de salida del mentor (MAKERS_ACCEPTANCE.md): "ningún
+    fallo del proveedor puede convertirse en una recomendación
+    tranquilizadora ni omitir revisión humana". Se usa solo cuando el
+    proveedor falla (timeout/503) Y el input ya disparó un red flag
+    determinista (orchestration/red_flags.py, corre ANTES de llamar al
+    modelo) — sin esto, ese caso terminaba en un 502 mudo sin que nadie
+    se enterara de que había una señal de alarma real en el texto."""
+    return {
+        "resumen": (
+            "No se pudo completar el análisis automático, pero tu descripción "
+            "incluye una señal de alarma conocida."
+        ),
+        "sintomas_detectados": [],
+        "prioridad": "EMERGENCIA",
+        "posibles_causas": [],
+        "alertas": [
+            "Señal de alarma detectada en el texto; el sistema no pudo "
+            "completar el análisis automático."
+        ],
+        "recomendacion": (
+            "Busca atención de urgencias de inmediato o llama a la línea de "
+            "emergencias local. Esta orientación puede no ser exacta y no "
+            "reemplaza una evaluación médica profesional."
+        ),
+        "requiere_revision": True,
+        "confianza": 0.0,
+    }
 
 
 def build_safe_fallback(validation: dict, model_output: dict) -> dict:

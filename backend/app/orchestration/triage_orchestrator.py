@@ -3,13 +3,23 @@ Capa de orquestacion — equivalente a run_prototype() en el notebook, pero
 recibiendo el proveedor de modelo por inyeccion de dependencia (Dependency
 Inversion) en vez de llamar a NVIDIA por su nombre. Esta clase no sabe si
 el proveedor es NVIDIA, Gemini o un mock de tests.
+
+Sesion 6: motor hibrido. Los red flags (orchestration/red_flags.py) se
+chequean ANTES y DESPUES de llamar al modelo — antes, para decidir que
+hacer si el proveedor falla; despues, para que el LLM no pueda "bajar"
+una clasificacion que el propio input ya marco como señal de alarma. El
+validador de evals/ sigue siendo la ultima linea de defensa (corre
+despues, en routes_triage.py) — esto es una capa adicional, no un
+reemplazo.
 """
 
 from __future__ import annotations
 
-from ..providers.base import ModelProvider
+from ..providers.base import ModelProvider, ModelProviderError
+from ..validation.safe_response import build_provider_error_fallback
 from .contract import HUMAN_DECISION, SYSTEM_VALIDATIONS
 from .prompt_builder import build_system_prompt
+from .red_flags import detect_red_flags
 
 _MAX_TOKENS = 1800
 
@@ -20,19 +30,41 @@ class TriageOrchestrator:
         self._system_prompt = build_system_prompt()
 
     def run(self, symptoms_text: str) -> dict:
-        output = self._provider.generate_json(
-            self._system_prompt,
-            {
-                "input": symptoms_text,
-                "context": {
-                    "human_decision": HUMAN_DECISION,
-                    "system_validations": SYSTEM_VALIDATIONS,
+        red_flags = detect_red_flags(symptoms_text)
+
+        try:
+            output = self._provider.generate_json(
+                self._system_prompt,
+                {
+                    "input": symptoms_text,
+                    "context": {
+                        "human_decision": HUMAN_DECISION,
+                        "system_validations": SYSTEM_VALIDATIONS,
+                    },
                 },
-            },
-            max_tokens=_MAX_TOKENS,
-        )
+                max_tokens=_MAX_TOKENS,
+            )
+        except ModelProviderError:
+            if red_flags:
+                # Gate de salida del mentor (MAKERS_ACCEPTANCE.md): un fallo
+                # del proveedor no puede omitir revision ante una señal de
+                # alarma real que ya detectamos de forma determinista, sin
+                # depender de que el LLM haya respondido.
+                return build_provider_error_fallback()
+            raise
+
         # Misma normalizacion que run_prototype(): no se le "ruega" al prompt
         # que use mayusculas, se corrige en codigo (.claude/CLAUDE.md seccion 8).
         if isinstance(output.get("prioridad"), str):
             output["prioridad"] = output["prioridad"].strip().upper()
+
+        if red_flags and output.get("prioridad") not in {"ALTA", "EMERGENCIA"}:
+            # El LLM ya no puede bajar esta clasificacion — el input tiene
+            # una señal de alarma determinista, sin importar que haya
+            # contestado el modelo. "Si hay duda, el nivel mas severo"
+            # (mismo criterio que evals/CLINICAL_SAFETY_CATALOG.md).
+            output["prioridad"] = "EMERGENCIA"
+        if red_flags:
+            output["requiere_revision"] = True
+
         return output
