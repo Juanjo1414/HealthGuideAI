@@ -66,10 +66,10 @@ archivo aparte que nadie vuelve a mirar — cada uno con dónde se atiende en es
   `NVIDIA_MAX_RETRIES` (hoy en 0 por defecto) y si conviene subirlo antes de gastar esfuerzo en
   el prompt — una corrida "inestable" por 503s no dice nada confiable sobre el prompt en sí.
 
-**Nota de proceso (no es código, es una decisión del equipo):** el mentor pide PRs chicos y
-"consolidar ramas" en vez de fast-forward directo a `main` (que es como venimos mergeando hasta
-ahora, por pedido explícito de Juan José en la Sesión 3). Esto es un cambio de flujo de trabajo,
-no algo que se decida solo — ver la pregunta al equipo más abajo.
+**Nota de proceso — decidido (2026-09-28):** se sigue mergeando `dev/Juanjo` → `main` directo,
+como hasta ahora, mientras trabaja una sola persona a la vez en el backend. El flujo de PR real
+(con review) se adopta recién en la Sesión 14, que ya estaba planeada así — no hace falta
+agregar fricción a cada sesión antes de eso.
 
 **Sobre "consolidar ramas":** revisado — `dev/Cristian` (remota) no tiene trabajo en conflicto,
 está exactamente en el commit `545d272`, el mismo punto donde arrancó este plan en la Sesión 1.
@@ -79,12 +79,10 @@ No hay nada que "resolver" en el sentido de choques de código; simplemente no t
 `codex/revision-healthguide-confiabilidad` (remota), sin revisar en esta pasada — si nadie sabe
 para qué es, es candidata a limpiar.
 
-**Nota de prioridad:** el mentor marca "Producto ejecutable" como PASS pero con la observación de
-probar con usuarios reales *"sin ampliar infraestructura"* — una señal de que, después de dos
-sesiones seguidas de infraestructura (3 y 4), toca priorizar validación real antes de seguir
-construyendo. Session 5 (seguridad) no es "más infraestructura" en el mismo sentido — es
-endurecer lo que ya existe — pero vale la pena que el equipo decida esto explícitamente en vez de
-que quede implícito.
+**Nota de prioridad — decidido (2026-09-28):** se sigue con la Sesión 5 ahora. Seguridad de la
+app es corta y endurece lo que ya existe (no es "más infraestructura" en el sentido que marca el
+mentor). Probar con usuarios reales queda pendiente de planificar, en paralelo o después, sin
+bloquear esta sesión.
 
 ---
 
