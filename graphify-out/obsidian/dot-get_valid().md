@@ -1,0 +1,19 @@
+---
+source_file: "backend/app/storage/session_store.py"
+type: "code"
+community: "Autenticacion y Sesiones"
+location: "L40"
+tags:
+  - graphify/code
+  - graphify/EXTRACTED
+  - community/Autenticacion_y_Sesiones
+---
+
+# .get_valid()
+
+## Connections
+- [[dot-delete()]] - `calls` [EXTRACTED]
+- [[Session]] - `calls` [EXTRACTED]
+- [[SessionStore]] - `method` [EXTRACTED]
+
+#graphify/code #graphify/EXTRACTED #community/Autenticacion_y_Sesiones

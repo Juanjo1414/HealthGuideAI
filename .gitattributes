@@ -5,3 +5,4 @@
 # justamente el tipo de archivo que se copia tal cual a la imagen de Docker,
 # asi que esto no es opcional.
 *.sh text eol=lf
+graphify-out/graph.json merge=graphify

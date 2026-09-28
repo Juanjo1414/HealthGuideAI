@@ -1,0 +1,17 @@
+---
+source_file: "backend/tests/test_prompt_builder.py"
+type: "rationale"
+community: "Orquestacion de Triage y Model Provider"
+location: "L35"
+tags:
+  - graphify/rationale
+  - graphify/EXTRACTED
+  - community/Orquestacion_de_Triage_y_Model_Provider
+---
+
+# No perder las reglas que ya funcionaban al agregar todo lo nuevo.
+
+## Connections
+- [[test_prompt_still_forbids_medication_and_diagnosis()]] - `rationale_for` [EXTRACTED]
+
+#graphify/rationale #graphify/EXTRACTED #community/Orquestacion_de_Triage_y_Model_Provider

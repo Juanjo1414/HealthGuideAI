@@ -10,3 +10,11 @@ htmlcov/
 *.pdf
 *.claude
 .claude
+
+# graphify: cache y paths locales de interprete no se versionan (son
+# regenerables/especificos de la maquina); el resto (graph.json, .html,
+# GRAPH_REPORT.md, obsidian/) si se versiona para que el equipo lo vea sin
+# tener que correr /graphify.
+graphify-out/cache/
+graphify-out/.graphify_python
+graphify-out/.graphify_root
