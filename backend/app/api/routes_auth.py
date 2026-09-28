@@ -27,7 +27,12 @@ def _set_session_cookie(response: Response, token: str) -> None:
         max_age=int(settings.session_ttl_seconds),
         httponly=True,
         samesite="lax",
-        secure=False,  # cambiar a True cuando se sirva por HTTPS en produccion
+        # Sesion 5: ligado a ENVIRONMENT en vez de un booleano fijo con un
+        # comentario de "acordate de cambiar esto" — ese tipo de TODO
+        # manual es exactamente lo que CONSTRAINTS.md pide no dejar pasar.
+        # HTTPS es obligatorio en produccion (Sesion 14), asi que esto no
+        # es un default optimista, es una condicion real.
+        secure=settings.environment == "production",
     )
 
 

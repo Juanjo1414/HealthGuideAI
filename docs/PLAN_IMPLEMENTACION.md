@@ -17,7 +17,7 @@ tomadas.
 | 2 | Estándar de calidad (`/constraints` + `/spec`) | Fundamentos | ✅ Hecha |
 | 3 | API Gateway + consolidación en NVIDIA | Backend | ✅ Hecha |
 | 4 | Escalabilidad horizontal (Postgres + Redis) | Backend | ✅ Hecha |
-| 5 | Seguridad de la aplicación | Backend | ⬜ Pendiente |
+| 5 | Seguridad de la aplicación | Backend | ✅ Hecha |
 | 6 | Motor de triage híbrido (reglas + few-shot) | Clínico | ⬜ Pendiente |
 | 7 | Base de conocimiento (RAG) | Clínico | ⬜ Pendiente |
 | 8 | Blindaje del modelo (prompt injection) | Clínico | ⬜ Pendiente |
@@ -292,24 +292,51 @@ Postgres — quedó documentado para que no le pase al resto del equipo.
 
 ---
 
-## Sesión 5 — Seguridad de la aplicación
+## Sesión 5 — Seguridad de la aplicación ✅
 
 Esta sesión cubre la seguridad de la **app**; la del **modelo** va aparte en la Sesión 8.
 
-1. **Credenciales admin**: hoy cae silenciosamente a `admin/12345` (`backend/app/config.py:89-90`).
-   Guard de arranque que falle ruidosamente en producción si no hay `ADMIN_PASSWORD` explícita.
-2. **CSRF**: la auth usa cookies, así que necesita protección explícita (double-submit o
-   SameSite estricto + verificación de origen).
-3. **Cookies**: `Secure` + `HttpOnly` + `SameSite` correctos según el dominio final.
-4. **Headers de seguridad**: CSP, HSTS, X-Content-Type-Options, Referrer-Policy.
-5. **Hashing de contraseñas**: auditar el algoritmo y su costo en `backend/app/auth/security.py`.
-6. **Validación de entrada** en toda la frontera, con límites de tamaño en el texto de síntomas.
-7. **Datos sensibles**: la evidencia clínica almacenada es información de salud — revisar qué se
-   guarda, por cuánto tiempo, y que los logs no la filtren.
-8. Auditoría de seguridad sobre el repo completo (dependencias, secretos, patrones inseguros).
+1. **Credenciales admin**: `validate_production_config()` (`backend/app/config.py`) corre al
+   importar `main.py`, antes de aceptar un request. Falla ruidosamente si `ENVIRONMENT=production`
+   y `ADMIN_PASSWORD` sigue en `12345`.
+2. **CSRF por verificación de origen** (`backend/app/api/csrf.py`), no double-submit token: la
+   cookie ya usa `SameSite=Lax` (bloquea el ataque cross-site clásico en navegadores modernos);
+   esta capa agrega defensa en profundidad verificando `Origin`/`Referer` contra
+   `CORS_ALLOWED_ORIGINS` + el propio origen del backend (para no romper "Try it out" en `/docs`).
+3. **Cookies**: `Secure` ligado a `ENVIRONMENT` (`routes_auth.py`), no un booleano fijo con un
+   comentario de "acordate de cambiar esto" — ese tipo de TODO manual es justo lo que
+   `CONSTRAINTS.md` prohíbe.
+4. **Headers de seguridad** (`backend/app/api/security_headers.py`): CSP estricto
+   (`default-src 'none'`) para la API JSON, más permisivo solo en `/docs`/`/redoc` para no romper
+   Swagger UI; `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy` siempre;
+   `Strict-Transport-Security` solo en `ENVIRONMENT=production`.
+5. **Hashing de contraseñas — auditado:** bcrypt vía passlib, 12 rounds (confirmado leyendo el
+   work factor del hash real), el mínimo que recomienda OWASP hoy. Sin cambios de código.
+6. **Validación de entrada**: `SignupRequest`/`LoginRequest`/`TriageRequest` ganaron
+   `extra="forbid"` — un campo colado a mano (ej. `"role": "admin"`) da 422 en vez de ignorarse.
+   Los límites de tamaño ya existían de sesiones anteriores.
+7. **Datos sensibles**: revisado — ningún `logger.*` de `backend/app/` registra texto de
+   síntomas, contraseñas ni tokens de sesión (confirmado leyendo los 24 archivos de
+   `backend/app/`, no asumido).
+8. **Auditoría con `cyber-neo`** (subagente en modo solo-lectura, más `pip-audit`/`npm audit`
+   corridos directamente): **0 critical, 0 high**. Sin SQL injection, XSS, SSRF, deserialización
+   insegura, comparación insegura de contraseñas, `except` que traguen errores, ni filtración de
+   stack trace/datos sensibles. Dos hallazgos reales, corregidos en la misma sesión:
+   - **medium (CWE-250):** el backend corría como root en el contenedor (`backend/Dockerfile` sin
+     `USER`). Se agregó un usuario `app` sin privilegios — probado reconstruyendo la imagen de
+     verdad y confirmando `docker compose exec backend whoami` → `app`, más `/ready` y un signup
+     real contra el contenedor nuevo.
+   - **low (CWE-798):** `DATABASE_URL` tenía el mismo problema que `ADMIN_PASSWORD` (default de
+     desarrollo hardcodeado) sin guard — se agregó al mismo `validate_production_config()`.
+   - Informativo (aplicado): `.github/workflows/ci.yml` no tenía `permissions:` explícito — se
+     agregó `contents: read` a nivel de workflow.
+   - Informativo (no aplicado, riesgo bajo): las actions de CI están pineadas por tag
+     (`actions/checkout@v4`), no por SHA. Documentado como deuda aceptada, no se tocó por no
+     tener forma de verificar el SHA correcto sin acceso a red en esta sesión.
 
-**Verificación:** tests de seguridad por cada punto; arrancar en producción sin `ADMIN_PASSWORD`
-debe fallar; un POST sin token CSRF debe ser rechazado.
+**Verificación real (no solo "los tests pasan"):** 53 tests backend en verde (90% de cobertura),
+más un smoke test manual contra el contenedor Docker reconstruido con el usuario no-root
+(`/ready`, signup real, verificación de que la cookie no trae `Secure` en desarrollo).
 
 ---
 

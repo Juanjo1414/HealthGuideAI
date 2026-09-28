@@ -16,6 +16,7 @@ Priority = Literal["BAJA", "MEDIA", "ALTA", "EMERGENCIA"]
 
 class TriageRequest(BaseModel):
     model_config = ConfigDict(
+        extra="forbid",
         json_schema_extra={
             "example": {
                 "symptoms_text": (

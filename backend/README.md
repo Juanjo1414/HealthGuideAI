@@ -171,6 +171,52 @@ confiando solo en proxies conocidos (ver comentario en `rate_limit.py`).
   `:8000` directo (no pasa por el gateway) — ese cableado de origen único es trabajo de la
   Sesión 14, cuando haya un dominio real y las cookies `Secure` lo exijan.
 
+## Seguridad de la aplicación (Sesión 5)
+
+- **Guard de arranque:** `config.validate_production_config()` corre al importar `main.py`, antes
+  de que el proceso pueda aceptar un request. Si `ENVIRONMENT=production` y `ADMIN_PASSWORD`
+  sigue en el default (`12345`), falta `NVIDIA_API_KEY`, o `DATABASE_URL` sigue apuntando a la
+  base de desarrollo (`healthguide_dev_only` — hallazgo de la auditoría de abajo), el proceso
+  **no arranca**. En desarrollo (`ENVIRONMENT` sin setear) no bloquea nada.
+- **CSRF por verificación de origen** (`app/api/csrf.py`), no double-submit token: la cookie de
+  sesión ya usa `SameSite=Lax`, que en navegadores modernos ya bloquea el ataque cross-site
+  clásico. Esta capa agrega defensa en profundidad, verificando el header `Origin` (o `Referer`
+  si falta) contra `CORS_ALLOWED_ORIGINS` + el propio origen del backend (para que `/docs` con
+  "Try it out" siga funcionando) en todo POST/PUT/PATCH/DELETE. Sin Origin ni Referer (clientes
+  no-navegador) se deja pasar — bloquear eso no defiende nada.
+- **Cookie `Secure` ligada a `ENVIRONMENT`**, no un booleano fijo con un comentario de "acordate
+  de cambiar esto" (`routes_auth.py`) — ese tipo de TODO manual es justo lo que `CONSTRAINTS.md`
+  pide no dejar pasar.
+- **Headers de seguridad** (`app/api/security_headers.py`) en toda respuesta:
+  `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, `Referrer-Policy`, y un
+  `Content-Security-Policy` estricto (`default-src 'none'`) para la API JSON — con una excepción
+  deliberada y más permisiva en `/docs`/`/redoc` para no romper los assets de Swagger UI que
+  vienen de un CDN. `Strict-Transport-Security` solo se manda en `ENVIRONMENT=production` (no
+  tiene sentido en HTTP plano de desarrollo).
+- **Validación de entrada:** `SignupRequest`, `LoginRequest` y `TriageRequest` usan
+  `extra="forbid"` — un campo inesperado en el body (ej. `"role": "admin"` colado a mano) da 422
+  en vez de ignorarse en silencio. Los límites de tamaño (`symptoms_text` hasta 4000 caracteres,
+  password 6-128) ya existían de sesiones anteriores.
+- **Hashing de contraseñas — auditado, sin cambios:** bcrypt vía passlib con **12 rounds**
+  (confirmado corriendo `CryptContext(...).hash(...)` y leyendo el work factor del hash
+  resultante), que es el mínimo recomendado por OWASP hoy. No hace falta tocar nada acá.
+- **Datos sensibles en logs:** revisado — `AccessLogMiddleware` solo loguea método/ruta/status/
+  duración/request_id, nunca el body. El catch-all de `errors.py` loguea la excepción real
+  server-side (para poder debuggear) pero el cliente nunca ve el detalle interno, solo un mensaje
+  genérico + el `request_id` para cruzarlo con el log.
+- **Auditoría de todo el repo con `cyber-neo`:** dependencias (`pip-audit`, `npm audit`) sin CVEs
+  conocidas; sin secretos hardcodeados; sin SQL injection, XSS, SSRF, deserialización insegura,
+  comparación insegura de contraseñas, `except` que traguen errores, ni filtración de stack trace
+  o de datos sensibles en logs (confirmado leyendo los 24 archivos de `backend/app/` y el
+  frontend, no asumido). Dos hallazgos reales, corregidos en esta misma sesión:
+  - **medium** — el backend corría como root dentro del contenedor (`backend/Dockerfile` no
+    tenía `USER`). Se agregó un usuario `app` sin privilegios; probado de verdad (`docker compose
+    build` + `docker compose exec backend whoami` → `app`, `/ready` y un signup real contra el
+    contenedor reconstruido).
+  - **low** — `DATABASE_URL` tenía el mismo problema que `admin_password` (default de desarrollo
+    hardcodeado) pero sin guard. Se agregó al mismo `validate_production_config()`.
+  Detalle completo en `docs/PLAN_IMPLEMENTACION.md`, Sesión 5.
+
 ## Revisión humana — qué es y qué no es
 
 `requiere_revision`/`requires_human_review` es un flag registrado en la tabla `evidence`, no una

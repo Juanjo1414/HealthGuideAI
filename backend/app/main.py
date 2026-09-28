@@ -15,12 +15,20 @@ from __future__ import annotations
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from .api.csrf import CSRFOriginCheckMiddleware
 from .api.errors import install_error_handlers
 from .api.middleware import AccessLogMiddleware, RequestIdMiddleware
 from .api.routes_auth import router as auth_router
 from .api.routes_health import router as health_router
 from .api.routes_triage import router as triage_router
-from .config import get_settings
+from .api.security_headers import SecurityHeadersMiddleware
+from .config import get_settings, validate_production_config
+
+# Guard de arranque (Sesion 5): corre al importar este modulo, antes de que
+# uvicorn pueda aceptar un solo request. Si ENVIRONMENT=production y algo
+# esta mal configurado (admin/12345 sin cambiar, falta la API key), el
+# proceso ni siquiera levanta — ver config.py.
+validate_production_config(get_settings())
 
 app = FastAPI(
     title="HealthGuide AI — API",
@@ -51,8 +59,10 @@ app.add_middleware(
     # es seguro.
     allow_credentials=True,
 )
+app.add_middleware(CSRFOriginCheckMiddleware)
 app.add_middleware(AccessLogMiddleware)
 app.add_middleware(RequestIdMiddleware)
+app.add_middleware(SecurityHeadersMiddleware)
 
 install_error_handlers(app)
 

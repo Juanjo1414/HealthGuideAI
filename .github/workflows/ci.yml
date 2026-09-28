@@ -10,6 +10,13 @@ on:
   pull_request:
     branches: [main]
 
+# Sesion 5 (auditoria cyber-neo, hallazgo informativo): sin esto, el
+# GITHUB_TOKEN de cada job usa los permisos default del repo, que suelen
+# ser mas amplios de lo que este workflow necesita — ningun job hace push
+# ni escribe nada, solo lee el codigo y corre tests/build.
+permissions:
+  contents: read
+
 jobs:
   backend-tests:
     runs-on: ubuntu-latest

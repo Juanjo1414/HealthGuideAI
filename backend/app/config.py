@@ -67,6 +67,11 @@ class Settings:
     # default solo existe para no bloquear desarrollo local.
     admin_username: str = "admin"
     admin_password: str = "12345"
+    # "development" por defecto para no bloquear a nadie corriendo local.
+    # Sesion 5: el guard de arranque de abajo lo usa para decidir si
+    # admin/12345 llegando sin cambiar es un problema silencioso (dev) o
+    # un arranque que tiene que fallar ruidosamente (production).
+    environment: str = "development"
 
 
 def get_settings() -> Settings:
@@ -99,4 +104,39 @@ def get_settings() -> Settings:
         session_ttl_seconds=float(os.getenv("SESSION_TTL_SECONDS", str(60 * 60 * 24 * 365))),
         admin_username=os.getenv("ADMIN_USERNAME", "admin"),
         admin_password=os.getenv("ADMIN_PASSWORD", "12345"),
+        environment=os.getenv("ENVIRONMENT", "development"),
     )
+
+
+def validate_production_config(settings: Settings) -> None:
+    """Guard de arranque (Sesion 5): si esto no revienta ahora, revienta
+    en produccion de una forma mucho peor — alguien entra con admin/12345.
+    Se llama una sola vez, al importar main.py, antes de que el proceso
+    pueda aceptar un solo request. No es una validacion de Pydantic porque
+    la regla no es "el campo tiene el tipo correcto", es "esta combinacion
+    de valores es insegura para este entorno especifico".
+    """
+    if settings.environment != "production":
+        return
+    problems = []
+    if settings.admin_password == "12345":  # noqa: S105 - comparando contra el default inseguro, no un secreto
+        problems.append(
+            "ADMIN_PASSWORD sigue en el default de desarrollo (12345). "
+            "Definila en el entorno antes de arrancar en produccion."
+        )
+    if not settings.nvidia_api_key:
+        problems.append("NVIDIA_API_KEY no esta configurada.")
+    # Auditoria cyber-neo (Sesion 5, hallazgo low/CWE-798): el guard de
+    # admin_password ya existia, pero database_url tenia el mismo problema
+    # (una credencial de desarrollo hardcodeada como default) sin nadie
+    # chequeandola antes de arrancar en produccion.
+    if "healthguide_dev_only" in settings.database_url:
+        problems.append(
+            "DATABASE_URL sigue apuntando a la base de desarrollo. "
+            "Definila en el entorno antes de arrancar en produccion."
+        )
+    if problems:
+        raise RuntimeError(
+            "No se puede arrancar con ENVIRONMENT=production por configuracion insegura:\n- "
+            + "\n- ".join(problems)
+        )

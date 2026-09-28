@@ -11,9 +11,12 @@ from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator
 
 class SignupRequest(BaseModel):
     model_config = ConfigDict(
+        # Sesion 5: un campo extra en el body (ej. "role": "admin" colado a
+        # mano) se rechaza con 422 en vez de ignorarse en silencio.
+        extra="forbid",
         json_schema_extra={
             "example": {"email": "paciente@example.com", "password": "unaClaveSegura123"}
-        }
+        },
     )
 
     email: EmailStr
@@ -22,9 +25,10 @@ class SignupRequest(BaseModel):
 
 class LoginRequest(BaseModel):
     model_config = ConfigDict(
+        extra="forbid",
         json_schema_extra={
             "example": {"email": "paciente@example.com", "password": "unaClaveSegura123"}
-        }
+        },
     )
 
     # No es EmailStr a proposito: la cuenta admin de arranque usa un

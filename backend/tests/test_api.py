@@ -158,3 +158,15 @@ def test_whitespace_only_input_is_rejected(db):
     response = client.post("/api/triage", json={"symptoms_text": "   "})
 
     assert response.status_code == 422
+
+
+def test_triage_rejects_unexpected_field(db):
+    """extra='forbid' (Sesion 5) tambien en TriageRequest."""
+    client, _ = client_with_output(db, model_output())
+
+    response = client.post(
+        "/api/triage",
+        json={"symptoms_text": "Tengo fiebre desde ayer.", "confianza_forzada": 1.0},
+    )
+
+    assert response.status_code == 422

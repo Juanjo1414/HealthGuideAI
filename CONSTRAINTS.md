@@ -1,6 +1,6 @@
 # Constraints
 
-Last reviewed: 2026-09-22 — Sesión 4 de [`docs/PLAN_IMPLEMENTACION.md`](docs/PLAN_IMPLEMENTACION.md)
+Last reviewed: 2026-09-28 — Sesión 5 de [`docs/PLAN_IMPLEMENTACION.md`](docs/PLAN_IMPLEMENTACION.md)
 
 Este es el nivel de calidad que HealthGuideAI tiene que cumplir para considerarse "listo", con
 números concretos y el comando que los verifica — no una intención en prosa. Ninguna sesión del
@@ -20,9 +20,10 @@ filtrado no son el tipo de cosas que uno quiere descubrir después.
   vacío, `TODO` parado donde debería ir la implementación real.
 - Sin tests saltados (`@pytest.mark.skip`) o borrados sin razón explícita en el mensaje de commit.
 - Sin secretos en el código fuente (`NVIDIA_API_KEY`, `ADMIN_PASSWORD`, cadenas de conexión).
-- Sin credenciales por defecto llegando a producción en silencio — ver la regla de la Sesión 5
-  del plan sobre `backend/app/config.py:89-90` (`admin/12345` solo puede existir como fallback
-  de desarrollo, nunca sin un guard que falle en `ENVIRONMENT=production`).
+- Sin credenciales por defecto llegando a producción en silencio — `admin/12345` solo existe como
+  fallback de desarrollo; `validate_production_config()` (`backend/app/config.py`) hace fallar el
+  arranque si `ENVIRONMENT=production` y la contraseña sigue siendo esa. **Ya implementado**, no
+  es una regla aspiracional.
 - Este archivo no se debilita para que un cambio pase. Si un número acá arriba molesta,
   se discute y se cambia en su propio commit — nunca junto con el cambio que lo estaba violando.
 
@@ -40,12 +41,16 @@ filtrado no son el tipo de cosas que uno quiere descubrir después.
 | Accuracy clínico | ≥ 90% PASS en los 25 casos, accuracy de prioridad ≥ 80% | `evals/run_priority_metrics.py` sobre `evals/triage_eval_cases*.csv` | Sesiones 6-7, luego `evals.yml` (Sesión 13) |
 | Red flags de EMERGENCIA | **Cero** falsos negativos — ninguna EMERGENCIA real clasificada por debajo | mismo run de evals, columna `expected_priority` vs `prioridad` en casos con `red_flag=true` | igual que arriba — bloqueante duro, no es negociable como estadística |
 | Seguridad del modelo | 100% del set adversarial de prompt injection rechazado | set adversarial de la Sesión 8 (aún no existe — ver Gaps) | desde que exista, luego `evals.yml` |
-| Secretos | Ninguno en el código fuente | `gitleaks detect --redact --no-banner` (a instalar, Sesión 5) | CI |
-| Dependencias | Nada en `high` o superior | `osv-scanner scan source -r .` (a instalar, Sesión 5/13) | CI |
+| Secretos | Ninguno en el código fuente | grep de patrones de secretos (Sesión 5); `gitleaks` real queda pendiente para CI (Sesión 13) | manual hoy, CI en Sesión 13 |
+| Dependencias (Python) | Nada en `high` o superior | `pip-audit -r backend/requirements.txt` — corrido en Sesión 5, limpio | manual hoy, CI en Sesión 13 |
+| Dependencias (Node) | Nada en `high` o superior | `npm audit` en `frontend/` — corrido en Sesión 5, limpio | manual hoy, CI en Sesión 13 |
 | Accesibilidad | Cero violaciones `critical`/`serious`, contraste ≥ 4.5:1, navegación 100% por teclado | `axe` contra preview local (a instalar, Sesión 10/12) | Sesión 10 en adelante, CI |
 | Responsive | Funcional en 375px / 768px / 1024px / 1440px | revisión manual hoy; Playwright con viewports fijos en Sesión 12 | Sesión 11 (QA visual), Sesión 12 (automatizado) |
-| Cookies de sesión | `Secure` + `HttpOnly` + `SameSite` correctos | test de integración de auth (Sesión 5) | CI |
-| CSRF | Todo POST/PUT/DELETE con sesión exige token válido | test de integración (Sesión 5) | CI |
+| Cookies de sesión | `Secure` ligado a `ENVIRONMENT`, `HttpOnly` + `SameSite=Lax` siempre | `backend/tests/test_auth.py` (`test_session_cookie_is_secure_in_production` y su contraparte) | cada edit, CI |
+| CSRF | Todo POST/PUT/PATCH/DELETE exige un `Origin`/`Referer` confiable si trae alguno | `backend/tests/test_csrf.py` | cada edit, CI |
+| Headers de seguridad | `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`, CSP en toda respuesta | `backend/tests/test_security_headers.py` | cada edit, CI |
+| Validación de entrada | `SignupRequest`/`LoginRequest`/`TriageRequest` rechazan campos inesperados (422) | `test_signup_rejects_unexpected_field`, `test_triage_rejects_unexpected_field` | cada edit, CI |
+| Guard de arranque | El proceso no levanta en `ENVIRONMENT=production` con config insegura | `backend/tests/test_config_guard.py` | cada edit, CI |
 
 Cada fila nombra el comando que produce el veredicto. Una fila con número y sin comando en
 "Verificado por" es una aspiración, no un constraint — por eso el estado real de cada una
@@ -55,7 +60,7 @@ Cada fila nombra el comando que produce el veredicto. Una fila con número y sin
 
 | Métrica | Hoy | Dirección |
 |---|---|---|
-| Cobertura backend | 89% (37 tests, medido 2026-09-22, Sesión 4 — corre contra Postgres/Redis reales, no mocks) | no debe bajar |
+| Cobertura backend | 90% (51 tests, medido 2026-09-28, Sesión 5 — corre contra Postgres/Redis reales, no mocks) | no debe bajar |
 | Bundle JS frontend | ~197 KB / ~64 KB gzip | se fija presupuesto duro (Lighthouse/`size-limit`) después de la migración a Tailwind+shadcn (Sesiones 9-11) — poner un número ahora quedaría obsoleto de inmediato |
 | Bundle CSS frontend | ~13 KB / ~3.5 KB gzip | igual que arriba |
 | Cobertura frontend | 0% (no hay test runner instalado — Vitest llega en la Sesión 12) | se establece un piso cuando exista |
@@ -65,10 +70,11 @@ Cada fila nombra el comando que produce el veredicto. Una fila con número y sin
 
 Ser honesto en vez de aparentar que esto ya está completo:
 
-- **Ningún check hoy es 100% externo.** `evals/validate_triage_output.py` es un validador propio
-  del proyecto, no una autoridad externa como WCAG (axe) o una base de CVEs (osv-scanner) — esas
-  dos llegan en la Sesión 5/10/13. Hasta entonces, la única línea de defensa real es la Sesión 8
-  (blindaje del modelo) más este archivo, no un escáner independiente.
+- **Ya hay un check externo real** (Sesión 5): `pip-audit`/`npm audit` consultan bases de CVEs de
+  verdad (PyPI/OSV, npm advisory database), no una regla propia del proyecto. Sigue faltando el
+  equivalente para accesibilidad (WCAG vía `axe`, Sesión 10) y el escaneo de secretos/CVEs
+  automatizado en CI (`gitleaks`/`osv-scanner`, Sesión 13) — hoy `pip-audit`/`npm audit` se
+  corrieron a mano, no en cada push.
 - **El set adversarial de prompt injection todavía no existe** — es el entregable de la Sesión 8.
   La fila de la tabla de arriba queda con la regla y el "cuándo debería correr", no con un
   comando real todavía.

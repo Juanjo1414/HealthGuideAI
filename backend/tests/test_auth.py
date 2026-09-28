@@ -100,3 +100,40 @@ def test_triage_without_session_requires_login(db):
     response = client.post("/api/triage", json={"symptoms_text": "Tengo fiebre desde ayer."})
 
     assert response.status_code == 401
+
+
+def test_signup_rejects_unexpected_field(db):
+    """extra='forbid' (Sesion 5): un campo colado a mano (ej. "role":
+    "admin") tiene que dar 422, no ignorarse en silencio."""
+    client, _ = client_with_fresh_db(db)
+
+    response = client.post(
+        "/api/auth/signup",
+        json={"email": "hola@gmail.com", "password": "clave123", "role": "admin"},
+    )
+
+    assert response.status_code == 422
+
+
+def test_session_cookie_is_not_secure_in_development(db, monkeypatch):
+    monkeypatch.delenv("ENVIRONMENT", raising=False)
+    client, _ = client_with_fresh_db(db)
+
+    response = client.post(
+        "/api/auth/signup", json={"email": "cookie-dev@example.com", "password": "clave123"}
+    )
+
+    set_cookie = response.headers.get("set-cookie", "")
+    assert "Secure" not in set_cookie
+
+
+def test_session_cookie_is_secure_in_production(db, monkeypatch):
+    monkeypatch.setenv("ENVIRONMENT", "production")
+    client, _ = client_with_fresh_db(db)
+
+    response = client.post(
+        "/api/auth/signup", json={"email": "cookie-prod@example.com", "password": "clave123"}
+    )
+
+    set_cookie = response.headers.get("set-cookie", "")
+    assert "Secure" in set_cookie

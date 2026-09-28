@@ -22,6 +22,15 @@ COPY backend/alembic backend/alembic
 COPY backend/docker-entrypoint.sh backend/docker-entrypoint.sh
 RUN chmod +x backend/docker-entrypoint.sh
 
+# Sesion 5 (auditoria cyber-neo, hallazgo medium/CWE-250): sin esto, uvicorn
+# corria como root dentro del contenedor. No hace falta root para nada de lo
+# que este proceso hace (no escribe en disco, no abre puertos <1024) — es
+# una capa de contencion gratis si alguna dependencia (FastAPI, psycopg2,
+# el SDK de openai) tuviera alguna vez una RCE.
+RUN groupadd -r app && useradd -r -g app -d /app app \
+    && chown -R app:app /app
+USER app
+
 EXPOSE 8000
 
 # ENTRYPOINT (no CMD): fija el proceso principal del contenedor sin dejarlo
