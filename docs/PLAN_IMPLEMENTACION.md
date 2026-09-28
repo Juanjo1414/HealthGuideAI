@@ -620,3 +620,22 @@ deben.
 - `evals/CLINICAL_SAFETY_CATALOG.md`
 - `frontend/src/styles/tokens.css:16-29` · `frontend/src/components/{PriorityBadge,ResultCard}.jsx`
 - `.github/workflows/` · `TEAM_ROTATION.md`
+
+## Herramientas de desarrollo
+
+**Grafo de conocimiento del repo (`graphify`):** el repo completo (backend, frontend, evals,
+docs, decisiones) está indexado como grafo navegable en `graphify-out/` — `graph.json` +
+`graph.html` (interactivo, sin servidor) + `GRAPH_REPORT.md` (god nodes, conexiones
+sorprendentes, preguntas sugeridas) + un vault de Obsidian en `graphify-out/obsidian/` para
+quien no tenga `graphify` instalado pero sí Obsidian. Todo eso queda versionado en git.
+
+Se instaló un hook `post-commit` (y `post-checkout`) que reconstruye el grafo automáticamente
+después de cada commit, re-extrayendo vía AST solo el código que cambió (sin volver a llamar a
+un LLM). **Importante:** los git hooks viven en `.git/hooks/`, que **no se versiona** — el hook
+solo existe en la máquina donde se instaló (`graphify hook install`). Si otra persona del
+equipo clona el repo o trabaja en otra máquina, no lo va a tener automáticamente a menos que lo
+instale ahí también. Por ahora esto quedó documentado acá en vez de forzado por código; si en
+algún momento se vuelve un problema real (el grafo se desactualiza porque alguien no tiene el
+hook), la sesión que lo resuelva puede automatizar la instalación (ej. un paso en
+`docker-entrypoint.sh` o un check en CI), pero no se hizo todavía porque no había evidencia de
+que hiciera falta.

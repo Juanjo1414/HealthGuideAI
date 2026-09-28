@@ -166,6 +166,19 @@ verificar que todo funcione" que seguimos manualmente durante este proyecto.
 workflow como check obligatorio — así la regla la impone GitHub, no solo la disciplina del
 equipo. Se configura en Settings → Branches del repositorio, y requiere permisos de admin.
 
+## Grafo de conocimiento del repo (graphify)
+
+El repo está indexado como grafo navegable en `graphify-out/`: `graph.html` (interactivo, se
+abre en cualquier navegador sin instalar nada), `graph.json`, `GRAPH_REPORT.md` (god nodes,
+conexiones sorprendentes entre docs/código) y un vault de Obsidian en `graphify-out/obsidian/`
+para quien prefiera esa herramienta.
+
+Hay un hook `post-commit` instalado que reconstruye el grafo automáticamente en cada commit
+(solo re-extrae vía AST el código que cambió, sin llamar a ningún LLM). **Ojo:** ese hook vive
+en `.git/hooks/`, que git no versiona — cada persona que clone el repo tiene que correr
+`graphify hook install` una vez en su propia máquina si quiere que el grafo se le mantenga
+actualizado solo. Detalle en `docs/PLAN_IMPLEMENTACION.md`, sección "Herramientas de desarrollo".
+
 ## Pendiente
 
 - Documentar requisitos exactos de entorno.
