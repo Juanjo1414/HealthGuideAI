@@ -11,10 +11,20 @@ una clasificacion que el propio input ya marco como señal de alarma. El
 validador de evals/ sigue siendo la ultima linea de defensa (corre
 despues, en routes_triage.py) — esto es una capa adicional, no un
 reemplazo.
+
+Sesion 7: RAG. El retriever es local (backend/app/knowledge/), no agrega
+una llamada de red nueva sobre el timeout que ya tiene el proveedor. Se
+construye una sola vez en __init__ (el corpus no cambia en caliente) y se
+consulta por request segun el texto de sintomas — a diferencia del
+system prompt (estatico, armado una sola vez), el contexto recuperado
+depende de cada input, asi que viaja en el payload por request, no
+horneado en el prompt.
 """
 
 from __future__ import annotations
 
+from ..knowledge.retrieval import KnowledgeRetriever
+from ..knowledge.sources import KNOWLEDGE_BASE
 from ..providers.base import ModelProvider, ModelProviderError
 from ..validation.safe_response import build_provider_error_fallback
 from .contract import HUMAN_DECISION, SYSTEM_VALIDATIONS
@@ -22,26 +32,38 @@ from .prompt_builder import build_system_prompt
 from .red_flags import detect_red_flags
 
 _MAX_TOKENS = 1800
+_RAG_TOP_K = 2
 
 
 class TriageOrchestrator:
     def __init__(self, provider: ModelProvider):
         self._provider = provider
         self._system_prompt = build_system_prompt()
+        self._knowledge_retriever = KnowledgeRetriever(KNOWLEDGE_BASE)
 
     def run(self, symptoms_text: str) -> dict:
         red_flags = detect_red_flags(symptoms_text)
+        retrieved = self._knowledge_retriever.search(symptoms_text, top_k=_RAG_TOP_K)
+
+        payload = {
+            "input": symptoms_text,
+            "context": {
+                "human_decision": HUMAN_DECISION,
+                "system_validations": SYSTEM_VALIDATIONS,
+            },
+        }
+        if retrieved:
+            # Nunca se fuerza contexto irrelevante (retrieved viene vacio si
+            # ningun chunk matcheo de verdad — ver KnowledgeRetriever.search).
+            payload["contexto_recuperado"] = [
+                {"fuente": chunk.source_name, "url": chunk.source_url, "contenido": chunk.text_es}
+                for chunk in retrieved
+            ]
 
         try:
             output = self._provider.generate_json(
                 self._system_prompt,
-                {
-                    "input": symptoms_text,
-                    "context": {
-                        "human_decision": HUMAN_DECISION,
-                        "system_validations": SYSTEM_VALIDATIONS,
-                    },
-                },
+                payload,
                 max_tokens=_MAX_TOKENS,
             )
         except ModelProviderError:

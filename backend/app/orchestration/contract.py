@@ -104,6 +104,23 @@ DISCLAIMER = (
 # punto de partida razonable, no un reemplazo de esa revision. Si Cristian
 # los corrige, se actualizan aca, no en el catalogo de evals (no son casos
 # de evaluacion, son ejemplos de prompt).
+# RAG (Sesion 7): el payload por request puede traer "contexto_recuperado"
+# — fragmentos reales de fuentes de salud publica (backend/app/knowledge/)
+# recuperados por busqueda lexica local segun el texto de sintomas. Es
+# contexto adicional, no una fuente de verdad que reemplace la rubrica: si
+# no aplica al caso, se ignora. Citar la fuente por nombre es lo que hace
+# la respuesta auditable (item 3 de la Sesion 7), no un adorno opcional.
+RAG_INSTRUCTIONS = (
+    "Si el payload incluye \"contexto_recuperado\", son fragmentos de fuentes de salud "
+    "publica reales (con nombre y URL) relacionados con el caso, recuperados automaticamente "
+    "segun el texto del usuario. Son apoyo adicional, no una regla nueva: usalos solo si son "
+    "relevantes para este caso puntual, y si los usas para fundamentar una alerta o una "
+    "posible causa, menciona la fuente por nombre (ej. \"segun CDC\", \"segun Cleveland Clinic\") "
+    "en \"alertas\" o \"posibles_causas\". Nunca cites una fuente que no venga en ese contexto, y "
+    "nunca uses este contexto para diagnosticar ni para recomendar medicamentos — esas reglas no "
+    "cambian. Si no hay contexto recuperado, o ninguno es relevante, ignora esta seccion."
+)
+
 FEW_SHOT_EXAMPLES: list[dict] = [
     {
         "input": (

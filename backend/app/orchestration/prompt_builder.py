@@ -62,6 +62,9 @@ Rubrica de prioridad (criterios observables por nivel):
 Disclaimer obligatorio — tiene que quedar reflejado en el texto de "recomendacion", no solo cumplido en silencio:
 {contract.DISCLAIMER}
 
+Contexto recuperado automaticamente (RAG, Sesion 7):
+{contract.RAG_INSTRUCTIONS}
+
 Ejemplos de referencia (formato exacto esperado, no copies el contenido si no aplica al caso real):
 {_format_few_shot()}
 

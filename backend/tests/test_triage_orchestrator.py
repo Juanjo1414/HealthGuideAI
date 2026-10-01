@@ -19,8 +19,10 @@ class FakeProvider(ModelProvider):
     def __init__(self, response: dict | None = None, error: Exception | None = None):
         self._response = response
         self._error = error
+        self.last_payload: dict | None = None
 
     def generate_json(self, system_prompt: str, payload: dict, max_tokens: int) -> dict:
+        self.last_payload = payload
         if self._error is not None:
             raise self._error
         return dict(self._response)
@@ -99,6 +101,34 @@ def test_provider_failure_with_red_flag_returns_safe_fallback_instead_of_raising
     assert result["requiere_revision"] is True
     # No inventa medicación ni diagnóstico ni siquiera en el camino de error.
     assert "ibuprofeno" not in result["recomendacion"].lower()
+
+
+def test_rag_context_is_attached_for_a_known_red_flag_category():
+    """Sesion 7: un input que matchea una fuente curada (dolor de pecho)
+    tiene que viajar con 'contexto_recuperado' en el payload, citando la
+    fuente real — no alcanza con que exista el modulo, tiene que estar
+    conectado al flujo real."""
+    provider = FakeProvider(response=base_output(prioridad="EMERGENCIA", requiere_revision=True))
+    orchestrator = TriageOrchestrator(provider)
+
+    orchestrator.run("Tengo dolor en el pecho y no puedo respirar bien.")
+
+    assert provider.last_payload is not None
+    assert "contexto_recuperado" in provider.last_payload
+    fuentes = [c["fuente"] for c in provider.last_payload["contexto_recuperado"]]
+    assert any("CDC" in f for f in fuentes)
+
+
+def test_rag_context_is_absent_for_unrelated_input():
+    """Un input sin relacion con el corpus no debe forzar contexto —
+    el RAG amplia, no inventa (Sesion 7, item 4)."""
+    provider = FakeProvider(response=base_output())
+    orchestrator = TriageOrchestrator(provider)
+
+    orchestrator.run("Tengo la nariz tapada y estornudos desde ayer.")
+
+    assert provider.last_payload is not None
+    assert "contexto_recuperado" not in provider.last_payload
 
 
 def test_red_flag_fallback_passes_the_real_output_validator():

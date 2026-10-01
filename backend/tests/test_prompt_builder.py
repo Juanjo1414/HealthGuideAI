@@ -37,3 +37,12 @@ def test_prompt_still_forbids_medication_and_diagnosis():
 
     assert "medicamentos" in prompt.lower()
     assert "diagnostiques" in prompt.lower()
+
+
+def test_prompt_includes_rag_instructions():
+    """Sesion 7: el prompt tiene que explicar como usar y citar
+    'contexto_recuperado', o el modelo no sabria que hacer con el."""
+    prompt = build_system_prompt()
+
+    assert contract.RAG_INSTRUCTIONS in prompt
+    assert "contexto_recuperado" in prompt
