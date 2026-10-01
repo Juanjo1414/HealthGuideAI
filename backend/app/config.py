@@ -24,7 +24,22 @@ class Settings:
     nvidia_base_url: str = "https://integrate.api.nvidia.com/v1"
     nvidia_model: str = "nvidia/nemotron-3-super-120b-a12b"
     nvidia_timeout_seconds: float = 30.0
-    nvidia_max_retries: int = 0
+    # Sesion 7: estaba en 0 a proposito en sesiones anteriores, pero las
+    # corridas reales de evals (Sesion 6, evals/results.md) mostraron 503
+    # "Service temporarily overloaded" repetidos — un error que casi
+    # siempre rechaza rapido, no cuelga la conexion, asi que un reintento
+    # con backoff (lo maneja el SDK de openai internamente) suele resolver
+    # en un par de segundos extra, no en otros 30s completos. El SDK
+    # reintenta solo errores razonablemente reintentables (5xx, timeouts,
+    # rate limits), no cualquier fallo.
+    # Tradeoff honesto: en el peor caso patologico (cada intento agota los
+    # 30s completos sin responder nada), 2 reintentos podrian superar el
+    # timeout de 35s que ya tiene el frontend (frontend/src/api/triageApi.js)
+    # — en ese caso el usuario ve el mismo "tardo demasiado" que ya veria
+    # hoy con 0 reintentos, no es peor. El caso comun (503 rapido) es donde
+    # esto realmente ayuda, y es el que se vio repetidas veces en las
+    # corridas reales.
+    nvidia_max_retries: int = 2
     # 5173 es el puerto de "npm run dev" (Vite); 8080 es el puerto publicado
     # por el frontend en compose.yml. Configurable por env var para cuando
     # esto se despliegue en un dominio real — ver backend/README.md.
@@ -89,7 +104,7 @@ def get_settings() -> Settings:
         **settings_kwargs,
         nvidia_api_key=os.getenv("NVIDIA_API_KEY") or None,
         nvidia_timeout_seconds=float(os.getenv("NVIDIA_TIMEOUT_SECONDS", "30")),
-        nvidia_max_retries=int(os.getenv("NVIDIA_MAX_RETRIES", "0")),
+        nvidia_max_retries=int(os.getenv("NVIDIA_MAX_RETRIES", "2")),
         evidence_include_sensitive_payloads=os.getenv(
             "EVIDENCE_INCLUDE_SENSITIVE_PAYLOADS", "false"
         ).lower()
