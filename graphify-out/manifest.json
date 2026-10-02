@@ -306,8 +306,8 @@
     "semantic_hash": ""
   },
   "backend/tests/test_security_validator.py": {
-    "mtime": 1790912295.4624288,
-    "seen": 1790912394.6118615,
+    "mtime": 1790912424.4988751,
+    "seen": 1790912914.5184727,
     "ast_hash": "af93391082fe47fd82a39660680d9412",
     "semantic_hash": ""
   },
@@ -330,8 +330,8 @@
     "semantic_hash": "f8c732f2e0d16602c9691b6a2d411edb"
   },
   "evals/triage_parsing.py": {
-    "mtime": 1790912287.0575764,
-    "seen": 1790912394.6118672,
+    "mtime": 1790912424.4988751,
+    "seen": 1790912914.5184832,
     "ast_hash": "ffbe24e9b9c7a937449ca5525de14f41",
     "semantic_hash": ""
   },
@@ -348,28 +348,16 @@
     "semantic_hash": ""
   },
   "frontend/package.json": {
-    "mtime": 1790097389.077655,
-    "seen": 1790607532.5935242,
-    "ast_hash": "29564be88b60de27ba33fb0ea54b284d",
-    "semantic_hash": "29564be88b60de27ba33fb0ea54b284d"
+    "mtime": 1790913248.0541472,
+    "seen": 1790913788.0192575,
+    "ast_hash": "eae1e1e94d15cd40604e355a1e882741",
+    "semantic_hash": ""
   },
   "frontend/src/App.jsx": {
     "mtime": 1790097389.0824234,
     "seen": 1790607532.593525,
     "ast_hash": "7e3121d9d7ac7a1fbf55962751235e3c",
     "semantic_hash": "7e3121d9d7ac7a1fbf55962751235e3c"
-  },
-  "frontend/src/api/authApi.js": {
-    "mtime": 1790097389.0824234,
-    "seen": 1790607532.5935261,
-    "ast_hash": "96f0b7eafde0dc810b95f5232eed56a5",
-    "semantic_hash": "96f0b7eafde0dc810b95f5232eed56a5"
-  },
-  "frontend/src/api/triageApi.js": {
-    "mtime": 1790097389.0881433,
-    "seen": 1790607532.5935268,
-    "ast_hash": "314d637bcbccdb47b66442cf6d03a6d1",
-    "semantic_hash": "314d637bcbccdb47b66442cf6d03a6d1"
   },
   "frontend/src/components/AuthForm.jsx": {
     "mtime": 1790097389.089906,
@@ -425,17 +413,11 @@
     "ast_hash": "1c628cf237245b24394ada51f0e9a6b0",
     "semantic_hash": "1c628cf237245b24394ada51f0e9a6b0"
   },
-  "frontend/src/context/AuthContext.jsx": {
-    "mtime": 1790097389.0922637,
-    "seen": 1790607532.5935357,
-    "ast_hash": "f235b09a966930af80cf5ca14dc7fe99",
-    "semantic_hash": "f235b09a966930af80cf5ca14dc7fe99"
-  },
   "frontend/src/main.jsx": {
-    "mtime": 1790097389.0935278,
-    "seen": 1790607532.5935366,
-    "ast_hash": "d3d6e1c4526f3953e0cbff6d79ed678e",
-    "semantic_hash": "d3d6e1c4526f3953e0cbff6d79ed678e"
+    "mtime": 1790913016.8198512,
+    "seen": 1790913788.0192885,
+    "ast_hash": "b05368e78b29044b9a08a9e16a9b2cc0",
+    "semantic_hash": ""
   },
   "frontend/src/pages/LoginPage.jsx": {
     "mtime": 1790097389.0952108,
@@ -456,10 +438,10 @@
     "semantic_hash": "7d84a771fcec84037fe0f554036fb3ed"
   },
   "frontend/vite.config.js": {
-    "mtime": 1789086235.0,
-    "seen": 1790607532.5935402,
-    "ast_hash": "ee80d09370b6bfb1ad86efd9a737e411",
-    "semantic_hash": "ee80d09370b6bfb1ad86efd9a737e411"
+    "mtime": 1790912965.8280423,
+    "seen": 1790913788.0193005,
+    "ast_hash": "e470ef4d530e210e74cf9eab7e7a4d24",
+    "semantic_hash": ""
   },
   ".github/workflows/ci.yml": {
     "mtime": 1790608670.664548,
@@ -681,6 +663,66 @@
     "mtime": 1790912130.4753952,
     "seen": 1790912394.6119173,
     "ast_hash": "215d51eea47dcfa828a117f7b18f07c6",
+    "semantic_hash": ""
+  },
+  "frontend/src/api/authApi.ts": {
+    "mtime": 1790912798.0951037,
+    "seen": 1790912914.5184932,
+    "ast_hash": "1cc1e1758797254bf873b9a7a742acf0",
+    "semantic_hash": ""
+  },
+  "frontend/src/api/triageApi.ts": {
+    "mtime": 1790912807.401654,
+    "seen": 1790912914.518495,
+    "ast_hash": "8d7ec31de14d0a4691d4dd490b89c50a",
+    "semantic_hash": ""
+  },
+  "frontend/src/api/types.ts": {
+    "mtime": 1790912787.4969296,
+    "seen": 1790912914.518497,
+    "ast_hash": "07c0597df3d5f4754dbfc99bcb947f1c",
+    "semantic_hash": ""
+  },
+  "frontend/src/context/AuthContext.tsx": {
+    "mtime": 1790912818.1588247,
+    "seen": 1790912914.5185163,
+    "ast_hash": "6cbe21e79511fec0f8e3305bcd4fe6e0",
+    "semantic_hash": ""
+  },
+  "frontend/src/vite-env.d.ts": {
+    "mtime": 1790912874.0037408,
+    "seen": 1790912914.5185256,
+    "ast_hash": "0352474ba2918efe13895edbc3780d94",
+    "semantic_hash": ""
+  },
+  "frontend/tsconfig.json": {
+    "mtime": 1790912985.264557,
+    "seen": 1790913788.0192971,
+    "ast_hash": "cf299d1a41588c0e699be9c661c5f40f",
+    "semantic_hash": ""
+  },
+  "frontend/tsconfig.node.json": {
+    "mtime": 1790912862.89052,
+    "seen": 1790912914.518529,
+    "ast_hash": "ced5fc65d202a07fc5eac57dc9937d9b",
+    "semantic_hash": ""
+  },
+  "frontend/components.json": {
+    "mtime": 1790913147.700816,
+    "seen": 1790913788.0192542,
+    "ast_hash": "da4ab1be222353a93034a50fdb736bf0",
+    "semantic_hash": ""
+  },
+  "frontend/src/components/ui/button.tsx": {
+    "mtime": 1790913179.5746293,
+    "seen": 1790913788.0192804,
+    "ast_hash": "2700bddde0ac66fc6f2fc1b56fcfdc2d",
+    "semantic_hash": ""
+  },
+  "frontend/src/lib/utils.ts": {
+    "mtime": 1790913179.871289,
+    "seen": 1790913788.0192866,
+    "ast_hash": "0482d21cfeab8cfcfe44f94927e45afb",
     "semantic_hash": ""
   }
 }
