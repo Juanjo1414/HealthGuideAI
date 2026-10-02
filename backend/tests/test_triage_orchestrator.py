@@ -66,6 +66,23 @@ def test_escalates_when_red_flag_present_and_model_undertriages():
     assert result["requiere_revision"] is True
 
 
+def test_escalates_to_emergencia_even_when_model_already_says_alta():
+    """Hallazgo real (Sesion 7, corrida contra NVIDIA): 'red_flag_fiebre_bebe'
+    volvio a salir ALTA (no EMERGENCIA) y el override viejo lo toleraba
+    porque solo corregia prioridades POR DEBAJO de ALTA. Cada entrada de
+    RED_FLAG_KEYWORDS/PEDIATRIC_FEVER_PATTERN es EMERGENCIA segun la propia
+    rubrica (contract.PRIORITY_RUBRIC) — ALTA nunca deberia quedar sin
+    corregir cuando ya se detecto un red flag real."""
+    orchestrator = TriageOrchestrator(
+        FakeProvider(response=base_output(prioridad="ALTA", requiere_revision=False))
+    )
+
+    result = orchestrator.run("Mi bebe de 3 meses tiene fiebre de 39.5 grados.")
+
+    assert result["prioridad"] == "EMERGENCIA"
+    assert result["requiere_revision"] is True
+
+
 def test_does_not_downgrade_model_emergency_without_red_flag():
     """El motor hibrido no debe tocar nada cuando no hay red flag — si el
     modelo ya dijo EMERGENCIA por su cuenta, eso no se toca ni se explica de más."""

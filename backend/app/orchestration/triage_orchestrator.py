@@ -80,11 +80,23 @@ class TriageOrchestrator:
         if isinstance(output.get("prioridad"), str):
             output["prioridad"] = output["prioridad"].strip().upper()
 
-        if red_flags and output.get("prioridad") not in {"ALTA", "EMERGENCIA"}:
+        if red_flags and output.get("prioridad") != "EMERGENCIA":
             # El LLM ya no puede bajar esta clasificacion — el input tiene
             # una señal de alarma determinista, sin importar que haya
             # contestado el modelo. "Si hay duda, el nivel mas severo"
             # (mismo criterio que evals/CLINICAL_SAFETY_CATALOG.md).
+            #
+            # Hallazgo real (Sesion 7, corrida de evals contra NVIDIA real):
+            # esto antes toleraba "ALTA" sin corregir ("not in {ALTA,
+            # EMERGENCIA}"), asumiendo que ALTA ya era "suficientemente
+            # severo". red_flag_fiebre_bebe volvio a clasificar ALTA en esa
+            # corrida — un falso negativo real de EMERGENCIA, violando el gate
+            # bloqueante de CONSTRAINTS.md ("cero falsos negativos"). Cada
+            # entrada de RED_FLAG_KEYWORDS y PEDIATRIC_FEVER_PATTERN es,
+            # segun la propia rubrica del prompt (contract.PRIORITY_RUBRIC),
+            # un criterio de EMERGENCIA — no existe un red flag que la
+            # rubrica describa como "solo ALTA". Tolerar ALTA aca era una
+            # excepcion sin respaldo en la rubrica, no una regla real.
             output["prioridad"] = "EMERGENCIA"
         if red_flags:
             output["requiere_revision"] = True
