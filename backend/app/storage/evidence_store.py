@@ -33,8 +33,13 @@ class EvidenceStore:
         self, symptoms_text: str, model_output: dict, validation: dict, user_id: int | None = None
     ) -> str:
         request_id = str(uuid.uuid4())
-        symptoms_payload = symptoms_text if self._include_sensitive_payloads else None
-        output_payload = model_output if self._include_sensitive_payloads else None
+        # Decisión de producto (Sesión 10/11): quien crea una cuenta lo hace
+        # justamente para guardar su historial, así que con user_id el
+        # contenido se guarda siempre. Las consultas anónimas siguen sin
+        # guardar nada legible salvo que el flag global lo pida.
+        include_payload = self._include_sensitive_payloads or user_id is not None
+        symptoms_payload = symptoms_text if include_payload else None
+        output_payload = model_output if include_payload else None
         self._db.execute(
             """
             INSERT INTO evidence (
@@ -80,6 +85,31 @@ class EvidenceStore:
             ),
         )
         return request_id
+
+    def entries_for_user(self, user_id: int) -> list[dict]:
+        """Historial de un usuario, mas reciente primero — filtrado en SQL
+        (`WHERE user_id = ...`), no en Python, para que sea imposible que un
+        bug de la capa de arriba devuelva evidencia de otro usuario (ver
+        docs/PANTALLAS.md, pantalla 4: "control de autorizacion real, no
+        solo de UI"). `model_output` viaja completo solo si quedo guardado
+        (EVIDENCE_INCLUDE_SENSITIVE_PAYLOADS=true) — por defecto es NULL, y
+        el endpoint lo refleja honestamente en vez de inventar un resumen."""
+        rows = self._db.query_all(
+            """
+            SELECT request_id, "timestamp", model_priority, model_requires_review,
+                   validation, model_output, symptoms_text, provider_error_type
+            FROM evidence
+            WHERE user_id = %s AND provider_error_type IS NULL
+            ORDER BY "timestamp" DESC
+            """,
+            (user_id,),
+        )
+        return [dict(row) for row in rows]
+
+    def delete_for_user(self, user_id: int) -> None:
+        """Derecho al olvido desde la pantalla de Perfil — borra todas las
+        filas del usuario, no solo las oculta."""
+        self._db.execute("DELETE FROM evidence WHERE user_id = %s", (user_id,))
 
     def all_entries(self) -> list[dict]:
         """Todas las filas de evidencia, más nuevas primero. A propósito NO

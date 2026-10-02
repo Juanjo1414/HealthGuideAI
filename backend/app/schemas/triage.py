@@ -83,3 +83,28 @@ class TriageResponse(BaseModel):
     validation: ValidationSummary
     requires_human_review: bool
     request_id: str
+
+
+class HistoryEntry(BaseModel):
+    """Una fila del historial del usuario (GET /triage/history). A
+    diferencia de TriageResponse, casi todos los campos de contenido son
+    opcionales: `evidence.model_output` solo existe si el despliegue corre
+    con EVIDENCE_INCLUDE_SENSITIVE_PAYLOADS=true (ver evidence_store.py).
+    `detalle_disponible` le dice a la UI si puede mostrar el detalle
+    completo o si tiene que explicar honestamente que no se guardó."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    request_id: str
+    timestamp: str
+    prioridad: Priority | None
+    requiere_revision: bool
+    validation_passed: bool | None
+    detalle_disponible: bool
+    sintomas_texto: str | None = None
+    resumen: str | None = None
+    sintomas_detectados: list[str] | None = None
+    posibles_causas: list[str] | None = None
+    alertas: list[str] | None = None
+    recomendacion: str | None = None
+    confianza: float | None = None

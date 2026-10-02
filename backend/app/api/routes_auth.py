@@ -60,7 +60,7 @@ def signup(
 
     session = session_store.create(user.id)
     _set_session_cookie(response, session.token)
-    return UserResponse(id=user.id, email=user.email, role=user.role)
+    return UserResponse(id=user.id, email=user.email, role=user.role, created_at=user.created_at)
 
 
 @router.post(
@@ -81,7 +81,7 @@ def login(
 
     session = session_store.create(user.id)
     _set_session_cookie(response, session.token)
-    return UserResponse(id=user.id, email=user.email, role=user.role)
+    return UserResponse(id=user.id, email=user.email, role=user.role, created_at=user.created_at)
 
 
 @router.post("/auth/logout", status_code=204, summary="Cierra la sesión actual")
@@ -107,4 +107,9 @@ def logout(
     responses={401: {"description": "No hay sesión activa."}},
 )
 def me(current_user: User = Depends(require_authenticated)) -> UserResponse:
-    return UserResponse(id=current_user.id, email=current_user.email, role=current_user.role)
+    return UserResponse(
+        id=current_user.id,
+        email=current_user.email,
+        role=current_user.role,
+        created_at=current_user.created_at,
+    )
