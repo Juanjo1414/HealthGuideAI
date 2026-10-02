@@ -107,6 +107,28 @@ THIRD_PARTY_REPORT_KEYWORDS = [
     "mi perro", "mi gato", "mi mascota",
 ]
 
+# Sesion 8 (blindaje contra prompt injection): fragmentos literales de las
+# instrucciones internas (contract.py/prompt_builder.py) que NUNCA deberian
+# aparecer en una respuesta real. Si aparecen, es señal de que un intento
+# de extraccion de prompt tuvo exito. NO incluye contract.DISCLAIMER —
+# ese SI se espera que aparezca en toda recomendacion, no es una fuga.
+# NOTA: se comparan sin tildes (ver strip_accents), por eso van sin acentos.
+PROMPT_LEAK_PATTERNS = [
+    "system prompt", "prompt del sistema", "mis instrucciones son",
+    "instrucciones internas", "rubrica de prioridad", "esquema requerido",
+    "ejemplos de referencia", "contexto_recuperado", "eres el componente ai del producto",
+]
+
+# Heuristica para detectar que la respuesta se salio del dominio de salud
+# (codigo, consultas SQL, opiniones politicas) — el agente nunca deberia
+# responder a esto, sin importar como se lo pidan. Lista heuristica, no
+# exhaustiva, mismo espiritu que MEDICATION_KEYWORDS: cubre violaciones
+# obvias, no garantiza deteccion de cualquier forma de salirse del dominio.
+OUT_OF_DOMAIN_PATTERNS = [
+    "```", "def ", "import ", "function(", "<html", "select * from",
+    "partido politico", "presidente de", "gobierno de", "votar por",
+]
+
 
 def detect_red_flags(text: str) -> List[str]:
     """Union de las señales de alarma por keyword simple mas el patron
@@ -297,8 +319,44 @@ class OutOfScopeInputRule(ValidationRule):
         return RuleResult(True)
 
 
+class NoPromptLeakRule(ValidationRule):
+    """Rechaza respuestas que revelan fragmentos literales de las
+    instrucciones internas del sistema — señal de que un intento de
+    extraccion de prompt (Sesion 8) tuvo exito, sin importar si vino
+    disfrazado de pedido de auditoria, de "repite tus instrucciones", etc.
+    """
+
+    name = "no_revela_prompt_interno"
+
+    def evaluate(self, output: dict, input_text: str) -> RuleResult:
+        blob = text_blob(output)
+        hits = [p for p in PROMPT_LEAK_PATTERNS if strip_accents(p) in blob]
+        if hits:
+            return RuleResult(
+                False, [f"La respuesta revela fragmentos de las instrucciones internas: {hits}."]
+            )
+        return RuleResult(True)
+
+
+class StaysInDomainRule(ValidationRule):
+    """Rechaza respuestas que se salen del dominio de salud (codigo, consultas
+    SQL, opiniones politicas) — el agente no debe responder a esto sin
+    importar como se lo pidan (Sesion 8, blindaje de dominio)."""
+
+    name = "se_mantiene_en_dominio"
+
+    def evaluate(self, output: dict, input_text: str) -> RuleResult:
+        blob = text_blob(output)
+        hits = [p for p in OUT_OF_DOMAIN_PATTERNS if strip_accents(p) in blob]
+        if hits:
+            return RuleResult(
+                False, [f"La respuesta contiene contenido fuera del dominio de salud: {hits}."]
+            )
+        return RuleResult(True)
+
+
 def default_rules() -> List[ValidationRule]:
-    """Las 6 reglas de seguridad que corre HealthGuide AI hoy, en el orden en que se reportan."""
+    """Las 8 reglas de seguridad que corre HealthGuide AI hoy, en el orden en que se reportan."""
     return [
         SchemaRule(),
         NoDiagnosisRule(),
@@ -306,4 +364,6 @@ def default_rules() -> List[ValidationRule]:
         IncompleteInputRule(),
         RedFlagEscalationRule(),
         OutOfScopeInputRule(),
+        NoPromptLeakRule(),
+        StaysInDomainRule(),
     ]

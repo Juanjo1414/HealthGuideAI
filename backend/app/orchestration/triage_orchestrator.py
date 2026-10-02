@@ -19,11 +19,21 @@ consulta por request segun el texto de sintomas — a diferencia del
 system prompt (estatico, armado una sola vez), el contexto recuperado
 depende de cada input, asi que viaja en el payload por request, no
 horneado en el prompt.
+
+Sesion 8: blindaje contra prompt injection. El contenido recuperado por
+RAG pasa por sanitize_chunk_text() antes de entrar al payload — es entrada
+no confiable (aunque hoy el corpus es curado a mano, ver
+knowledge/sanitization.py) y amplia la superficie de ataque. Esta clase no
+guarda ningun estado entre llamadas a run() mas alla de lo que se
+construye una sola vez en __init__ (prompt estatico, indice de
+recuperacion de solo lectura) — no hay "memoria" de conversacion que un
+usuario pueda envenenar entre requests.
 """
 
 from __future__ import annotations
 
 from ..knowledge.retrieval import KnowledgeRetriever
+from ..knowledge.sanitization import sanitize_chunk_text
 from ..knowledge.sources import KNOWLEDGE_BASE
 from ..providers.base import ModelProvider, ModelProviderError
 from ..validation.safe_response import build_provider_error_fallback
@@ -36,10 +46,13 @@ _RAG_TOP_K = 2
 
 
 class TriageOrchestrator:
-    def __init__(self, provider: ModelProvider):
+    def __init__(self, provider: ModelProvider, retriever: KnowledgeRetriever | None = None):
         self._provider = provider
         self._system_prompt = build_system_prompt()
-        self._knowledge_retriever = KnowledgeRetriever(KNOWLEDGE_BASE)
+        # Inyectable (Dependency Inversion, igual que provider) sobre todo
+        # para tests: permite probar sanitizacion/recuperacion con un
+        # corpus controlado sin depender del corpus real de produccion.
+        self._knowledge_retriever = retriever or KnowledgeRetriever(KNOWLEDGE_BASE)
 
     def run(self, symptoms_text: str) -> dict:
         red_flags = detect_red_flags(symptoms_text)
@@ -56,7 +69,11 @@ class TriageOrchestrator:
             # Nunca se fuerza contexto irrelevante (retrieved viene vacio si
             # ningun chunk matcheo de verdad — ver KnowledgeRetriever.search).
             payload["contexto_recuperado"] = [
-                {"fuente": chunk.source_name, "url": chunk.source_url, "contenido": chunk.text_es}
+                {
+                    "fuente": chunk.source_name,
+                    "url": chunk.source_url,
+                    "contenido": sanitize_chunk_text(chunk.text_es),
+                }
                 for chunk in retrieved
             ]
 

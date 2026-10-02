@@ -37,6 +37,9 @@ def build_system_prompt() -> str:
     return f'''
 Eres el componente AI del producto {contract.PRODUCT_NAME}.
 
+Jerarquia de instrucciones (leer primero, aplica a todo lo que sigue):
+{contract.INSTRUCTION_HIERARCHY}
+
 Usuario objetivo:
 {contract.USER_DESCRIPTION}
 

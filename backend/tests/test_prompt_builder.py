@@ -39,6 +39,18 @@ def test_prompt_still_forbids_medication_and_diagnosis():
     assert "diagnostiques" in prompt.lower()
 
 
+def test_prompt_includes_instruction_hierarchy():
+    """Sesion 8: la jerarquia de instrucciones tiene que estar en el prompt
+    y aparecer antes que el resto de las reglas, para que el modelo la lea
+    primero."""
+    prompt = build_system_prompt()
+
+    assert contract.INSTRUCTION_HIERARCHY in prompt
+    jerarquia_pos = prompt.index(contract.INSTRUCTION_HIERARCHY)
+    rubrica_pos = prompt.index(contract.PRIORITY_RUBRIC["EMERGENCIA"])
+    assert jerarquia_pos < rubrica_pos
+
+
 def test_prompt_includes_rag_instructions():
     """Sesion 7: el prompt tiene que explicar como usar y citar
     'contexto_recuperado', o el modelo no sabria que hacer con el."""
