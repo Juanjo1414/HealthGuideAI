@@ -480,9 +480,9 @@
     "semantic_hash": ""
   },
   "CONSTRAINTS.md": {
-    "mtime": 1790899790.265263,
-    "seen": 1790910898.2450457,
-    "ast_hash": "74653f7a1862e6fa397bf3edc3e6e41d",
+    "mtime": 1790911669.2854385,
+    "seen": 1790911780.8718143,
+    "ast_hash": "5f674c3cc05fcb1ee6f5f0d7c592b73c",
     "semantic_hash": ""
   },
   "DECISION_LOG.md": {
@@ -552,9 +552,9 @@
     "semantic_hash": "a9bc13f4eb90c3f7ba70e02beda1a619"
   },
   "docs/PLAN_IMPLEMENTACION.md": {
-    "mtime": 1790899795.5076365,
-    "seen": 1790910898.2450721,
-    "ast_hash": "fc3593fc23403b0a0a46ea0e8ee16b29",
+    "mtime": 1790911733.5821295,
+    "seen": 1790911780.8718376,
+    "ast_hash": "c3579e9cc3f6004d426312256e8cdfff",
     "semantic_hash": ""
   },
   "docs/arquitectura.md": {
@@ -582,9 +582,9 @@
     "semantic_hash": ""
   },
   "evals/results.md": {
-    "mtime": 1790899630.932609,
-    "seen": 1790910898.2450805,
-    "ast_hash": "6dbe196f4d3095f56768aef47facef5f",
+    "mtime": 1790911692.533883,
+    "seen": 1790911780.8718488,
+    "ast_hash": "0bc4f5d30f4b387b3c3ec3cb3731a05c",
     "semantic_hash": ""
   },
   "frontend/README.md": {
@@ -678,9 +678,9 @@
     "semantic_hash": ""
   },
   "evals/adversarial_report.md": {
-    "mtime": 1790911351.9333167,
-    "seen": 1790911483.4771385,
-    "ast_hash": "a36d4a2d510a57a5c10f9a50522c053d",
+    "mtime": 1790911587.4412594,
+    "seen": 1790911780.871845,
+    "ast_hash": "215d51eea47dcfa828a117f7b18f07c6",
     "semantic_hash": ""
   }
 }
