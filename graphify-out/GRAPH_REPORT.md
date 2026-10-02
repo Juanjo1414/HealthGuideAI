@@ -1,17 +1,17 @@
 # Graph Report - HealthGuideAI  (2026-10-01)
 
 ## Corpus Check
-- 105 files · ~161,440 words
+- 105 files · ~161,582 words
 - Verdict: corpus is large enough that graph structure adds value.
 - Unclassified: 22 file(s) not represented in the graph (top: (none) 8, .csv 4, .example 2)
 
 ## Summary
-- 809 nodes · 1602 edges · 35 communities (27 shown, 8 thin omitted)
+- 812 nodes · 1609 edges · 34 communities (26 shown, 8 thin omitted)
 - Extraction: 94% EXTRACTED · 6% INFERRED · 0% AMBIGUOUS · INFERRED: 90 edges (avg confidence: 0.88)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `ad1381c9`
+- Built from commit: `e6533e5f`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -25,11 +25,11 @@
 - csrf.py
 - PLAN_IMPLEMENTACION.md — roadmap de 14 sesiones
 - test_gateway.py
-- validate_triage_output.py
+- HealthGuideAI - Diagrama de Arquitectura (v2)
 - run_adversarial_suite.py
 - Reporte del set adversarial (Sesión 8 — blindaje contra prompt injection)
 - Capas del Diagrama de Arquitectura
-- Config de Build del Frontend
+- sanitize_chunk_text
 - Decision NVIDIA vs Gemini y Revision de Mentores
 - Bugs Documentados en CLAUDE.md
 - CI y Requisitos de Escalabilidad
@@ -42,7 +42,6 @@
 - Skill de Refactor de Archivos Grandes
 - Docker Entrypoint
 - KnowledgeRetriever
-- build_system_prompt
 - validate_triage_output
 - Exception
 - ABC
@@ -52,7 +51,7 @@
 ## God Nodes (most connected - your core abstractions)
 1. `Database` - 33 edges
 2. `get_settings()` - 30 edges
-3. `validate_triage_output()` - 25 edges
+3. `validate_triage_output()` - 27 edges
 4. `KnowledgeRetriever` - 23 edges
 5. `TriageOrchestrator` - 21 edges
 6. `Diagrama de Arquitectura — HealthGuideAI` - 20 edges
@@ -84,7 +83,7 @@
 - **Evidencia consolidada de la decisión NVIDIA vs Gemini** — decision_log_decision1_nvidia_vs_gemini, decision_table_doc, readme_known_failures, claude_md_notebook_gemini [INFERRED 0.85]
 - **Flujo compartido de validación de seguridad del triage (notebook + backend + evals)** — claude_md_output_contract, decision_log_validate_triage_output, backend_readme_doc, constraints_enforced_table [INFERRED 0.85]
 
-## Communities (35 total, 8 thin omitted)
+## Communities (34 total, 8 thin omitted)
 
 ### Community 0 - "dependencies.py"
 Cohesion: 0.05
@@ -95,16 +94,16 @@ Cohesion: 0.07
 Nodes (45): get_current_user(), Devuelve el usuario autenticado si la cookie de sesion es valida, o None si no…, login(), logout(), me(), get, post, Response (+37 more)
 
 ### Community 2 - "Frontend React App"
-Cohesion: 0.08
-Nodes (40): AuthApiError, authRequest(), getCurrentUser(), login(), logout(), signup(), requestTriage(), TriageApiError (+32 more)
+Cohesion: 0.05
+Nodes (58): dependencies, react, react-dom, react-router-dom, devDependencies, vite, @vitejs/plugin-react, name (+50 more)
 
 ### Community 3 - "triage_rules.py"
 Cohesion: 0.06
-Nodes (48): ABC, detect_red_flags(), Capa determinista de red flags (Sesion 6) — corre ANTES de llamar al modelo,…, Señales de alarma detectadas en el texto del usuario (lista vacía si ninguna)., El input real puede venir sin tildes — el chequeo tiene que matchear igual., No dos formas de detectar red flags que se puedan desincronizar — entrada (este…, Hallazgo real de la Sesion 6: 'red_flag_fiebre_bebe' clasificaba ALTA en vez de…, No todo lo que menciona fiebre es un red flag — sin la combinacion con edad de… (+40 more)
+Nodes (50): ABC, detect_red_flags(), Capa determinista de red flags (Sesion 6) — corre ANTES de llamar al modelo,…, Señales de alarma detectadas en el texto del usuario (lista vacía si ninguna)., El input real puede venir sin tildes — el chequeo tiene que matchear igual., No dos formas de detectar red flags que se puedan desincronizar — entrada (este…, Hallazgo real de la Sesion 6: 'red_flag_fiebre_bebe' clasificaba ALTA en vez de…, No todo lo que menciona fiebre es un red flag — sin la combinacion con edad de… (+42 more)
 
 ### Community 4 - "test_triage_orchestrator.py"
-Cohesion: 0.08
-Nodes (38): create_triage(), post, TriageOrchestrator, ModelProvider, ModelProviderError, ABC, Capa de modelo — la interfaz que resuelve el pendiente de DECISION_LOG.md…, El proveedor no pudo devolver un JSON usable (timeout, respuesta invalida,… (+30 more)
+Cohesion: 0.06
+Nodes (54): El contrato de producto es estable — ya fue validado por el modelo en la Parte…, build_system_prompt(), _format_few_shot(), _format_rubric(), Arma SYSTEM_PROTOTYPE a partir del contrato — mismo texto base que construye…, ModelProvider, Capa de orquestacion — equivalente a run_prototype() en el notebook, pero…, TriageOrchestrator (+46 more)
 
 ### Community 5 - "_is_flagged"
 Cohesion: 0.48
@@ -122,9 +121,9 @@ Nodes (49): Backend service (compose.yml), Frontend service (compose.yml), Gatew
 Cohesion: 0.06
 Nodes (12): Tests del CSRFOriginCheckMiddleware — verificacion de origen para metodos que…, Un cliente que no es navegador (curl, un test, un futuro cliente movil) no…, Simula "Try it out" en /docs: el Origin es el propio backend, no está en…, Algunos navegadores viejos no mandan Origin en same-origin POST, pero sí…, test_post_falls_back_to_referer_when_origin_missing(), test_post_from_backends_own_origin_is_allowed(), test_post_without_origin_or_referer_is_allowed(), Tests de la capa de gateway agregada en la Sesion 3: versionado (/api/v1 vs… (+4 more)
 
-### Community 9 - "validate_triage_output.py"
+### Community 9 - "HealthGuideAI - Diagrama de Arquitectura (v2)"
 Cohesion: 0.14
-Nodes (23): BaseModel, field_validator, Esquemas de la API. TriageResponse envuelve el contrato de salida fijo de…, TriageRequest, TriageResponse, ValidationSummary, 4. Configurador de Prompt, HealthGuideAI - Diagrama de Arquitectura (v2) (+15 more)
+Nodes (23): create_triage(), post, BaseModel, field_validator, Esquemas de la API. TriageResponse envuelve el contrato de salida fijo de…, TriageRequest, TriageResponse, ValidationSummary (+15 more)
 
 ### Community 10 - "run_adversarial_suite.py"
 Cohesion: 0.08
@@ -134,9 +133,9 @@ Nodes (25): app_orchestration_triage_orchestrator, app_providers_base, app_provi
 Cohesion: 0.23
 Nodes (21): Capa de Almacenamiento / Evidencia, Capa de API / Gateway, Capa de Canal, Capa de Modelo (intercambiable), Capa de Orquestación, Capa de Validación (dominio, sin LLM), contract (JTBD, output_fields, reglas del dominio), DECISION_LOG.md (+13 more)
 
-### Community 13 - "Config de Build del Frontend"
-Cohesion: 0.11
-Nodes (18): dependencies, react, react-dom, react-router-dom, devDependencies, vite, @vitejs/plugin-react, name (+10 more)
+### Community 13 - "sanitize_chunk_text"
+Cohesion: 0.29
+Nodes (9): Sesion 8 (blindaje contra prompt injection): sanitiza el contenido recuperado…, Si el texto de un chunk contiene un patron de inyeccion reconocible, se…, sanitize_chunk_text(), test_clean_text_passes_through_unchanged(), test_redacts_text_with_bracketed_system_marker(), test_redacts_text_with_english_injection_pattern(), test_redacts_text_with_ignore_instructions_pattern(), test_redacts_text_with_you_are_now_pattern() (+1 more)
 
 ### Community 14 - "Decision NVIDIA vs Gemini y Revision de Mentores"
 Cohesion: 0.17
@@ -175,16 +174,12 @@ Cohesion: 0.67
 Nodes (3): Umbral de 100 líneas para refactor, Sub-agente context-gatherer, Skill: refactor-large-files
 
 ### Community 28 - "KnowledgeRetriever"
-Cohesion: 0.07
-Nodes (36): KnowledgeRetriever, Motor de recuperacion local tipo BM25 (Sesion 7) para la base de conocimiento…, Hasta top_k chunks relevantes, o lista vacia si nada matchea. Una consulta sin…, Indice BM25 en memoria sobre una lista de KnowledgeChunk., RetrievedChunk, tokenize(), Sesion 8 (blindaje contra prompt injection): sanitiza el contenido recuperado…, Si el texto de un chunk contiene un patron de inyeccion reconocible, se… (+28 more)
-
-### Community 32 - "build_system_prompt"
-Cohesion: 0.14
-Nodes (17): El contrato de producto es estable — ya fue validado por el modelo en la Parte…, build_system_prompt(), _format_few_shot(), _format_rubric(), Arma SYSTEM_PROTOTYPE a partir del contrato — mismo texto base que construye…, ModelProvider, Tests de que la rúbrica, los ejemplos few-shot y el disclaimer reforzado…, No perder las reglas que ya funcionaban al agregar todo lo nuevo. (+9 more)
+Cohesion: 0.10
+Nodes (26): KnowledgeRetriever, Motor de recuperacion local tipo BM25 (Sesion 7) para la base de conocimiento…, Hasta top_k chunks relevantes, o lista vacia si nada matchea. Una consulta sin…, Indice BM25 en memoria sobre una lista de KnowledgeChunk., RetrievedChunk, tokenize(), KnowledgeChunk, Corpus curado para RAG (Sesion 7). Cada entrada es una fuente de salud publica… (+18 more)
 
 ### Community 33 - "validate_triage_output"
 Cohesion: 0.11
-Nodes (29): Any, build_provider_error_fallback(), build_safe_fallback(), Respuestas deterministas para cuando no se puede confiar en el modelo — ni en…, Sesion 6, gate de salida del mentor (MAKERS_ACCEPTANCE.md): "ningún fallo del…, Sesion 8: hallazgo real corriendo el set adversarial contra NVIDIA —…, El caso real que expuso el bug: un input que pide dosis de medicamento no debe…, test_provider_error_fallback_always_passes_its_own_validator() (+21 more)
+Nodes (32): Any, build_provider_error_fallback(), build_safe_fallback(), Respuestas deterministas para cuando no se puede confiar en el modelo — ni en…, Sesion 6, gate de salida del mentor (MAKERS_ACCEPTANCE.md): "ningún fallo del…, Sesion 8: hallazgo real corriendo el set adversarial contra NVIDIA —…, El caso real que expuso el bug: un input que pide dosis de medicamento no debe…, test_provider_error_fallback_always_passes_its_own_validator() (+24 more)
 
 ### Community 39 - "errors.py"
 Cohesion: 0.26
@@ -196,18 +191,18 @@ Nodes (41): _check_postgres(), _check_redis(), liveness(), get, Redis, Response,
 
 ## Knowledge Gaps
 - **45 isolated node(s):** `Resultado por caso`, `react`, `react-dom`, `react-router-dom`, `vite` (+40 more)
-  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 280 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
+  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 281 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
 - **8 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
 - **Why does `Decisión 4: alcance honesto de requiere_revision` connect `backend/README.md` to `dependencies.py`?**
-  _High betweenness centrality (0.135) - this node is a cross-community bridge._
+  _High betweenness centrality (0.134) - this node is a cross-community bridge._
 - **Why does `get_settings()` connect `dependencies.py` to `Database`, `routes_auth.py`, `run_adversarial_suite.py`, `csrf.py`?**
   _High betweenness centrality (0.066) - this node is a cross-community bridge._
-- **Why does `Database` connect `Database` to `dependencies.py`, `routes_auth.py`?**
-  _High betweenness centrality (0.047) - this node is a cross-community bridge._
+- **Why does `validate_triage_output()` connect `validate_triage_output` to `run_adversarial_suite.py`, `triage_rules.py`, `test_triage_orchestrator.py`?**
+  _High betweenness centrality (0.049) - this node is a cross-community bridge._
 - **Are the 11 inferred relationships involving `Database` (e.g. with `_ensure_admin_seeded()` and `get_db()`) actually correct?**
   _`Database` has 11 INFERRED edges - model-reasoned connections that need verification._
 - **Are the 4 inferred relationships involving `TriageOrchestrator` (e.g. with `get_triage_orchestrator()` and `create_triage()`) actually correct?**

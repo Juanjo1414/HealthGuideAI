@@ -630,7 +630,7 @@
       "_callable_class": true,
       "_origin": "ast",
       "community": 9,
-      "community_name": "validate_triage_output.py",
+      "community_name": "HealthGuideAI - Diagrama de Arquitectura (v2)",
       "file_type": "code",
       "norm_label": "triagerequest",
       "source_file": "backend/app/schemas/triage.py",
@@ -643,7 +643,7 @@
       "_callable_class": true,
       "_origin": "ast",
       "community": 9,
-      "community_name": "validate_triage_output.py",
+      "community_name": "HealthGuideAI - Diagrama de Arquitectura (v2)",
       "file_type": "code",
       "norm_label": "triageresponse",
       "source_file": "backend/app/schemas/triage.py",
@@ -656,7 +656,7 @@
       "_callable_class": true,
       "_origin": "ast",
       "community": 9,
-      "community_name": "validate_triage_output.py",
+      "community_name": "HealthGuideAI - Diagrama de Arquitectura (v2)",
       "file_type": "code",
       "norm_label": "validationsummary",
       "source_file": "backend/app/schemas/triage.py",
@@ -1299,18 +1299,6 @@
       "source_location": "L56"
     },
     {
-      "id": "backend_app_storage_user_store_userstore_init",
-      "label": ".__init__()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 1,
-      "community_name": "routes_auth.py",
-      "file_type": "code",
-      "norm_label": ".__init__()",
-      "source_file": "backend/app/storage/user_store.py",
-      "source_location": "L28"
-    },
-    {
       "id": "backend_app_storage_user_store_userstore_row_to_user",
       "label": "._row_to_user()",
       "_callable": true,
@@ -1609,6 +1597,78 @@
       "norm_label": "main()",
       "source_file": "evals/run_priority_metrics.py",
       "source_location": "L33"
+    },
+    {
+      "id": "backend_app_knowledge_sanitization_sanitize_chunk_text",
+      "label": "sanitize_chunk_text()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 13,
+      "community_name": "sanitize_chunk_text",
+      "file_type": "code",
+      "norm_label": "sanitize_chunk_text()",
+      "source_file": "backend/app/knowledge/sanitization.py",
+      "source_location": "L30"
+    },
+    {
+      "id": "backend_tests_test_knowledge_sanitization_test_clean_text_passes_through_unchanged",
+      "label": "test_clean_text_passes_through_unchanged()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 13,
+      "community_name": "sanitize_chunk_text",
+      "file_type": "code",
+      "norm_label": "test_clean_text_passes_through_unchanged()",
+      "source_file": "backend/tests/test_knowledge_sanitization.py",
+      "source_location": "L4"
+    },
+    {
+      "id": "backend_tests_test_knowledge_sanitization_test_redacts_text_with_bracketed_system_marker",
+      "label": "test_redacts_text_with_bracketed_system_marker()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 13,
+      "community_name": "sanitize_chunk_text",
+      "file_type": "code",
+      "norm_label": "test_redacts_text_with_bracketed_system_marker()",
+      "source_file": "backend/tests/test_knowledge_sanitization.py",
+      "source_location": "L19"
+    },
+    {
+      "id": "backend_tests_test_knowledge_sanitization_test_redacts_text_with_english_injection_pattern",
+      "label": "test_redacts_text_with_english_injection_pattern()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 13,
+      "community_name": "sanitize_chunk_text",
+      "file_type": "code",
+      "norm_label": "test_redacts_text_with_english_injection_pattern()",
+      "source_file": "backend/tests/test_knowledge_sanitization.py",
+      "source_location": "L14"
+    },
+    {
+      "id": "backend_tests_test_knowledge_sanitization_test_redacts_text_with_ignore_instructions_pattern",
+      "label": "test_redacts_text_with_ignore_instructions_pattern()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 13,
+      "community_name": "sanitize_chunk_text",
+      "file_type": "code",
+      "norm_label": "test_redacts_text_with_ignore_instructions_pattern()",
+      "source_file": "backend/tests/test_knowledge_sanitization.py",
+      "source_location": "L9"
+    },
+    {
+      "id": "backend_tests_test_knowledge_sanitization_test_redacts_text_with_you_are_now_pattern",
+      "label": "test_redacts_text_with_you_are_now_pattern()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 13,
+      "community_name": "sanitize_chunk_text",
+      "file_type": "code",
+      "norm_label": "test_redacts_text_with_you_are_now_pattern()",
+      "source_file": "backend/tests/test_knowledge_sanitization.py",
+      "source_location": "L24"
     },
     {
       "id": "frontend_src_api_authapi_authapierror_constructor",
@@ -2079,18 +2139,6 @@
       "source_location": "L48"
     },
     {
-      "id": "backend_app_knowledge_sanitization_sanitize_chunk_text",
-      "label": "sanitize_chunk_text()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 28,
-      "community_name": "KnowledgeRetriever",
-      "file_type": "code",
-      "norm_label": "sanitize_chunk_text()",
-      "source_file": "backend/app/knowledge/sanitization.py",
-      "source_location": "L30"
-    },
-    {
       "id": "backend_tests_test_knowledge_retrieval_test_empty_corpus_returns_empty",
       "label": "test_empty_corpus_returns_empty()",
       "_callable": true,
@@ -2161,66 +2209,6 @@
       "norm_label": "test_search_returns_most_relevant_chunk_first()",
       "source_file": "backend/tests/test_knowledge_retrieval.py",
       "source_location": "L23"
-    },
-    {
-      "id": "backend_tests_test_knowledge_sanitization_test_clean_text_passes_through_unchanged",
-      "label": "test_clean_text_passes_through_unchanged()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 28,
-      "community_name": "KnowledgeRetriever",
-      "file_type": "code",
-      "norm_label": "test_clean_text_passes_through_unchanged()",
-      "source_file": "backend/tests/test_knowledge_sanitization.py",
-      "source_location": "L4"
-    },
-    {
-      "id": "backend_tests_test_knowledge_sanitization_test_redacts_text_with_bracketed_system_marker",
-      "label": "test_redacts_text_with_bracketed_system_marker()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 28,
-      "community_name": "KnowledgeRetriever",
-      "file_type": "code",
-      "norm_label": "test_redacts_text_with_bracketed_system_marker()",
-      "source_file": "backend/tests/test_knowledge_sanitization.py",
-      "source_location": "L19"
-    },
-    {
-      "id": "backend_tests_test_knowledge_sanitization_test_redacts_text_with_english_injection_pattern",
-      "label": "test_redacts_text_with_english_injection_pattern()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 28,
-      "community_name": "KnowledgeRetriever",
-      "file_type": "code",
-      "norm_label": "test_redacts_text_with_english_injection_pattern()",
-      "source_file": "backend/tests/test_knowledge_sanitization.py",
-      "source_location": "L14"
-    },
-    {
-      "id": "backend_tests_test_knowledge_sanitization_test_redacts_text_with_ignore_instructions_pattern",
-      "label": "test_redacts_text_with_ignore_instructions_pattern()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 28,
-      "community_name": "KnowledgeRetriever",
-      "file_type": "code",
-      "norm_label": "test_redacts_text_with_ignore_instructions_pattern()",
-      "source_file": "backend/tests/test_knowledge_sanitization.py",
-      "source_location": "L9"
-    },
-    {
-      "id": "backend_tests_test_knowledge_sanitization_test_redacts_text_with_you_are_now_pattern",
-      "label": "test_redacts_text_with_you_are_now_pattern()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 28,
-      "community_name": "KnowledgeRetriever",
-      "file_type": "code",
-      "norm_label": "test_redacts_text_with_you_are_now_pattern()",
-      "source_file": "backend/tests/test_knowledge_sanitization.py",
-      "source_location": "L24"
     },
     {
       "id": "backend_tests_test_knowledge_sources_test_anaphylaxis_query_retrieves_cleveland_clinic_source",
@@ -2571,126 +2559,6 @@
       "source_location": "L70"
     },
     {
-      "id": "backend_app_orchestration_prompt_builder_build_system_prompt",
-      "label": "build_system_prompt()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 32,
-      "community_name": "build_system_prompt",
-      "file_type": "code",
-      "norm_label": "build_system_prompt()",
-      "source_file": "backend/app/orchestration/prompt_builder.py",
-      "source_location": "L36"
-    },
-    {
-      "id": "backend_app_orchestration_prompt_builder_format_few_shot",
-      "label": "_format_few_shot()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 32,
-      "community_name": "build_system_prompt",
-      "file_type": "code",
-      "norm_label": "_format_few_shot()",
-      "source_file": "backend/app/orchestration/prompt_builder.py",
-      "source_location": "L25"
-    },
-    {
-      "id": "backend_app_orchestration_prompt_builder_format_rubric",
-      "label": "_format_rubric()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 32,
-      "community_name": "build_system_prompt",
-      "file_type": "code",
-      "norm_label": "_format_rubric()",
-      "source_file": "backend/app/orchestration/prompt_builder.py",
-      "source_location": "L18"
-    },
-    {
-      "id": "backend_app_orchestration_triage_orchestrator_triageorchestrator_init",
-      "label": ".__init__()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 32,
-      "community_name": "build_system_prompt",
-      "file_type": "code",
-      "norm_label": ".__init__()",
-      "source_file": "backend/app/orchestration/triage_orchestrator.py",
-      "source_location": "L49"
-    },
-    {
-      "id": "backend_tests_test_prompt_builder_test_prompt_includes_disclaimer",
-      "label": "test_prompt_includes_disclaimer()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 32,
-      "community_name": "build_system_prompt",
-      "file_type": "code",
-      "norm_label": "test_prompt_includes_disclaimer()",
-      "source_file": "backend/tests/test_prompt_builder.py",
-      "source_location": "L20"
-    },
-    {
-      "id": "backend_tests_test_prompt_builder_test_prompt_includes_few_shot_examples",
-      "label": "test_prompt_includes_few_shot_examples()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 32,
-      "community_name": "build_system_prompt",
-      "file_type": "code",
-      "norm_label": "test_prompt_includes_few_shot_examples()",
-      "source_file": "backend/tests/test_prompt_builder.py",
-      "source_location": "L26"
-    },
-    {
-      "id": "backend_tests_test_prompt_builder_test_prompt_includes_instruction_hierarchy",
-      "label": "test_prompt_includes_instruction_hierarchy()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 32,
-      "community_name": "build_system_prompt",
-      "file_type": "code",
-      "norm_label": "test_prompt_includes_instruction_hierarchy()",
-      "source_file": "backend/tests/test_prompt_builder.py",
-      "source_location": "L42"
-    },
-    {
-      "id": "backend_tests_test_prompt_builder_test_prompt_includes_rag_instructions",
-      "label": "test_prompt_includes_rag_instructions()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 32,
-      "community_name": "build_system_prompt",
-      "file_type": "code",
-      "norm_label": "test_prompt_includes_rag_instructions()",
-      "source_file": "backend/tests/test_prompt_builder.py",
-      "source_location": "L54"
-    },
-    {
-      "id": "backend_tests_test_prompt_builder_test_prompt_includes_rubric_for_all_priority_levels",
-      "label": "test_prompt_includes_rubric_for_all_priority_levels()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 32,
-      "community_name": "build_system_prompt",
-      "file_type": "code",
-      "norm_label": "test_prompt_includes_rubric_for_all_priority_levels()",
-      "source_file": "backend/tests/test_prompt_builder.py",
-      "source_location": "L13"
-    },
-    {
-      "id": "backend_tests_test_prompt_builder_test_prompt_still_forbids_medication_and_diagnosis",
-      "label": "test_prompt_still_forbids_medication_and_diagnosis()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 32,
-      "community_name": "build_system_prompt",
-      "file_type": "code",
-      "norm_label": "test_prompt_still_forbids_medication_and_diagnosis()",
-      "source_file": "backend/tests/test_prompt_builder.py",
-      "source_location": "L34"
-    },
-    {
       "id": "backend_app_orchestration_triage_orchestrator_triageorchestrator_run",
       "label": ".run()",
       "_callable": true,
@@ -2784,7 +2652,7 @@
       "file_type": "code",
       "norm_label": "test_accepts_normal_response_within_domain()",
       "source_file": "backend/tests/test_security_validator.py",
-      "source_location": "L113"
+      "source_location": "L137"
     },
     {
       "id": "backend_tests_test_security_validator_test_accepts_normal_response_without_prompt_leak",
@@ -2835,6 +2703,18 @@
       "source_location": "L19"
     },
     {
+      "id": "backend_tests_test_security_validator_test_rejects_medication_leaked_through_sintomas_detectados",
+      "label": "test_rejects_medication_leaked_through_sintomas_detectados()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 33,
+      "community_name": "validate_triage_output",
+      "file_type": "code",
+      "norm_label": "test_rejects_medication_leaked_through_sintomas_detectados()",
+      "source_file": "backend/tests/test_security_validator.py",
+      "source_location": "L113"
+    },
+    {
       "id": "backend_tests_test_security_validator_test_rejects_non_object_json",
       "label": "test_rejects_non_object_json()",
       "_callable": true,
@@ -2845,6 +2725,18 @@
       "norm_label": "test_rejects_non_object_json()",
       "source_file": "backend/tests/test_security_validator.py",
       "source_location": "L38"
+    },
+    {
+      "id": "backend_tests_test_security_validator_test_rejects_prompt_leak_through_sintomas_detectados",
+      "label": "test_rejects_prompt_leak_through_sintomas_detectados()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 33,
+      "community_name": "validate_triage_output",
+      "file_type": "code",
+      "norm_label": "test_rejects_prompt_leak_through_sintomas_detectados()",
+      "source_file": "backend/tests/test_security_validator.py",
+      "source_location": "L127"
     },
     {
       "id": "backend_tests_test_security_validator_test_rejects_response_that_leaks_internal_prompt_fragments",
@@ -3015,16 +2907,52 @@
       "source_location": "L45"
     },
     {
-      "id": "backend_app_api_routes_triage_create_triage",
-      "label": "create_triage()",
+      "id": "backend_app_orchestration_prompt_builder_build_system_prompt",
+      "label": "build_system_prompt()",
       "_callable": true,
       "_origin": "ast",
       "community": 4,
       "community_name": "test_triage_orchestrator.py",
       "file_type": "code",
-      "norm_label": "create_triage()",
-      "source_file": "backend/app/api/routes_triage.py",
-      "source_location": "L40"
+      "norm_label": "build_system_prompt()",
+      "source_file": "backend/app/orchestration/prompt_builder.py",
+      "source_location": "L36"
+    },
+    {
+      "id": "backend_app_orchestration_prompt_builder_format_few_shot",
+      "label": "_format_few_shot()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 4,
+      "community_name": "test_triage_orchestrator.py",
+      "file_type": "code",
+      "norm_label": "_format_few_shot()",
+      "source_file": "backend/app/orchestration/prompt_builder.py",
+      "source_location": "L25"
+    },
+    {
+      "id": "backend_app_orchestration_prompt_builder_format_rubric",
+      "label": "_format_rubric()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 4,
+      "community_name": "test_triage_orchestrator.py",
+      "file_type": "code",
+      "norm_label": "_format_rubric()",
+      "source_file": "backend/app/orchestration/prompt_builder.py",
+      "source_location": "L18"
+    },
+    {
+      "id": "backend_app_orchestration_triage_orchestrator_triageorchestrator_init",
+      "label": ".__init__()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 4,
+      "community_name": "test_triage_orchestrator.py",
+      "file_type": "code",
+      "norm_label": ".__init__()",
+      "source_file": "backend/app/orchestration/triage_orchestrator.py",
+      "source_location": "L49"
     },
     {
       "id": "backend_app_providers_base_modelprovider_generate_json",
@@ -3061,6 +2989,78 @@
       "norm_label": ".__init__()",
       "source_file": "backend/app/providers/nvidia_provider.py",
       "source_location": "L22"
+    },
+    {
+      "id": "backend_tests_test_prompt_builder_test_prompt_includes_disclaimer",
+      "label": "test_prompt_includes_disclaimer()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 4,
+      "community_name": "test_triage_orchestrator.py",
+      "file_type": "code",
+      "norm_label": "test_prompt_includes_disclaimer()",
+      "source_file": "backend/tests/test_prompt_builder.py",
+      "source_location": "L20"
+    },
+    {
+      "id": "backend_tests_test_prompt_builder_test_prompt_includes_few_shot_examples",
+      "label": "test_prompt_includes_few_shot_examples()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 4,
+      "community_name": "test_triage_orchestrator.py",
+      "file_type": "code",
+      "norm_label": "test_prompt_includes_few_shot_examples()",
+      "source_file": "backend/tests/test_prompt_builder.py",
+      "source_location": "L26"
+    },
+    {
+      "id": "backend_tests_test_prompt_builder_test_prompt_includes_instruction_hierarchy",
+      "label": "test_prompt_includes_instruction_hierarchy()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 4,
+      "community_name": "test_triage_orchestrator.py",
+      "file_type": "code",
+      "norm_label": "test_prompt_includes_instruction_hierarchy()",
+      "source_file": "backend/tests/test_prompt_builder.py",
+      "source_location": "L42"
+    },
+    {
+      "id": "backend_tests_test_prompt_builder_test_prompt_includes_rag_instructions",
+      "label": "test_prompt_includes_rag_instructions()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 4,
+      "community_name": "test_triage_orchestrator.py",
+      "file_type": "code",
+      "norm_label": "test_prompt_includes_rag_instructions()",
+      "source_file": "backend/tests/test_prompt_builder.py",
+      "source_location": "L54"
+    },
+    {
+      "id": "backend_tests_test_prompt_builder_test_prompt_includes_rubric_for_all_priority_levels",
+      "label": "test_prompt_includes_rubric_for_all_priority_levels()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 4,
+      "community_name": "test_triage_orchestrator.py",
+      "file_type": "code",
+      "norm_label": "test_prompt_includes_rubric_for_all_priority_levels()",
+      "source_file": "backend/tests/test_prompt_builder.py",
+      "source_location": "L13"
+    },
+    {
+      "id": "backend_tests_test_prompt_builder_test_prompt_still_forbids_medication_and_diagnosis",
+      "label": "test_prompt_still_forbids_medication_and_diagnosis()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 4,
+      "community_name": "test_triage_orchestrator.py",
+      "file_type": "code",
+      "norm_label": "test_prompt_still_forbids_medication_and_diagnosis()",
+      "source_file": "backend/tests/test_prompt_builder.py",
+      "source_location": "L34"
     },
     {
       "id": "backend_tests_test_triage_orchestrator_base_output",
@@ -3397,6 +3397,18 @@
       "norm_label": ".__init__()",
       "source_file": "backend/app/storage/session_store.py",
       "source_location": "L25"
+    },
+    {
+      "id": "backend_app_storage_user_store_userstore_init",
+      "label": ".__init__()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 40,
+      "community_name": "Database",
+      "file_type": "code",
+      "norm_label": ".__init__()",
+      "source_file": "backend/app/storage/user_store.py",
+      "source_location": "L28"
     },
     {
       "id": "backend_scripts_migrate_sqlite_to_postgres_main",
@@ -3963,12 +3975,24 @@
       "source_location": "L31"
     },
     {
+      "id": "backend_app_api_routes_triage_create_triage",
+      "label": "create_triage()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 9,
+      "community_name": "HealthGuideAI - Diagrama de Arquitectura (v2)",
+      "file_type": "code",
+      "norm_label": "create_triage()",
+      "source_file": "backend/app/api/routes_triage.py",
+      "source_location": "L40"
+    },
+    {
       "id": "backend_app_schemas_triage_triagerequest_normalize_symptoms_text",
       "label": ".normalize_symptoms_text()",
       "_callable": true,
       "_origin": "ast",
       "community": 9,
-      "community_name": "validate_triage_output.py",
+      "community_name": "HealthGuideAI - Diagrama de Arquitectura (v2)",
       "file_type": "code",
       "norm_label": ".normalize_symptoms_text()",
       "source_file": "backend/app/schemas/triage.py",
@@ -4759,11 +4783,55 @@
       "source_location": "L7"
     },
     {
+      "id": "backend_app_knowledge_sanitization",
+      "label": "sanitization.py",
+      "_origin": "ast",
+      "community": 13,
+      "community_name": "sanitize_chunk_text",
+      "file_type": "code",
+      "norm_label": "sanitization.py",
+      "source_file": "backend/app/knowledge/sanitization.py",
+      "source_location": "L1"
+    },
+    {
+      "id": "backend_tests_test_knowledge_sanitization",
+      "label": "test_knowledge_sanitization.py",
+      "_origin": "ast",
+      "community": 13,
+      "community_name": "sanitize_chunk_text",
+      "file_type": "code",
+      "norm_label": "test_knowledge_sanitization.py",
+      "source_file": "backend/tests/test_knowledge_sanitization.py",
+      "source_location": "L1"
+    },
+    {
+      "id": "backend_app_knowledge_sanitization_rationale_1",
+      "label": "Sesion 8 (blindaje contra prompt injection): sanitiza el contenido recuperado\u2026",
+      "_origin": "ast",
+      "community": 13,
+      "community_name": "sanitize_chunk_text",
+      "file_type": "rationale",
+      "norm_label": "sesion 8 (blindaje contra prompt injection): sanitiza el contenido recuperado...",
+      "source_file": "backend/app/knowledge/sanitization.py",
+      "source_location": "L1"
+    },
+    {
+      "id": "backend_app_knowledge_sanitization_rationale_31",
+      "label": "Si el texto de un chunk contiene un patron de inyeccion reconocible, se\u2026",
+      "_origin": "ast",
+      "community": 13,
+      "community_name": "sanitize_chunk_text",
+      "file_type": "rationale",
+      "norm_label": "si el texto de un chunk contiene un patron de inyeccion reconocible, se...",
+      "source_file": "backend/app/knowledge/sanitization.py",
+      "source_location": "L31"
+    },
+    {
       "id": "frontend_package",
       "label": "package.json",
       "_origin": "ast",
-      "community": 13,
-      "community_name": "Config de Build del Frontend",
+      "community": 2,
+      "community_name": "Frontend React App",
       "file_type": "code",
       "norm_label": "package.json",
       "source_file": "frontend/package.json",
@@ -4773,8 +4841,8 @@
       "id": "frontend_package_dependencies",
       "label": "dependencies",
       "_origin": "ast",
-      "community": 13,
-      "community_name": "Config de Build del Frontend",
+      "community": 2,
+      "community_name": "Frontend React App",
       "file_type": "code",
       "norm_label": "dependencies",
       "source_file": "frontend/package.json",
@@ -4784,8 +4852,8 @@
       "id": "frontend_package_dependencies_react",
       "label": "react",
       "_origin": "ast",
-      "community": 13,
-      "community_name": "Config de Build del Frontend",
+      "community": 2,
+      "community_name": "Frontend React App",
       "file_type": "code",
       "norm_label": "react",
       "source_file": "frontend/package.json",
@@ -4795,8 +4863,8 @@
       "id": "frontend_package_dependencies_react_dom",
       "label": "react-dom",
       "_origin": "ast",
-      "community": 13,
-      "community_name": "Config de Build del Frontend",
+      "community": 2,
+      "community_name": "Frontend React App",
       "file_type": "code",
       "norm_label": "react-dom",
       "source_file": "frontend/package.json",
@@ -4806,8 +4874,8 @@
       "id": "frontend_package_dependencies_react_router_dom",
       "label": "react-router-dom",
       "_origin": "ast",
-      "community": 13,
-      "community_name": "Config de Build del Frontend",
+      "community": 2,
+      "community_name": "Frontend React App",
       "file_type": "code",
       "norm_label": "react-router-dom",
       "source_file": "frontend/package.json",
@@ -4817,8 +4885,8 @@
       "id": "frontend_package_devdependencies",
       "label": "devDependencies",
       "_origin": "ast",
-      "community": 13,
-      "community_name": "Config de Build del Frontend",
+      "community": 2,
+      "community_name": "Frontend React App",
       "file_type": "code",
       "norm_label": "devdependencies",
       "source_file": "frontend/package.json",
@@ -4828,8 +4896,8 @@
       "id": "frontend_package_devdependencies_vite",
       "label": "vite",
       "_origin": "ast",
-      "community": 13,
-      "community_name": "Config de Build del Frontend",
+      "community": 2,
+      "community_name": "Frontend React App",
       "file_type": "code",
       "norm_label": "vite",
       "source_file": "frontend/package.json",
@@ -4839,8 +4907,8 @@
       "id": "frontend_package_devdependencies_vitejs_plugin_react",
       "label": "@vitejs/plugin-react",
       "_origin": "ast",
-      "community": 13,
-      "community_name": "Config de Build del Frontend",
+      "community": 2,
+      "community_name": "Frontend React App",
       "file_type": "code",
       "norm_label": "@vitejs/plugin-react",
       "source_file": "frontend/package.json",
@@ -4850,8 +4918,8 @@
       "id": "frontend_package_name",
       "label": "name",
       "_origin": "ast",
-      "community": 13,
-      "community_name": "Config de Build del Frontend",
+      "community": 2,
+      "community_name": "Frontend React App",
       "file_type": "code",
       "norm_label": "name",
       "source_file": "frontend/package.json",
@@ -4861,8 +4929,8 @@
       "id": "frontend_package_private",
       "label": "private",
       "_origin": "ast",
-      "community": 13,
-      "community_name": "Config de Build del Frontend",
+      "community": 2,
+      "community_name": "Frontend React App",
       "file_type": "code",
       "norm_label": "private",
       "source_file": "frontend/package.json",
@@ -4872,8 +4940,8 @@
       "id": "frontend_package_scripts",
       "label": "scripts",
       "_origin": "ast",
-      "community": 13,
-      "community_name": "Config de Build del Frontend",
+      "community": 2,
+      "community_name": "Frontend React App",
       "file_type": "code",
       "norm_label": "scripts",
       "source_file": "frontend/package.json",
@@ -4883,8 +4951,8 @@
       "id": "frontend_package_scripts_build",
       "label": "build",
       "_origin": "ast",
-      "community": 13,
-      "community_name": "Config de Build del Frontend",
+      "community": 2,
+      "community_name": "Frontend React App",
       "file_type": "code",
       "norm_label": "build",
       "source_file": "frontend/package.json",
@@ -4894,8 +4962,8 @@
       "id": "frontend_package_scripts_dev",
       "label": "dev",
       "_origin": "ast",
-      "community": 13,
-      "community_name": "Config de Build del Frontend",
+      "community": 2,
+      "community_name": "Frontend React App",
       "file_type": "code",
       "norm_label": "dev",
       "source_file": "frontend/package.json",
@@ -4905,8 +4973,8 @@
       "id": "frontend_package_scripts_preview",
       "label": "preview",
       "_origin": "ast",
-      "community": 13,
-      "community_name": "Config de Build del Frontend",
+      "community": 2,
+      "community_name": "Frontend React App",
       "file_type": "code",
       "norm_label": "preview",
       "source_file": "frontend/package.json",
@@ -4916,8 +4984,8 @@
       "id": "frontend_package_type",
       "label": "type",
       "_origin": "ast",
-      "community": 13,
-      "community_name": "Config de Build del Frontend",
+      "community": 2,
+      "community_name": "Frontend React App",
       "file_type": "code",
       "norm_label": "type",
       "source_file": "frontend/package.json",
@@ -4927,56 +4995,12 @@
       "id": "frontend_package_version",
       "label": "version",
       "_origin": "ast",
-      "community": 13,
-      "community_name": "Config de Build del Frontend",
+      "community": 2,
+      "community_name": "Frontend React App",
       "file_type": "code",
       "norm_label": "version",
       "source_file": "frontend/package.json",
       "source_location": "L4"
-    },
-    {
-      "id": "frontend_vite_config",
-      "label": "vite.config.js",
-      "_origin": "ast",
-      "community": 13,
-      "community_name": "Config de Build del Frontend",
-      "file_type": "code",
-      "norm_label": "vite.config.js",
-      "source_file": "frontend/vite.config.js",
-      "source_location": "L1"
-    },
-    {
-      "id": "ref_react_dom",
-      "label": "react-dom",
-      "_origin": "ast",
-      "community": 13,
-      "community_name": "Config de Build del Frontend",
-      "file_type": "concept",
-      "norm_label": "react-dom",
-      "source_file": "frontend/package.json",
-      "source_location": "L13"
-    },
-    {
-      "id": "ref_vite",
-      "label": "vite",
-      "_origin": "ast",
-      "community": 13,
-      "community_name": "Config de Build del Frontend",
-      "file_type": "concept",
-      "norm_label": "vite",
-      "source_file": "frontend/package.json",
-      "source_location": "L18"
-    },
-    {
-      "id": "ref_vitejs_plugin_react",
-      "label": "@vitejs/plugin-react",
-      "_origin": "ast",
-      "community": 13,
-      "community_name": "Config de Build del Frontend",
-      "file_type": "concept",
-      "norm_label": "@vitejs/plugin-react",
-      "source_file": "frontend/package.json",
-      "source_location": "L17"
     },
     {
       "id": "frontend_src_api_authapi",
@@ -5221,6 +5245,17 @@
       "source_location": "L8"
     },
     {
+      "id": "frontend_vite_config",
+      "label": "vite.config.js",
+      "_origin": "ast",
+      "community": 2,
+      "community_name": "Frontend React App",
+      "file_type": "code",
+      "norm_label": "vite.config.js",
+      "source_file": "frontend/vite.config.js",
+      "source_location": "L1"
+    },
+    {
       "id": "ref_react",
       "label": "react",
       "_origin": "ast",
@@ -5232,6 +5267,17 @@
       "source_location": "L12"
     },
     {
+      "id": "ref_react_dom",
+      "label": "react-dom",
+      "_origin": "ast",
+      "community": 2,
+      "community_name": "Frontend React App",
+      "file_type": "concept",
+      "norm_label": "react-dom",
+      "source_file": "frontend/package.json",
+      "source_location": "L13"
+    },
+    {
       "id": "ref_react_router_dom",
       "label": "react-router-dom",
       "_origin": "ast",
@@ -5241,6 +5287,28 @@
       "norm_label": "react-router-dom",
       "source_file": "frontend/package.json",
       "source_location": "L14"
+    },
+    {
+      "id": "ref_vite",
+      "label": "vite",
+      "_origin": "ast",
+      "community": 2,
+      "community_name": "Frontend React App",
+      "file_type": "concept",
+      "norm_label": "vite",
+      "source_file": "frontend/package.json",
+      "source_location": "L18"
+    },
+    {
+      "id": "ref_vitejs_plugin_react",
+      "label": "@vitejs/plugin-react",
+      "_origin": "ast",
+      "community": 2,
+      "community_name": "Frontend React App",
+      "file_type": "concept",
+      "norm_label": "@vitejs/plugin-react",
+      "source_file": "frontend/package.json",
+      "source_location": "L17"
     },
     {
       "id": "backend_docker_entrypoint",
@@ -5306,17 +5374,6 @@
       "source_location": "L1"
     },
     {
-      "id": "backend_app_knowledge_sanitization",
-      "label": "sanitization.py",
-      "_origin": "ast",
-      "community": 28,
-      "community_name": "KnowledgeRetriever",
-      "file_type": "code",
-      "norm_label": "sanitization.py",
-      "source_file": "backend/app/knowledge/sanitization.py",
-      "source_location": "L1"
-    },
-    {
       "id": "backend_app_knowledge_sources",
       "label": "sources.py",
       "_origin": "ast",
@@ -5328,17 +5385,6 @@
       "source_location": "L1"
     },
     {
-      "id": "backend_app_orchestration_triage_orchestrator",
-      "label": "triage_orchestrator.py",
-      "_origin": "ast",
-      "community": 28,
-      "community_name": "KnowledgeRetriever",
-      "file_type": "code",
-      "norm_label": "triage_orchestrator.py",
-      "source_file": "backend/app/orchestration/triage_orchestrator.py",
-      "source_location": "L1"
-    },
-    {
       "id": "backend_tests_test_knowledge_retrieval",
       "label": "test_knowledge_retrieval.py",
       "_origin": "ast",
@@ -5347,17 +5393,6 @@
       "file_type": "code",
       "norm_label": "test_knowledge_retrieval.py",
       "source_file": "backend/tests/test_knowledge_retrieval.py",
-      "source_location": "L1"
-    },
-    {
-      "id": "backend_tests_test_knowledge_sanitization",
-      "label": "test_knowledge_sanitization.py",
-      "_origin": "ast",
-      "community": 28,
-      "community_name": "KnowledgeRetriever",
-      "file_type": "code",
-      "norm_label": "test_knowledge_sanitization.py",
-      "source_file": "backend/tests/test_knowledge_sanitization.py",
       "source_location": "L1"
     },
     {
@@ -5405,28 +5440,6 @@
       "source_location": "L64"
     },
     {
-      "id": "backend_app_knowledge_sanitization_rationale_1",
-      "label": "Sesion 8 (blindaje contra prompt injection): sanitiza el contenido recuperado\u2026",
-      "_origin": "ast",
-      "community": 28,
-      "community_name": "KnowledgeRetriever",
-      "file_type": "rationale",
-      "norm_label": "sesion 8 (blindaje contra prompt injection): sanitiza el contenido recuperado...",
-      "source_file": "backend/app/knowledge/sanitization.py",
-      "source_location": "L1"
-    },
-    {
-      "id": "backend_app_knowledge_sanitization_rationale_31",
-      "label": "Si el texto de un chunk contiene un patron de inyeccion reconocible, se\u2026",
-      "_origin": "ast",
-      "community": 28,
-      "community_name": "KnowledgeRetriever",
-      "file_type": "rationale",
-      "norm_label": "si el texto de un chunk contiene un patron de inyeccion reconocible, se...",
-      "source_file": "backend/app/knowledge/sanitization.py",
-      "source_location": "L31"
-    },
-    {
       "id": "backend_app_knowledge_sources_rationale_1",
       "label": "Corpus curado para RAG (Sesion 7). Cada entrada es una fuente de salud publica\u2026",
       "_origin": "ast",
@@ -5435,17 +5448,6 @@
       "file_type": "rationale",
       "norm_label": "corpus curado para rag (sesion 7). cada entrada es una fuente de salud publica...",
       "source_file": "backend/app/knowledge/sources.py",
-      "source_location": "L1"
-    },
-    {
-      "id": "backend_app_orchestration_triage_orchestrator_rationale_1",
-      "label": "Capa de orquestacion \u2014 equivalente a run_prototype() en el notebook, pero\u2026",
-      "_origin": "ast",
-      "community": 28,
-      "community_name": "KnowledgeRetriever",
-      "file_type": "rationale",
-      "norm_label": "capa de orquestacion \u2014 equivalente a run_prototype() en el notebook, pero...",
-      "source_file": "backend/app/orchestration/triage_orchestrator.py",
       "source_location": "L1"
     },
     {
@@ -5556,6 +5558,17 @@
       "file_type": "code",
       "norm_label": "triage_rules.py",
       "source_file": "evals/triage_rules.py",
+      "source_location": "L1"
+    },
+    {
+      "id": "evals_validate_triage_output",
+      "label": "validate_triage_output.py",
+      "_origin": "ast",
+      "community": 3,
+      "community_name": "triage_rules.py",
+      "file_type": "code",
+      "norm_label": "validate_triage_output.py",
+      "source_file": "evals/validate_triage_output.py",
       "source_location": "L1"
     },
     {
@@ -5801,6 +5814,17 @@
       "source_location": "L372"
     },
     {
+      "id": "evals_validate_triage_output_rationale_1",
+      "label": "validate_triage_output.py Validador determinista de reglas de seguridad para\u2026",
+      "_origin": "ast",
+      "community": 3,
+      "community_name": "triage_rules.py",
+      "file_type": "rationale",
+      "norm_label": "validate_triage_output.py validador determinista de reglas de seguridad para...",
+      "source_file": "evals/validate_triage_output.py",
+      "source_location": "L1"
+    },
+    {
       "id": "evals_validate_triage_output_rationale_63",
       "label": "Corre un conjunto de reglas de seguridad sobre un output y agrega el veredicto.\u2026",
       "_origin": "ast",
@@ -5810,138 +5834,6 @@
       "norm_label": "corre un conjunto de reglas de seguridad sobre un output y agrega el veredicto....",
       "source_file": "evals/validate_triage_output.py",
       "source_location": "L63"
-    },
-    {
-      "id": "backend_app_orchestration_contract",
-      "label": "contract.py",
-      "_origin": "ast",
-      "community": 32,
-      "community_name": "build_system_prompt",
-      "file_type": "code",
-      "norm_label": "contract.py",
-      "source_file": "backend/app/orchestration/contract.py",
-      "source_location": "L1"
-    },
-    {
-      "id": "backend_app_orchestration_init",
-      "label": "orchestration/__init__.py",
-      "_origin": "ast",
-      "community": 32,
-      "community_name": "build_system_prompt",
-      "file_type": "code",
-      "norm_label": "orchestration/__init__.py",
-      "source_file": "backend/app/orchestration/__init__.py",
-      "source_location": "L1"
-    },
-    {
-      "id": "backend_app_orchestration_prompt_builder",
-      "label": "prompt_builder.py",
-      "_origin": "ast",
-      "community": 32,
-      "community_name": "build_system_prompt",
-      "file_type": "code",
-      "norm_label": "prompt_builder.py",
-      "source_file": "backend/app/orchestration/prompt_builder.py",
-      "source_location": "L1"
-    },
-    {
-      "id": "backend_app_orchestration_triage_orchestrator_py_modelprovider",
-      "label": "ModelProvider",
-      "_origin": "ast",
-      "community": 32,
-      "community_name": "build_system_prompt",
-      "file_type": "code",
-      "norm_label": "modelprovider",
-      "source_file": "",
-      "source_location": ""
-    },
-    {
-      "id": "backend_tests_test_prompt_builder",
-      "label": "test_prompt_builder.py",
-      "_origin": "ast",
-      "community": 32,
-      "community_name": "build_system_prompt",
-      "file_type": "code",
-      "norm_label": "test_prompt_builder.py",
-      "source_file": "backend/tests/test_prompt_builder.py",
-      "source_location": "L1"
-    },
-    {
-      "id": "knowledgeretriever",
-      "label": "KnowledgeRetriever",
-      "_origin": "ast",
-      "community": 32,
-      "community_name": "build_system_prompt",
-      "file_type": "code",
-      "norm_label": "knowledgeretriever",
-      "source_file": "",
-      "source_location": ""
-    },
-    {
-      "id": "backend_app_orchestration_contract_rationale_1",
-      "label": "El contrato de producto es estable \u2014 ya fue validado por el modelo en la Parte\u2026",
-      "_origin": "ast",
-      "community": 32,
-      "community_name": "build_system_prompt",
-      "file_type": "rationale",
-      "norm_label": "el contrato de producto es estable \u2014 ya fue validado por el modelo en la parte...",
-      "source_file": "backend/app/orchestration/contract.py",
-      "source_location": "L1"
-    },
-    {
-      "id": "backend_app_orchestration_prompt_builder_rationale_1",
-      "label": "Arma SYSTEM_PROTOTYPE a partir del contrato \u2014 mismo texto base que construye\u2026",
-      "_origin": "ast",
-      "community": 32,
-      "community_name": "build_system_prompt",
-      "file_type": "rationale",
-      "norm_label": "arma system_prototype a partir del contrato \u2014 mismo texto base que construye...",
-      "source_file": "backend/app/orchestration/prompt_builder.py",
-      "source_location": "L1"
-    },
-    {
-      "id": "backend_tests_test_prompt_builder_rationale_1",
-      "label": "Tests de que la r\u00fabrica, los ejemplos few-shot y el disclaimer reforzado\u2026",
-      "_origin": "ast",
-      "community": 32,
-      "community_name": "build_system_prompt",
-      "file_type": "rationale",
-      "norm_label": "tests de que la rubrica, los ejemplos few-shot y el disclaimer reforzado...",
-      "source_file": "backend/tests/test_prompt_builder.py",
-      "source_location": "L1"
-    },
-    {
-      "id": "backend_tests_test_prompt_builder_rationale_35",
-      "label": "No perder las reglas que ya funcionaban al agregar todo lo nuevo.",
-      "_origin": "ast",
-      "community": 32,
-      "community_name": "build_system_prompt",
-      "file_type": "rationale",
-      "norm_label": "no perder las reglas que ya funcionaban al agregar todo lo nuevo.",
-      "source_file": "backend/tests/test_prompt_builder.py",
-      "source_location": "L35"
-    },
-    {
-      "id": "backend_tests_test_prompt_builder_rationale_43",
-      "label": "Sesion 8: la jerarquia de instrucciones tiene que estar en el prompt y aparecer\u2026",
-      "_origin": "ast",
-      "community": 32,
-      "community_name": "build_system_prompt",
-      "file_type": "rationale",
-      "norm_label": "sesion 8: la jerarquia de instrucciones tiene que estar en el prompt y aparecer...",
-      "source_file": "backend/tests/test_prompt_builder.py",
-      "source_location": "L43"
-    },
-    {
-      "id": "backend_tests_test_prompt_builder_rationale_55",
-      "label": "Sesion 7: el prompt tiene que explicar como usar y citar 'contexto_recuperado',\u2026",
-      "_origin": "ast",
-      "community": 32,
-      "community_name": "build_system_prompt",
-      "file_type": "rationale",
-      "norm_label": "sesion 7: el prompt tiene que explicar como usar y citar 'contexto_recuperado',...",
-      "source_file": "backend/tests/test_prompt_builder.py",
-      "source_location": "L55"
     },
     {
       "id": "any",
@@ -6041,6 +5933,17 @@
       "norm_label": "sesion 8: pedirle al agente que 'olvide el triage' y escriba codigo no deberia...",
       "source_file": "backend/tests/test_security_validator.py",
       "source_location": "L102"
+    },
+    {
+      "id": "backend_tests_test_security_validator_rationale_114",
+      "label": "Hallazgo de revision de codigo (Sesion 8): text_blob() no incluia\u2026",
+      "_origin": "ast",
+      "community": 33,
+      "community_name": "validate_triage_output",
+      "file_type": "rationale",
+      "norm_label": "hallazgo de revision de codigo (sesion 8): text_blob() no incluia...",
+      "source_file": "backend/tests/test_security_validator.py",
+      "source_location": "L114"
     },
     {
       "id": "backend_tests_test_security_validator_rationale_68",
@@ -6153,13 +6056,57 @@
       "source_location": "L1"
     },
     {
-      "id": "backend_app_api_routes_triage_py_post",
-      "label": "post",
+      "id": "backend_app_orchestration_contract",
+      "label": "contract.py",
       "_origin": "ast",
       "community": 4,
       "community_name": "test_triage_orchestrator.py",
       "file_type": "code",
-      "norm_label": "post",
+      "norm_label": "contract.py",
+      "source_file": "backend/app/orchestration/contract.py",
+      "source_location": "L1"
+    },
+    {
+      "id": "backend_app_orchestration_init",
+      "label": "orchestration/__init__.py",
+      "_origin": "ast",
+      "community": 4,
+      "community_name": "test_triage_orchestrator.py",
+      "file_type": "code",
+      "norm_label": "orchestration/__init__.py",
+      "source_file": "backend/app/orchestration/__init__.py",
+      "source_location": "L1"
+    },
+    {
+      "id": "backend_app_orchestration_prompt_builder",
+      "label": "prompt_builder.py",
+      "_origin": "ast",
+      "community": 4,
+      "community_name": "test_triage_orchestrator.py",
+      "file_type": "code",
+      "norm_label": "prompt_builder.py",
+      "source_file": "backend/app/orchestration/prompt_builder.py",
+      "source_location": "L1"
+    },
+    {
+      "id": "backend_app_orchestration_triage_orchestrator",
+      "label": "triage_orchestrator.py",
+      "_origin": "ast",
+      "community": 4,
+      "community_name": "test_triage_orchestrator.py",
+      "file_type": "code",
+      "norm_label": "triage_orchestrator.py",
+      "source_file": "backend/app/orchestration/triage_orchestrator.py",
+      "source_location": "L1"
+    },
+    {
+      "id": "backend_app_orchestration_triage_orchestrator_py_modelprovider",
+      "label": "ModelProvider",
+      "_origin": "ast",
+      "community": 4,
+      "community_name": "test_triage_orchestrator.py",
+      "file_type": "code",
+      "norm_label": "modelprovider",
       "source_file": "",
       "source_location": ""
     },
@@ -6208,6 +6155,17 @@
       "source_location": "L1"
     },
     {
+      "id": "backend_tests_test_prompt_builder",
+      "label": "test_prompt_builder.py",
+      "_origin": "ast",
+      "community": 4,
+      "community_name": "test_triage_orchestrator.py",
+      "file_type": "code",
+      "norm_label": "test_prompt_builder.py",
+      "source_file": "backend/tests/test_prompt_builder.py",
+      "source_location": "L1"
+    },
+    {
       "id": "backend_tests_test_triage_orchestrator",
       "label": "test_triage_orchestrator.py",
       "_origin": "ast",
@@ -6241,6 +6199,17 @@
       "source_location": ""
     },
     {
+      "id": "knowledgeretriever",
+      "label": "KnowledgeRetriever",
+      "_origin": "ast",
+      "community": 4,
+      "community_name": "test_triage_orchestrator.py",
+      "file_type": "code",
+      "norm_label": "knowledgeretriever",
+      "source_file": "",
+      "source_location": ""
+    },
+    {
       "id": "runtimeerror",
       "label": "RuntimeError",
       "_origin": "ast",
@@ -6250,6 +6219,39 @@
       "norm_label": "runtimeerror",
       "source_file": "",
       "source_location": ""
+    },
+    {
+      "id": "backend_app_orchestration_contract_rationale_1",
+      "label": "El contrato de producto es estable \u2014 ya fue validado por el modelo en la Parte\u2026",
+      "_origin": "ast",
+      "community": 4,
+      "community_name": "test_triage_orchestrator.py",
+      "file_type": "rationale",
+      "norm_label": "el contrato de producto es estable \u2014 ya fue validado por el modelo en la parte...",
+      "source_file": "backend/app/orchestration/contract.py",
+      "source_location": "L1"
+    },
+    {
+      "id": "backend_app_orchestration_prompt_builder_rationale_1",
+      "label": "Arma SYSTEM_PROTOTYPE a partir del contrato \u2014 mismo texto base que construye\u2026",
+      "_origin": "ast",
+      "community": 4,
+      "community_name": "test_triage_orchestrator.py",
+      "file_type": "rationale",
+      "norm_label": "arma system_prototype a partir del contrato \u2014 mismo texto base que construye...",
+      "source_file": "backend/app/orchestration/prompt_builder.py",
+      "source_location": "L1"
+    },
+    {
+      "id": "backend_app_orchestration_triage_orchestrator_rationale_1",
+      "label": "Capa de orquestacion \u2014 equivalente a run_prototype() en el notebook, pero\u2026",
+      "_origin": "ast",
+      "community": 4,
+      "community_name": "test_triage_orchestrator.py",
+      "file_type": "rationale",
+      "norm_label": "capa de orquestacion \u2014 equivalente a run_prototype() en el notebook, pero...",
+      "source_file": "backend/app/orchestration/triage_orchestrator.py",
+      "source_location": "L1"
     },
     {
       "id": "backend_app_providers_base_rationale_1",
@@ -6294,6 +6296,50 @@
       "norm_label": "implementacion de modelprovider para nvidia nemotron-3-super-120b-a12b, via el...",
       "source_file": "backend/app/providers/nvidia_provider.py",
       "source_location": "L1"
+    },
+    {
+      "id": "backend_tests_test_prompt_builder_rationale_1",
+      "label": "Tests de que la r\u00fabrica, los ejemplos few-shot y el disclaimer reforzado\u2026",
+      "_origin": "ast",
+      "community": 4,
+      "community_name": "test_triage_orchestrator.py",
+      "file_type": "rationale",
+      "norm_label": "tests de que la rubrica, los ejemplos few-shot y el disclaimer reforzado...",
+      "source_file": "backend/tests/test_prompt_builder.py",
+      "source_location": "L1"
+    },
+    {
+      "id": "backend_tests_test_prompt_builder_rationale_35",
+      "label": "No perder las reglas que ya funcionaban al agregar todo lo nuevo.",
+      "_origin": "ast",
+      "community": 4,
+      "community_name": "test_triage_orchestrator.py",
+      "file_type": "rationale",
+      "norm_label": "no perder las reglas que ya funcionaban al agregar todo lo nuevo.",
+      "source_file": "backend/tests/test_prompt_builder.py",
+      "source_location": "L35"
+    },
+    {
+      "id": "backend_tests_test_prompt_builder_rationale_43",
+      "label": "Sesion 8: la jerarquia de instrucciones tiene que estar en el prompt y aparecer\u2026",
+      "_origin": "ast",
+      "community": 4,
+      "community_name": "test_triage_orchestrator.py",
+      "file_type": "rationale",
+      "norm_label": "sesion 8: la jerarquia de instrucciones tiene que estar en el prompt y aparecer...",
+      "source_file": "backend/tests/test_prompt_builder.py",
+      "source_location": "L43"
+    },
+    {
+      "id": "backend_tests_test_prompt_builder_rationale_55",
+      "label": "Sesion 7: el prompt tiene que explicar como usar y citar 'contexto_recuperado',\u2026",
+      "_origin": "ast",
+      "community": 4,
+      "community_name": "test_triage_orchestrator.py",
+      "file_type": "rationale",
+      "norm_label": "sesion 7: el prompt tiene que explicar como usar y citar 'contexto_recuperado',...",
+      "source_file": "backend/tests/test_prompt_builder.py",
+      "source_location": "L55"
     },
     {
       "id": "backend_tests_test_triage_orchestrator_rationale_1",
@@ -6945,11 +6991,22 @@
       "source_location": "L1"
     },
     {
+      "id": "backend_app_api_routes_triage_py_post",
+      "label": "post",
+      "_origin": "ast",
+      "community": 9,
+      "community_name": "HealthGuideAI - Diagrama de Arquitectura (v2)",
+      "file_type": "code",
+      "norm_label": "post",
+      "source_file": "",
+      "source_location": ""
+    },
+    {
       "id": "backend_app_schemas_init",
       "label": "schemas/__init__.py",
       "_origin": "ast",
       "community": 9,
-      "community_name": "validate_triage_output.py",
+      "community_name": "HealthGuideAI - Diagrama de Arquitectura (v2)",
       "file_type": "code",
       "norm_label": "schemas/__init__.py",
       "source_file": "backend/app/schemas/__init__.py",
@@ -6960,7 +7017,7 @@
       "label": "triage.py",
       "_origin": "ast",
       "community": 9,
-      "community_name": "validate_triage_output.py",
+      "community_name": "HealthGuideAI - Diagrama de Arquitectura (v2)",
       "file_type": "code",
       "norm_label": "triage.py",
       "source_file": "backend/app/schemas/triage.py",
@@ -6971,7 +7028,7 @@
       "label": "BaseModel",
       "_origin": "ast",
       "community": 9,
-      "community_name": "validate_triage_output.py",
+      "community_name": "HealthGuideAI - Diagrama de Arquitectura (v2)",
       "file_type": "code",
       "norm_label": "basemodel",
       "source_file": "",
@@ -6982,43 +7039,21 @@
       "label": "field_validator",
       "_origin": "ast",
       "community": 9,
-      "community_name": "validate_triage_output.py",
+      "community_name": "HealthGuideAI - Diagrama de Arquitectura (v2)",
       "file_type": "code",
       "norm_label": "field_validator",
       "source_file": "",
       "source_location": ""
     },
     {
-      "id": "evals_validate_triage_output",
-      "label": "validate_triage_output.py",
-      "_origin": "ast",
-      "community": 9,
-      "community_name": "validate_triage_output.py",
-      "file_type": "code",
-      "norm_label": "validate_triage_output.py",
-      "source_file": "evals/validate_triage_output.py",
-      "source_location": "L1"
-    },
-    {
       "id": "backend_app_schemas_triage_rationale_1",
       "label": "Esquemas de la API. TriageResponse envuelve el contrato de salida fijo de\u2026",
       "_origin": "ast",
       "community": 9,
-      "community_name": "validate_triage_output.py",
+      "community_name": "HealthGuideAI - Diagrama de Arquitectura (v2)",
       "file_type": "rationale",
       "norm_label": "esquemas de la api. triageresponse envuelve el contrato de salida fijo de...",
       "source_file": "backend/app/schemas/triage.py",
-      "source_location": "L1"
-    },
-    {
-      "id": "evals_validate_triage_output_rationale_1",
-      "label": "validate_triage_output.py Validador determinista de reglas de seguridad para\u2026",
-      "_origin": "ast",
-      "community": 9,
-      "community_name": "validate_triage_output.py",
-      "file_type": "rationale",
-      "norm_label": "validate_triage_output.py validador determinista de reglas de seguridad para...",
-      "source_file": "evals/validate_triage_output.py",
       "source_location": "L1"
     },
     {
@@ -9363,7 +9398,7 @@
       "author": null,
       "captured_at": null,
       "community": 9,
-      "community_name": "validate_triage_output.py",
+      "community_name": "HealthGuideAI - Diagrama de Arquitectura (v2)",
       "contributor": null,
       "file_type": "concept",
       "norm_label": "4. configurador de prompt",
@@ -9378,7 +9413,7 @@
       "author": null,
       "captured_at": null,
       "community": 9,
-      "community_name": "validate_triage_output.py",
+      "community_name": "HealthGuideAI - Diagrama de Arquitectura (v2)",
       "contributor": null,
       "file_type": "concept",
       "norm_label": "evaluacion y auditoria",
@@ -9393,7 +9428,7 @@
       "author": null,
       "captured_at": null,
       "community": 9,
-      "community_name": "validate_triage_output.py",
+      "community_name": "HealthGuideAI - Diagrama de Arquitectura (v2)",
       "contributor": null,
       "file_type": "concept",
       "norm_label": "2. interfaz de usuario",
@@ -9408,7 +9443,7 @@
       "author": null,
       "captured_at": null,
       "community": 9,
-      "community_name": "validate_triage_output.py",
+      "community_name": "HealthGuideAI - Diagrama de Arquitectura (v2)",
       "contributor": null,
       "file_type": "concept",
       "norm_label": "5. modelo llm nvidia (nemotron-3-super:122b)",
@@ -9423,7 +9458,7 @@
       "author": null,
       "captured_at": null,
       "community": 9,
-      "community_name": "validate_triage_output.py",
+      "community_name": "HealthGuideAI - Diagrama de Arquitectura (v2)",
       "contributor": null,
       "file_type": "concept",
       "norm_label": "3. orquestador de triage",
@@ -9438,7 +9473,7 @@
       "author": null,
       "captured_at": null,
       "community": 9,
-      "community_name": "validate_triage_output.py",
+      "community_name": "HealthGuideAI - Diagrama de Arquitectura (v2)",
       "contributor": null,
       "file_type": "concept",
       "norm_label": "7. reglas de seguridad",
@@ -9453,7 +9488,7 @@
       "author": null,
       "captured_at": null,
       "community": 9,
-      "community_name": "validate_triage_output.py",
+      "community_name": "HealthGuideAI - Diagrama de Arquitectura (v2)",
       "contributor": null,
       "file_type": "concept",
       "norm_label": "9. respuesta estructurada (json)",
@@ -9468,7 +9503,7 @@
       "author": null,
       "captured_at": null,
       "community": 9,
-      "community_name": "validate_triage_output.py",
+      "community_name": "HealthGuideAI - Diagrama de Arquitectura (v2)",
       "contributor": null,
       "file_type": "concept",
       "norm_label": "10. resultado final",
@@ -9483,7 +9518,7 @@
       "author": null,
       "captured_at": null,
       "community": 9,
-      "community_name": "validate_triage_output.py",
+      "community_name": "HealthGuideAI - Diagrama de Arquitectura (v2)",
       "contributor": null,
       "file_type": "concept",
       "norm_label": "revision humana (gate pass/fail)",
@@ -9498,7 +9533,7 @@
       "author": null,
       "captured_at": null,
       "community": 9,
-      "community_name": "validate_triage_output.py",
+      "community_name": "HealthGuideAI - Diagrama de Arquitectura (v2)",
       "contributor": null,
       "file_type": "concept",
       "norm_label": "1. usuario",
@@ -9513,7 +9548,7 @@
       "author": null,
       "captured_at": null,
       "community": 9,
-      "community_name": "validate_triage_output.py",
+      "community_name": "HealthGuideAI - Diagrama de Arquitectura (v2)",
       "contributor": null,
       "file_type": "concept",
       "norm_label": "6. validacion determinista (red flags)",
@@ -9528,7 +9563,7 @@
       "author": null,
       "captured_at": null,
       "community": 9,
-      "community_name": "validate_triage_output.py",
+      "community_name": "HealthGuideAI - Diagrama de Arquitectura (v2)",
       "contributor": null,
       "file_type": "concept",
       "norm_label": "8. validador de salida y json",
@@ -9543,7 +9578,7 @@
       "author": null,
       "captured_at": null,
       "community": 9,
-      "community_name": "validate_triage_output.py",
+      "community_name": "HealthGuideAI - Diagrama de Arquitectura (v2)",
       "contributor": null,
       "file_type": "image",
       "norm_label": "healthguideai - diagrama de arquitectura (v2)",
@@ -9558,7 +9593,7 @@
       "author": null,
       "captured_at": null,
       "community": 9,
-      "community_name": "validate_triage_output.py",
+      "community_name": "HealthGuideAI - Diagrama de Arquitectura (v2)",
       "contributor": null,
       "file_type": "rationale",
       "norm_label": "disclaimer: no diagnostica, no prescribe, no reemplaza a un profesional",
@@ -9711,6 +9746,18 @@
       "type": "external"
     },
     {
+      "id": "app_validation_safe_response",
+      "label": "app_validation_safe_response",
+      "_origin": "semantic",
+      "community": 10,
+      "community_name": "run_adversarial_suite.py",
+      "external": true,
+      "file_type": "concept",
+      "norm_label": "app_validation_safe_response",
+      "source_file": "",
+      "type": "external"
+    },
+    {
       "id": "csv",
       "label": "csv",
       "_origin": "semantic",
@@ -9771,6 +9818,18 @@
       "type": "external"
     },
     {
+      "id": "re",
+      "label": "re",
+      "_origin": "semantic",
+      "community": 13,
+      "community_name": "sanitize_chunk_text",
+      "external": true,
+      "file_type": "concept",
+      "norm_label": "re",
+      "source_file": "",
+      "type": "external"
+    },
+    {
       "id": "frontend_src_styles_global",
       "label": "frontend_src_styles_global",
       "_origin": "semantic",
@@ -9807,14 +9866,14 @@
       "type": "external"
     },
     {
-      "id": "re",
-      "label": "re",
+      "id": "typing",
+      "label": "typing",
       "_origin": "semantic",
-      "community": 28,
-      "community_name": "KnowledgeRetriever",
+      "community": 3,
+      "community_name": "triage_rules.py",
       "external": true,
       "file_type": "concept",
-      "norm_label": "re",
+      "norm_label": "typing",
       "source_file": "",
       "type": "external"
     },
@@ -10063,33 +10122,10 @@
       "label": "pydantic",
       "_origin": "semantic",
       "community": 9,
-      "community_name": "validate_triage_output.py",
+      "community_name": "HealthGuideAI - Diagrama de Arquitectura (v2)",
       "external": true,
       "file_type": "concept",
       "norm_label": "pydantic",
-      "source_file": "",
-      "type": "external"
-    },
-    {
-      "id": "typing",
-      "label": "typing",
-      "_origin": "semantic",
-      "community": 9,
-      "community_name": "validate_triage_output.py",
-      "external": true,
-      "file_type": "concept",
-      "norm_label": "typing",
-      "source_file": "",
-      "type": "external"
-    },
-    {
-      "id": "app_validation_safe_response",
-      "label": "app_validation_safe_response",
-      "community": 10,
-      "community_name": "run_adversarial_suite.py",
-      "external": true,
-      "file_type": "concept",
-      "norm_label": "app_validation_safe_response",
       "source_file": "",
       "type": "external"
     }
@@ -12120,7 +12156,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "backend/tests/test_security_validator.py",
-      "source_location": "L114",
+      "source_location": "L138",
       "weight": 1.0
     },
     {
@@ -12132,7 +12168,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "backend/tests/test_security_validator.py",
-      "source_location": "L115",
+      "source_location": "L139",
       "weight": 1.0
     },
     {
@@ -12232,6 +12268,30 @@
       "weight": 1.0
     },
     {
+      "source": "backend_tests_test_security_validator_test_rejects_medication_leaked_through_sintomas_detectados",
+      "target": "evals_validate_triage_output_validate_triage_output",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "backend/tests/test_security_validator.py",
+      "source_location": "L118",
+      "weight": 1.0
+    },
+    {
+      "source": "backend_tests_test_security_validator_test_rejects_medication_leaked_through_sintomas_detectados",
+      "target": "backend_tests_test_security_validator_valid_output",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "backend/tests/test_security_validator.py",
+      "source_location": "L119",
+      "weight": 1.0
+    },
+    {
       "source": "backend_tests_test_security_validator_test_rejects_non_object_json",
       "target": "evals_validate_triage_output_validate_triage_output",
       "relation": "calls",
@@ -12241,6 +12301,30 @@
       "context": "call",
       "source_file": "backend/tests/test_security_validator.py",
       "source_location": "L39",
+      "weight": 1.0
+    },
+    {
+      "source": "backend_tests_test_security_validator_test_rejects_prompt_leak_through_sintomas_detectados",
+      "target": "evals_validate_triage_output_validate_triage_output",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "backend/tests/test_security_validator.py",
+      "source_location": "L128",
+      "weight": 1.0
+    },
+    {
+      "source": "backend_tests_test_security_validator_test_rejects_prompt_leak_through_sintomas_detectados",
+      "target": "backend_tests_test_security_validator_valid_output",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "backend/tests/test_security_validator.py",
+      "source_location": "L129",
       "weight": 1.0
     },
     {
@@ -12840,7 +12924,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "evals/triage_parsing.py",
-      "source_location": "L43",
+      "source_location": "L51",
       "weight": 1.0
     },
     {
@@ -21523,13 +21607,35 @@
     },
     {
       "source": "backend_tests_test_security_validator",
-      "target": "backend_tests_test_security_validator_test_accepts_normal_response_within_domain",
+      "target": "backend_tests_test_security_validator_test_rejects_medication_leaked_through_sintomas_detectados",
       "relation": "contains",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "backend/tests/test_security_validator.py",
       "source_location": "L113",
+      "weight": 1.0
+    },
+    {
+      "source": "backend_tests_test_security_validator",
+      "target": "backend_tests_test_security_validator_test_rejects_prompt_leak_through_sintomas_detectados",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "backend/tests/test_security_validator.py",
+      "source_location": "L127",
+      "weight": 1.0
+    },
+    {
+      "source": "backend_tests_test_security_validator",
+      "target": "backend_tests_test_security_validator_test_accepts_normal_response_within_domain",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "backend/tests/test_security_validator.py",
+      "source_location": "L137",
       "weight": 1.0
     },
     {
@@ -24522,6 +24628,17 @@
       "confidence_score": 1.0,
       "source_file": "backend/tests/test_security_validator.py",
       "source_location": "L102",
+      "weight": 1.0
+    },
+    {
+      "source": "backend_tests_test_security_validator_rationale_114",
+      "target": "backend_tests_test_security_validator_test_rejects_medication_leaked_through_sintomas_detectados",
+      "relation": "rationale_for",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "backend/tests/test_security_validator.py",
+      "source_location": "L114",
       "weight": 1.0
     },
     {
@@ -28635,5 +28752,5 @@
       "source_file": "CLAUDE.md"
     }
   ],
-  "built_at_commit": "ad1381c9868d6e6a0d8869b492be141d7322736c"
+  "built_at_commit": "e6533e5f17f9cc5dfc868888c99f3d23314d5fa2"
 }
