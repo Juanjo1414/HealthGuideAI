@@ -21,7 +21,7 @@ tomadas.
 | 6 | Motor de triage híbrido (reglas + few-shot) | Clínico | ✅ Hecha |
 | 7 | Base de conocimiento (RAG) | Clínico | ✅ Hecha |
 | 8 | Blindaje del modelo (prompt injection) | Clínico | ✅ Hecha |
-| 9 | Setup TypeScript + Tailwind + shadcn/ui | Frontend | ⬜ Pendiente |
+| 9 | Setup TypeScript + Tailwind + shadcn/ui | Frontend | ✅ Hecha |
 | 10 | Componentes base (accesibilidad preservada) | Frontend | ⬜ Pendiente |
 | 11 | Pantallas completas + responsive | Frontend | ⬜ Pendiente |
 | 12 | Suite de tests completa | Verificación | ⬜ Pendiente |
@@ -523,24 +523,51 @@ NVIDIA (no solo unitaria) — ver arriba.
 
 # FASE 3 — Frontend
 
-## Sesión 9 — Setup: TypeScript + Tailwind + shadcn/ui + design tokens
+## Sesión 9 — Setup: TypeScript + Tailwind + shadcn/ui + design tokens ✅
 
 **Objetivo:** dejar el terreno preparado. No se migra ninguna página todavía.
 
-1. Configurar TypeScript en el proyecto Vite y tipar la capa `frontend/src/api/` y
-   `AuthContext`.
-2. `shadcn init` + Tailwind, conviviendo con el CSS actual.
-3. **Fijar la paleta médica explícitamente** como variables del tema — no heredar los violetas
-   por defecto de shadcn (es exactamente el "AI slop" que hay que evitar).
-4. **Corregir la jerarquía de prioridad**: hoy `frontend/src/styles/tokens.css:16-29` tiene
-   BAJA/MEDIA/ALTA con fondo oscuro y EMERGENCIA con fondo claro (`#fff0f1`) — la escala se rompe
-   justo en el nivel más grave. Los 4 niveles deben compartir la misma lógica visual, con
-   severidad creciente.
-5. Figtree + Noto Sans.
-6. Escala de espaciado y tipografía sistemática (hoy todo son px sueltos en `App.css`).
+1. **TypeScript configurado** (`tsconfig.json`/`tsconfig.node.json`, `strict: true`,
+   `allowJs: true` para que convivan los `.jsx` sin migrar). Se tipó exactamente lo que pedía el
+   plan: `authApi.ts`, `triageApi.ts`, `AuthContext.tsx`, más un `api/types.ts` nuevo con tipos
+   que reflejan el contrato real del backend (`schemas/auth.py`, `schemas/triage.py`), no tipos
+   inventados. Los `.jsx` que los importan (ProtectedRoute, LoginPage, SignupPage, TriagePage) no
+   se tocaron — los imports son sin extensión, Vite resuelve `.ts`/`.tsx` igual que antes
+   resolvía `.js`/`.jsx`.
+2. **Tailwind v4 (`@tailwindcss/vite`) + `shadcn init`** (preset `nova`, base Base UI, iconos
+   `lucide-react` — adelanta el ítem de la Sesión 10 de reemplazar `icons.jsx`), conviviendo con
+   el CSS actual sin migrar ningún componente.
+3. **Paleta médica fijada explícitamente** en dos lugares a propósito: `tailwind.css` (el tema
+   permanente que usarán los componentes shadcn desde la Sesión 10) y `tokens.css` (el sistema
+   legado que usan los componentes reales HOY), para que no queden desincronizados mientras
+   conviven. Los tokens semánticos de shadcn (`--primary`, `--accent`, `--destructive`, etc.)
+   usan la paleta de marca, nunca los grises por defecto de Nova.
+4. **Jerarquía de prioridad corregida** — bug real confirmado: BAJA/MEDIA/ALTA tenían fondo
+   oscuro pero EMERGENCIA tenía fondo CLARO (`#fff0f1`), invirtiendo la severidad justo en el
+   nivel más grave. Los 4 valores nuevos se verificaron con cálculo real de contraste WCAG
+   (relative luminance), no a ojo: los 4 fondos quedan en la misma franja de luminosidad oscura
+   y cada par texto/fondo supera AAA.
+5. **Figtree + Noto Sans** — ya estaban cargadas en `index.html` pero `tokens.css` nunca las
+   referenciaba (desajuste preexistente, cerrado de paso).
+6. **Escala de espaciado y tipografía sistemática**: no se hizo un sistema de variables CSS
+   paralelo — Tailwind (instalado en este mismo ítem 2) ya trae una escala sistemática de
+   espaciado y tipografía, y es la que van a usar los componentes desde la Sesión 10. Agregar un
+   segundo sistema de espaciado hecho a mano hubiera sido complejidad redundante.
 
-**Verificación:** `npm run build` + `tsc` limpios; captura de los 4 badges lado a lado validando
-la nueva jerarquía **antes** de tocar componentes reales.
+**Dos regresiones de contraste reales, encontradas al verificar (no se habrían notado sin
+calcular contraste, solo "se ve bien"):**
+- `.button--primary` tenía texto casi negro (`#10170d`) pensado para el CTA viejo (verde claro
+  `#b8f47d`); con el CTA nuevo (verde oscuro `#059669`) el texto habría quedado casi invisible.
+- El verde/teal de marca con texto blanco encima da 3.68-3.77:1 (AA de texto grande nomás, no
+  AAA) — se usa el tono "-hover" (más oscuro, 7.27-7.68:1 AAA) como fondo real de botones,
+  reservando el tono base para usos decorativos sin texto encima (puntos, glows, bordes).
+  `.app-header__date` tenía el mismo problema (texto blanco sobre `--color-primary`, 3.68:1, ni
+  siquiera pasaba AA) y se corrigió igual.
+
+**Verificación real:** `npm run typecheck` y `npm run build` limpios en cada incremento (no solo
+al final). Captura de los 4 badges renderizados con el CSS real (`tokens.css`, no una
+aproximación) confirmando la jerarquía corregida — tomada antes de tocar cualquier componente
+real, como pedía el plan.
 
 ---
 
