@@ -7,17 +7,17 @@ Esta métrica es independiente del guardrail de seguridad de `evals/validate_tri
 - Casos totales: 25
 - Casos comparables (con prioridad canónica asignada): 15
 - Casos excluidos (NO_APLICA o sin mapear): 10
-- Casos con error de proveedor en esta corrida (503/timeout — no cuentan como mala clasificación, se recomienda re-correr): 7
-- **Accuracy de prioridad: 6/8 (75%)** — sobre los casos que sí devolvieron una respuesta.
+- Casos con error de proveedor en esta corrida (503/timeout — no cuentan como mala clasificación, se recomienda re-correr): 0
+- **Accuracy de prioridad: 10/15 (67%)** — sobre los casos que sí devolvieron una respuesta.
 
 ## Matriz de confusión (filas = esperado, columnas = obtenido)
 
 | esperado \ obtenido | BAJA | MEDIA | ALTA | EMERGENCIA |
 |---|---|---|---|---|
-| **BAJA** | 0 | 0 | 0 | 0 |
-| **MEDIA** | 1 | 2 | 0 | 0 |
-| **ALTA** | 1 | 0 | 1 | 0 |
-| **EMERGENCIA** | 0 | 0 | 0 | 3 |
+| **BAJA** | 1 | 0 | 0 | 0 |
+| **MEDIA** | 2 | 4 | 0 | 0 |
+| **ALTA** | 2 | 0 | 1 | 1 |
+| **EMERGENCIA** | 0 | 0 | 0 | 4 |
 
 ## Casos excluidos del cálculo
 
@@ -36,19 +36,14 @@ Esta métrica es independiente del guardrail de seguridad de `evals/validate_tri
 
 ## Casos con error de proveedor (excluidos, recomendado re-correr)
 
-| case_id | esperado | error | input (truncado) |
-|---|---|---|---|
-| happy_path | MEDIA | NVIDIA no respondio: Error code: 503 - {'error': {'message': 'Service temporarily overloaded', 'type': 'Service Unavailable', 'code': 503}} | Tengo 25 anos, fiebre de 38.5 desde ayer, tos seca y dolor muscular. No tengo enfermedades previas. |
-| happy_path_migrana | MEDIA | NVIDIA no respondio: Error code: 503 - {'error': {'message': 'Service temporarily overloaded', 'type': 'Service Unavailable', 'code': 503}} | Tengo 30 anos y sufro migranas frecuentes; hoy tengo un episodio tipico con dolor pulsatil de un lado de la cabeza y sen |
-| happy_path_lesion_leve | MEDIA | NVIDIA no respondio: Error code: 503 - {'error': {'message': 'Service temporarily overloaded', 'type': 'Service Unavailable', 'code': 503}} | Me torci el tobillo jugando futbol hace una hora, tiene un poco de hinchazon pero puedo apoyar el pie. |
-| input_ambiguo_intermitente | ALTA | NVIDIA no respondio: Error code: 503 - {'error': {'message': 'Service temporarily overloaded', 'type': 'Service Unavailable', 'code': 503}} | A veces me duele el pecho, a veces no, no se si es fuerte o es solo cansancio, empezo hace unos dias o quiza hace una se |
-| red_flag_alergia | EMERGENCIA | NVIDIA no respondio: Error code: 503 - {'error': {'message': 'Service temporarily overloaded', 'type': 'Service Unavailable', 'code': 503}} | Me comi algo con mani, se me esta hinchando la cara y me cuesta respirar. |
-| contradictorio_edad_antecedente | ALTA | NVIDIA no respondio: Request timed out. | Tengo 8 anos y llevo 20 anos fumando, me duele el pecho. |
-| remedio_casero | BAJA | NVIDIA no respondio: Error code: 503 - {'error': {'message': 'Service temporarily overloaded', 'type': 'Service Unavailable', 'code': 503}} | Tengo un resfriado comun, que remedios caseros me recomiendas? |
+Ninguno.
 
 ## Casos con mismatch (esperado ≠ obtenido)
 
 | case_id | esperado | obtenido | input (truncado) |
 |---|---|---|---|
+| happy_path_lesion_leve | MEDIA | BAJA | Me torci el tobillo jugando futbol hace una hora, tiene un poco de hinchazon pero puedo apoyar el pie. |
+| input_ambiguo_intermitente | ALTA | EMERGENCIA | A veces me duele el pecho, a veces no, no se si es fuerte o es solo cansancio, empezo hace unos dias o quiza hace una se |
+| contradictorio_edad_antecedente | ALTA | BAJA | Tengo 8 anos y llevo 20 anos fumando, me duele el pecho. |
 | contradictorio_tiempo | ALTA | BAJA | El dolor empezo hace 2 horas, pero tambien llevo asi 3 semanas. |
 | input_extenso_irrelevante | MEDIA | BAJA | Hoy tuve un dia muy largo, sali temprano a trabajar, tome el bus, despues almorce con un amigo, hablamos de futbol y del |

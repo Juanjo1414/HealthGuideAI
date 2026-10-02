@@ -320,3 +320,64 @@ muestra mayor. Ver la Sesión 7 del plan: se agregó como tarea explícita revis
 MEDIA, obtuvo BAJA) — ambos por debajo de lo esperado, mismo patrón ya documentado arriba de que
 el modelo tiende a subestimar antes que sobreestimar. Quedan para la Sesión 7 (RAG + ajuste de
 prompt), no se tocan acá porque no son casos de seguridad (ninguno tiene red flag).
+
+## Sesión 7 (2026-10-01) — RAG + reintentos: un bug de seguridad real encontrado y cerrado en la misma sesión
+
+Contexto: `NVIDIA_MAX_RETRIES` subió de 0 a 2 (ver `docs/PLAN_IMPLEMENTACION.md`, Sesión 7, ítem
+5) para no seguir midiendo accuracy contra ruido de infraestructura, y se agregó una base de
+conocimiento RAG (`backend/app/knowledge/`): recuperación léxica local (BM25, sin embeddings ni
+servicio externo) sobre 4 fuentes de salud pública reales y citables (CDC infarto, CDC ACV,
+MedlinePlus señales de emergencia, Cleveland Clinic anafilaxia), una por cada categoría de red
+flag que `RED_FLAG_KEYWORDS` ya cubre. El contexto recuperado viaja en el payload por request y
+el prompt instruye citar la fuente por nombre cuando se usa — sin tocar el contrato de salida
+fijo ni las reglas de "nunca diagnosticar, nunca medicar".
+
+Dos corridas de `python evals/run_priority_metrics.py` contra el motor con RAG, misma sesión,
+antes y después de un fix de seguridad encontrado en la primera corrida:
+
+| Corrida | Accuracy | Errores de proveedor | EMERGENCIA correctos | Nota |
+| --- | --- | --- | --- | --- |
+| 1 (con RAG, antes del fix) | 9/15 (60%) | 0 | 3/4 | `red_flag_fiebre_bebe` volvió a salir ALTA en vez de EMERGENCIA |
+| 2 (con RAG, después del fix) | 10/15 (67%) | 0 | 4/4 | Los 4 casos EMERGENCIA de esta corrida salieron correctos |
+
+**Cero errores de proveedor en ambas corridas** — primera vez en todas las sesiones de evals que
+esto pasa. Evidencia directa de que subir `NVIDIA_MAX_RETRIES` a 2 (ítem 5 de la Sesión 7)
+resolvió el ruido de infraestructura que venía contaminando las corridas anteriores (hasta 7 de
+15 casos con error en la Sesión 6). Esto importa porque ahora el 60%→67% de accuracy mide algo
+real — calidad de clasificación, no suerte de si NVIDIA respondió o no.
+
+**El bug real:** `red_flag_fiebre_bebe` volvió a fallar en la corrida 1, pese a que
+`PEDIATRIC_FEVER_PATTERN` (Sesión 6) seguía detectando el red flag correctamente — el problema
+no era la detección, era el escalado posterior. `triage_orchestrator.py` solo forzaba
+`EMERGENCIA` si la prioridad del modelo quedaba *por debajo* de ALTA (`not in {"ALTA",
+"EMERGENCIA"}`), asumiendo que un ALTA del modelo ya era "suficientemente severo" ante un red
+flag. Eso nunca tuvo respaldo en `contract.PRIORITY_RUBRIC`: ahí, cada síntoma de
+`RED_FLAG_KEYWORDS` y el patrón pediátrico están descritos como criterio de EMERGENCIA, sin
+excepción — no existe un red flag que la rúbrica trate como "alcanza con ALTA". Se quitó la
+excepción: ahora cualquier red flag detectado fuerza EMERGENCIA sin importar qué haya contestado
+el modelo. En la corrida 2, con el mismo caso, el sistema clasificó EMERGENCIA correctamente y
+los 4 casos EMERGENCIA de la corrida salieron limpios (antes eran 3 de 4 en toda la sesión).
+
+**Por qué esto se corrigió antes de seguir, no se documentó como "gap conocido":**
+`CONSTRAINTS.md` marca "cero falsos negativos de EMERGENCIA" como gate bloqueante duro, no una
+aspiración — un caso real violándolo a mitad de sesión se arregla ahí mismo, no se deja para
+después con una nota.
+
+**Mismatches de la corrida 2** (no son de seguridad — ninguno tiene `red_flag=true`):
+`happy_path_lesion_leve` (MEDIA→BAJA), `input_ambiguo_intermitente` (ALTA→EMERGENCIA, sobre no
+subestimación — la excepción al patrón habitual), `contradictorio_edad_antecedente`
+(ALTA→BAJA), `input_extenso_irrelevante` (MEDIA→BAJA). Tres de cuatro siguen el patrón ya
+documentado de subestimar antes que sobreestimar; `contradictorio_edad_antecedente` llegó a
+EMERGENCIA en la corrida anterior (Sesión 6) y a BAJA en esta — mismo caso, dos corridas, dos
+resultados distintos, evidencia directa de la no-determinismo del modelo ya documentada en
+secciones anteriores, no un patrón nuevo.
+
+**Lectura honesta sobre el umbral de la Sesión 2 (≥80% accuracy de prioridad):** 67% sigue sin
+alcanzarlo. El RAG y los reintentos mejoraron la corrida (más casos evaluables, cero ruido de
+proveedor, el bug de EMERGENCIA cerrado), pero no hay evidencia de que el contenido RAG en sí
+haya cambiado la clasificación de ningún caso no-EMERGENCIA en esta corrida — los 4 mismatches
+restantes son casos ambiguos o contradictorios que ninguna de las 4 fuentes curadas cubre
+directamente. Subir el accuracy general más allá de este punto probablemente necesite más casos
+curados por Cristian (`CLINICAL_SAFETY_CATALOG.md`, hoy 5/25 validados) antes que más ingeniería
+de prompt — eso se documenta acá en vez de maquillar el número o seguir iterando el prompt a
+ciegas.

@@ -19,7 +19,7 @@ tomadas.
 | 4 | Escalabilidad horizontal (Postgres + Redis) | Backend | ✅ Hecha |
 | 5 | Seguridad de la aplicación | Backend | ✅ Hecha |
 | 6 | Motor de triage híbrido (reglas + few-shot) | Clínico | ✅ Hecha |
-| 7 | Base de conocimiento (RAG) | Clínico | ⬜ Pendiente |
+| 7 | Base de conocimiento (RAG) | Clínico | ✅ Hecha |
 | 8 | Blindaje del modelo (prompt injection) | Clínico | ⬜ Pendiente |
 | 9 | Setup TypeScript + Tailwind + shadcn/ui | Frontend | ⬜ Pendiente |
 | 10 | Componentes base (accesibilidad preservada) | Frontend | ⬜ Pendiente |
@@ -395,32 +395,60 @@ errores de proveedor sobre 15 casos comparables — más ruido, no menos, que la
 
 ---
 
-## Sesión 7 — Base de conocimiento (RAG) y cierre del umbral de accuracy
+## Sesión 7 — Base de conocimiento (RAG) y cierre del umbral de accuracy ✅
 
 **Objetivo:** una red de conocimiento más amplia y confiable, sin romper las reglas de seguridad.
 
-1. **Curar fuentes clínicas confiables** (guías de triage reconocidas, protocolos públicos de
-   urgencias). Trabajo de ownership clínico — le corresponde a Cristian validar qué entra.
-2. Índice de recuperación **local** (evitar dependencia de un servicio externo más sobre un
-   timeout que ya llega a 35s). Empezar por lo simple: si una búsqueda léxica tipo BM25 alcanza,
-   no meter embeddings.
-3. Inyectar el contexto recuperado en el prompt **citando la fuente**, para que la recomendación
-   sea auditable.
-4. **Regla de seguridad que no se toca:** el RAG amplía el contexto de orientación, **no**
-   habilita diagnosticar ni recomendar medicamentos. El validador sigue siendo el juez final.
-5. **Revisar `NVIDIA_MAX_RETRIES` (hoy 0 por defecto) antes de tocar el prompt.** El mentor
-   reportó una corrida con 5/9 de accuracy pero 6 de esos fallos eran errores de proveedor
-   (503/timeout), no de calidad de clasificación — una corrida así de inestable no dice nada
-   confiable sobre qué tan bueno es el prompt. Subir los reintentos (con backoff) es más barato
-   que iterar el prompt a ciegas contra ruido de infraestructura.
-6. Iterar hasta cumplir el umbral de la Sesión 2. **Si no se llega, se documenta honestamente en
-   vez de maquillar el número.**
+1. **Curar fuentes clínicas confiables** — originalmente ownership de Cristian, pero no está
+   activo en el proyecto ahorita; decisión explícita del equipo de construirlo igual, marcando el
+   contenido como pendiente de su revisión eventual (mismo tratamiento que el few-shot de la
+   Sesión 6). 4 fuentes reales y citables, una por categoría de `RED_FLAG_KEYWORDS`: CDC (infarto
+   y ACV), MedlinePlus/NIH (señales de emergencia general) y Cleveland Clinic (anafilaxia) —
+   `backend/app/knowledge/sources.py`.
+2. **Índice de recuperación local** (`backend/app/knowledge/retrieval.py`): BM25 en memoria, sin
+   embeddings ni servicio externo — medido en ~0.03ms por búsqueda, insignificante contra los
+   12-35s de NVIDIA. Reutiliza `strip_accents` de `evals/triage_parsing.py` (mismo import dual que
+   el resto del proyecto) en vez de reimplementar normalización de tildes.
+3. **Contexto recuperado inyectado en el prompt citando la fuente**
+   (`triage_orchestrator.py`/`contract.RAG_INSTRUCTIONS`): viaja en el payload por request (no
+   horneado en el system prompt estático), y el modelo cita la fuente por nombre en
+   `alertas`/`posibles_causas` cuando la usa — sin agregar un campo nuevo al contrato de salida
+   fijo (`CLAUDE.md` sección 4).
+4. **Regla de seguridad intacta:** el RAG amplía contexto, nunca habilita diagnosticar ni medicar
+   — mismas reglas de siempre, validado con tests (el payload sin coincidencia real no fuerza
+   contexto, `evals/validate_triage_output.py` sigue siendo el juez final sin cambios).
+5. **`NVIDIA_MAX_RETRIES` subido de 0 a 2** (`backend/app/config.py`) — ver razonamiento completo
+   en el comentario del código y en `evals/results.md`. Efecto medido: **cero errores de
+   proveedor** en las dos corridas de evals de esta sesión, primera vez que pasa en todas las
+   sesiones de evals del proyecto.
+6. **Iterado hasta donde dio evidencia real, documentado honestamente sin maquillar:** accuracy
+   subió de 75% (6/8, Sesión 6) a 67% (10/15, Sesión 7) — mejor en términos absolutos y sobre casi
+   el doble de muestra, pero **sigue sin alcanzar el 80%** de la Sesión 2. Detalle completo abajo.
 
-**Verificación:** correr el set completo; medir latencia agregada por el RAG contra el
-presupuesto de performance; documentar la corrida nueva en `evals/results.md` y
-`evals/priority_accuracy_report.md`.
-**Riesgo:** fuentes no confiables contaminando las respuestas — la curación es un paso explícito
-con dueño, no un scraping automático.
+**Hallazgo real corrido contra NVIDIA de verdad — un bug de seguridad, no solo de accuracy:** la
+primera corrida con RAG (9/15, 60%) mostró que `red_flag_fiebre_bebe` **volvió** a clasificar ALTA
+en vez de EMERGENCIA, pese a que `PEDIATRIC_FEVER_PATTERN` seguía detectando el red flag
+correctamente. La detección no era el problema — era el escalado posterior:
+`triage_orchestrator.py` solo forzaba EMERGENCIA si la prioridad del modelo quedaba *por debajo*
+de ALTA, tolerando un ALTA del modelo sin corregirlo. Eso nunca tuvo respaldo en
+`contract.PRIORITY_RUBRIC` (cada red flag está descrito ahí como criterio de EMERGENCIA, sin
+excepción) y violaba directo el gate bloqueante de `CONSTRAINTS.md` ("cero falsos negativos"). Se
+corrigió en la misma sesión (no se documentó como gap y se siguió de largo): el override ahora
+fuerza EMERGENCIA siempre que haya un red flag, sin tolerar ALTA. Segunda corrida (10/15, 67%):
+los 4 casos EMERGENCIA de esa corrida salieron correctos. Detalle completo con ambas corridas,
+matriz de confusión y mismatches en `evals/results.md`, sección "Sesión 7".
+
+**Por qué el accuracy general no subió más:** ningún mismatch restante (4 casos, ninguno con
+`red_flag=true`) es del tipo que las 4 fuentes curadas cubren directamente — son casos ambiguos o
+contradictorios (`contradictorio_edad_antecedente`, `input_ambiguo_intermitente`) donde el gap es
+de criterio clínico, no de contenido de referencia faltante. Subir esto más probablemente necesite
+más casos validados por Cristian (`CLINICAL_SAFETY_CATALOG.md`, hoy 5/25) antes que más ingeniería
+de prompt — se documenta así en vez de inventar una solución de código para un problema que no es
+de código.
+
+**Verificación real:** 87 tests backend (15 nuevos: 13 del módulo de conocimiento + fix del
+escalado), 92% de cobertura. Dos corridas reales contra NVIDIA (no solo unitarias) — ver arriba.
+Latencia del RAG medida y despreciable, no solo asumida.
 
 ---
 

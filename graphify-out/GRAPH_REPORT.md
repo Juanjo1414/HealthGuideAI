@@ -6,18 +6,18 @@
 - Unclassified: 21 file(s) not represented in the graph (top: (none) 8, .csv 3, .example 2)
 
 ## Summary
-- 759 nodes · 1492 edges · 36 communities (30 shown, 6 thin omitted)
-- Extraction: 94% EXTRACTED · 6% INFERRED · 0% AMBIGUOUS · INFERRED: 87 edges (avg confidence: 0.88)
+- 761 nodes · 1496 edges · 35 communities (29 shown, 6 thin omitted)
+- Extraction: 94% EXTRACTED · 6% INFERRED · 0% AMBIGUOUS · INFERRED: 86 edges (avg confidence: 0.88)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `ade52db4`
+- Built from commit: `3a2b0dea`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
 ## Community Hubs (Navigation)
 - test_api.py
-- dependencies.py
+- routes_auth.py
 - Frontend React App
 - triage_rules.py
 - triage_orchestrator.py
@@ -26,13 +26,13 @@
 - PLAN_IMPLEMENTACION.md — roadmap de 14 sesiones
 - test_gateway.py
 - validate_triage_output
-- run_priority_metrics.py
+- config.py
 - routes_triage.py
 - Capas del Diagrama de Arquitectura
 - Config de Build del Frontend
 - Decision NVIDIA vs Gemini y Revision de Mentores
 - Bugs Documentados en CLAUDE.md
-- Manejo del Sobre de Error
+- dependencies.py
 - CI y Requisitos de Escalabilidad
 - Bug de Palabras Clave de Medicacion y Gaps de CI
 - CONSTRAINTS.md — nivel de calidad exigido
@@ -43,17 +43,16 @@
 - Skill de Refactor de Archivos Grandes
 - Docker Entrypoint
 - KnowledgeRetriever
-- config.py
-- test_csrf.py
-- AccessLogMiddleware
-- CSRFOriginCheckMiddleware
-- SecurityHeadersMiddleware
+- test_auth.py
+- UserStore
+- SessionStore
+- RedisRateLimiter
 - Exception
 
 ## God Nodes (most connected - your core abstractions)
 1. `Database` - 33 edges
 2. `get_settings()` - 29 edges
-3. `KnowledgeRetriever` - 23 edges
+3. `KnowledgeRetriever` - 22 edges
 4. `Diagrama de Arquitectura — HealthGuideAI` - 20 edges
 5. `TriageOrchestrator` - 18 edges
 6. `UserStore` - 18 edges
@@ -85,55 +84,55 @@
 - **Evidencia consolidada de la decisión NVIDIA vs Gemini** — decision_log_decision1_nvidia_vs_gemini, decision_table_doc, readme_known_failures, claude_md_notebook_gemini [INFERRED 0.85]
 - **Flujo compartido de validación de seguridad del triage (notebook + backend + evals)** — claude_md_output_contract, decision_log_validate_triage_output, backend_readme_doc, constraints_enforced_table [INFERRED 0.85]
 
-## Communities (36 total, 6 thin omitted)
+## Communities (35 total, 6 thin omitted)
 
 ### Community 0 - "test_api.py"
-Cohesion: 0.06
-Nodes (37): enforce_rate_limit(), get_rate_limiter(), InMemoryRateLimiter, Redis, Request, RateLimiter, Rate limiting. Desde la Sesión 4, la implementación real es `RedisRateLimiter`…, Dependencia de FastAPI. `limiter` llega inyectado vía Depends(get_rate_limiter)… (+29 more)
+Cohesion: 0.15
+Nodes (17): InMemoryRateLimiter, Ventana deslizante en memoria de un solo proceso — solo para tests, ver el…, client_with_output(), make_stub_user(), model_output(), extra='forbid' (Sesion 5) tambien en TriageRequest., Un usuario real en el schema de test, no un objeto armado a mano —…, StubOrchestrator (+9 more)
 
-### Community 1 - "dependencies.py"
-Cohesion: 0.06
-Nodes (60): _ensure_admin_seeded(), get_current_user(), get_db(), get_evidence_store(), get_redis_client(), get_session_store(), get_triage_orchestrator(), get_user_store() (+52 more)
+### Community 1 - "routes_auth.py"
+Cohesion: 0.16
+Nodes (20): login(), logout(), me(), get, post, Response, Capa de API/Gateway para autenticación. Igual que routes_triage.py, esta es la…, El logout manual es el unico mecanismo real de cierre de sesion en este… (+12 more)
 
 ### Community 2 - "Frontend React App"
 Cohesion: 0.08
 Nodes (40): AuthApiError, authRequest(), getCurrentUser(), login(), logout(), signup(), requestTriage(), TriageApiError (+32 more)
 
 ### Community 3 - "triage_rules.py"
-Cohesion: 0.07
-Nodes (42): detect_red_flags(), Capa determinista de red flags (Sesion 6) — corre ANTES de llamar al modelo,…, Señales de alarma detectadas en el texto del usuario (lista vacía si ninguna)., El input real puede venir sin tildes — el chequeo tiene que matchear igual., No dos formas de detectar red flags que se puedan desincronizar — entrada (este…, Hallazgo real de la Sesion 6: 'red_flag_fiebre_bebe' clasificaba ALTA en vez de…, No todo lo que menciona fiebre es un red flag — sin la combinacion con edad de…, test_detects_known_red_flag() (+34 more)
+Cohesion: 0.06
+Nodes (45): detect_red_flags(), Capa determinista de red flags (Sesion 6) — corre ANTES de llamar al modelo,…, Señales de alarma detectadas en el texto del usuario (lista vacía si ninguna)., El input real puede venir sin tildes — el chequeo tiene que matchear igual., No dos formas de detectar red flags que se puedan desincronizar — entrada (este…, Hallazgo real de la Sesion 6: 'red_flag_fiebre_bebe' clasificaba ALTA en vez de…, No todo lo que menciona fiebre es un red flag — sin la combinacion con edad de…, test_detects_known_red_flag() (+37 more)
 
 ### Community 4 - "triage_orchestrator.py"
 Cohesion: 0.06
 Nodes (50): El contrato de producto es estable — ya fue validado por el modelo en la Parte…, build_system_prompt(), _format_few_shot(), _format_rubric(), Arma SYSTEM_PROTOTYPE a partir del contrato — mismo texto base que construye…, ModelProvider, Capa de orquestacion — equivalente a run_prototype() en el notebook, pero…, TriageOrchestrator (+42 more)
 
 ### Community 5 - "Database"
-Cohesion: 0.06
-Nodes (34): Database, Conexion a Postgres (Sesion 4 — reemplaza el SQLite de las sesiones anteriores,…, Solo para tests: borra el schema completo (CASCADE) al terminar, para no dejar…, EvidenceStore, Exception, Capa de evidencia — cada request/response/veredicto de validación queda como…, Todas las filas de evidencia, más nuevas primero. A propósito NO filtra acá qué…, _is_flagged() (+26 more)
+Cohesion: 0.07
+Nodes (30): Database, Conexion a Postgres (Sesion 4 — reemplaza el SQLite de las sesiones anteriores,…, Solo para tests: borra el schema completo (CASCADE) al terminar, para no dejar…, EvidenceStore, Exception, Capa de evidencia — cada request/response/veredicto de validación queda como…, Todas las filas de evidencia, más nuevas primero. A propósito NO filtra acá qué…, _is_flagged() (+22 more)
 
 ### Community 6 - "main.py"
-Cohesion: 0.19
-Nodes (11): _origin_from_referer(), CSRF (Sesion 5) via verificacion de origen, no double-submit token. La auth ya…, Middleware de gateway: request ID y logging de acceso estructurado. Orden de…, Headers de seguridad (Sesion 5) — defensa en profundidad para el navegador,…, Punto de entrada. Corre con: uvicorn app.main:app --reload --app-dir backend…, fastapi_middleware_cors, starlette_middleware_base, starlette_requests (+3 more)
+Cohesion: 0.06
+Nodes (37): CSRFOriginCheckMiddleware, _origin_from_referer(), ASGIApp, BaseHTTPMiddleware, Request, CSRF (Sesion 5) via verificacion de origen, no double-submit token. La auth ya…, _envelope(), install_error_handlers() (+29 more)
 
 ### Community 7 - "PLAN_IMPLEMENTACION.md — roadmap de 14 sesiones"
 Cohesion: 0.07
 Nodes (49): Backend service (compose.yml), Frontend service (compose.yml), Gateway service (compose.yml), Postgres service (compose.yml), Rationale: Postgres publicado en 5433 no 5432, Redis service (compose.yml), Arquitectura por capas propuesta (canal/API/orquestacion/modelo/validacion/evidencia/escalamiento), arquitectura.md — Arquitectura HealthGuideAI (+41 more)
 
 ### Community 8 - "test_gateway.py"
-Cohesion: 0.15
-Nodes (3): Tests de la capa de gateway agregada en la Sesion 3: versionado (/api/v1 vs…, test_ready_reports_not_ready_when_postgres_fails(), test_ready_reports_not_ready_when_redis_fails()
+Cohesion: 0.06
+Nodes (12): Tests del CSRFOriginCheckMiddleware — verificacion de origen para metodos que…, Un cliente que no es navegador (curl, un test, un futuro cliente movil) no…, Simula "Try it out" en /docs: el Origin es el propio backend, no está en…, Algunos navegadores viejos no mandan Origin en same-origin POST, pero sí…, test_post_falls_back_to_referer_when_origin_missing(), test_post_from_backends_own_origin_is_allowed(), test_post_without_origin_or_referer_is_allowed(), Tests de la capa de gateway agregada en la Sesion 3: versionado (/api/v1 vs… (+4 more)
 
 ### Community 9 - "validate_triage_output"
-Cohesion: 0.13
-Nodes (28): Any, me duele' no debe confundirse con reporte de tercero solo porque comparte la…, test_own_symptoms_do_not_trigger_third_party_rule(), test_rejects_boolean_confidence(), test_rejects_extra_fields_and_non_string_list_items(), test_rejects_non_object_json(), test_third_party_report_with_review_flag_passes(), test_third_party_report_without_review_flag_fails() (+20 more)
+Cohesion: 0.14
+Nodes (26): Any, me duele' no debe confundirse con reporte de tercero solo porque comparte la…, test_own_symptoms_do_not_trigger_third_party_rule(), test_rejects_boolean_confidence(), test_rejects_extra_fields_and_non_string_list_items(), test_rejects_non_object_json(), test_third_party_report_with_review_flag_passes(), test_third_party_report_without_review_flag_fails() (+18 more)
 
-### Community 10 - "run_priority_metrics.py"
-Cohesion: 0.12
-Nodes (16): env.py de Alembic — sin modelos ORM a proposito (mismo criterio que…, DDL del esquema, en una sola lista de sentencias — una única fuente de verdad…, csv, compute_priority_metrics(), load_cases(), PriorityMetricsReport, metrics.py Mide algo que validate_triage_output.py no mide: si la prioridad que…, Lee uno o más CSV de evals y devuelve todas las filas como dicts. No valida… (+8 more)
+### Community 10 - "config.py"
+Cohesion: 0.06
+Nodes (41): env.py de Alembic — sin modelos ORM a proposito (mismo criterio que…, _check_postgres(), _check_redis(), liveness(), get, Redis, Response, /health vs /ready — a propósito NO viven bajo /api (ver DECISION_TABLE.md, nota… (+33 more)
 
 ### Community 11 - "routes_triage.py"
-Cohesion: 0.18
-Nodes (13): create_triage(), post, Capa de API/Gateway. Esta es la unica capa que sabe de HTTP — recibe el…, BaseModel, field_validator, Esquemas de la API. TriageResponse envuelve el contrato de salida fijo de…, TriageRequest, TriageResponse (+5 more)
+Cohesion: 0.11
+Nodes (20): enforce_rate_limit(), Request, RateLimiter, Dependencia de FastAPI. `limiter` llega inyectado vía Depends(get_rate_limiter)…, Interfaz chica a propósito (Interface Segregation, CLAUDE.md sección 13): lo…, create_triage(), post, Capa de API/Gateway. Esta es la unica capa que sabe de HTTP — recibe el… (+12 more)
 
 ### Community 12 - "Capas del Diagrama de Arquitectura"
 Cohesion: 0.23
@@ -151,9 +150,9 @@ Nodes (14): HealthGuideAI_Gemini.ipynb (dado de baja), HealthGuideAI_Nvidia.ipyn
 Cohesion: 0.17
 Nodes (13): AI flow: input → validaciones deterministas → LLM → JSON → revisión, Bug: login no aparecía por caché de Docker + fallo silencioso de npm ci, Bug: Postgres nativo en puerto 5432 chocaba con el de Docker, Bug: prioridad en minúscula tumbaba validación Pydantic, Bug: run_prototype reventaba con ValidationError de Pydantic, Bug: score de evaluación crítica en escala 0-100 en vez de 0-10, Sistema de evals (validate_triage_output), frontend/ (React 18 + Vite) (+5 more)
 
-### Community 16 - "Manejo del Sobre de Error"
-Cohesion: 0.26
-Nodes (11): _envelope(), install_error_handlers(), handle_http_exception(), handle_unexpected_error(), handle_validation_error(), Request, Sobre de error consistente para toda la API. Antes de esto, cada endpoint…, _request_id() (+3 more)
+### Community 16 - "dependencies.py"
+Cohesion: 0.16
+Nodes (21): _ensure_admin_seeded(), get_db(), get_evidence_store(), get_redis_client(), get_session_store(), get_triage_orchestrator(), get_user_store(), Redis (+13 more)
 
 ### Community 17 - "CI y Requisitos de Escalabilidad"
 Cohesion: 0.24
@@ -187,45 +186,41 @@ Nodes (3): Umbral de 100 líneas para refactor, Sub-agente context-gatherer, Ski
 Cohesion: 0.10
 Nodes (26): KnowledgeRetriever, Motor de recuperacion local tipo BM25 (Sesion 7) para la base de conocimiento…, Hasta top_k chunks relevantes, o lista vacia si nada matchea. Una consulta sin…, Indice BM25 en memoria sobre una lista de KnowledgeChunk., RetrievedChunk, tokenize(), KnowledgeChunk, Corpus curado para RAG (Sesion 7). Cada entrada es una fuente de salud publica… (+18 more)
 
-### Community 29 - "config.py"
-Cohesion: 0.17
-Nodes (20): _check_postgres(), _check_redis(), liveness(), get, Redis, Response, /health vs /ready — a propósito NO viven bajo /api (ver DECISION_TABLE.md, nota…, readiness() (+12 more)
-
-### Community 30 - "test_csrf.py"
-Cohesion: 0.17
-Nodes (7): Tests del CSRFOriginCheckMiddleware — verificacion de origen para metodos que…, Un cliente que no es navegador (curl, un test, un futuro cliente movil) no…, Simula "Try it out" en /docs: el Origin es el propio backend, no está en…, Algunos navegadores viejos no mandan Origin en same-origin POST, pero sí…, test_post_falls_back_to_referer_when_origin_missing(), test_post_from_backends_own_origin_is_allowed(), test_post_without_origin_or_referer_is_allowed()
-
-### Community 31 - "AccessLogMiddleware"
+### Community 29 - "test_auth.py"
 Cohesion: 0.24
-Nodes (7): AccessLogMiddleware, ASGIApp, BaseHTTPMiddleware, Request, Asigna un request_id (o respeta el que mande un proxy delante nuestro, ej. el…, Una línea por request, sin datos sensibles: quién (método+ruta), qué pasó…, RequestIdMiddleware
+Nodes (13): client_with_fresh_db(), extra='forbid' (Sesion 5): un campo colado a mano (ej. "role": "admin") tiene…, test_login_with_correct_credentials_succeeds(), test_login_with_wrong_password_returns_401(), test_logout_invalidates_session(), test_me_with_valid_session_returns_user(), test_me_without_session_returns_401(), test_session_cookie_is_not_secure_in_development() (+5 more)
 
-### Community 32 - "CSRFOriginCheckMiddleware"
-Cohesion: 0.38
-Nodes (4): CSRFOriginCheckMiddleware, ASGIApp, BaseHTTPMiddleware, Request
+### Community 30 - "UserStore"
+Cohesion: 0.30
+Nodes (7): get_current_user(), Devuelve el usuario autenticado si la cookie de sesion es valida, o None si no…, EmailAlreadyRegisteredError, Exception, Capa de acceso a la tabla `users`. No sabe de HTTP ni de hashing de contraseñas…, User, UserStore
 
-### Community 33 - "SecurityHeadersMiddleware"
-Cohesion: 0.33
-Nodes (4): ASGIApp, BaseHTTPMiddleware, Request, SecurityHeadersMiddleware
+### Community 31 - "SessionStore"
+Cohesion: 0.31
+Nodes (5): Capa de acceso a la tabla `sessions`. Sesiones respaldadas por servidor (no JWT…, Session, SessionStore, datetime, secrets
+
+### Community 32 - "RedisRateLimiter"
+Cohesion: 0.29
+Nodes (5): Redis, Ventana deslizante real, compartida entre cualquier número de…, RedisRateLimiter, La prueba que justifica la Sesión 4: dos objetos RedisRateLimiter *distintos*…, test_redis_rate_limiter_shares_state_across_instances()
 
 ## Knowledge Gaps
 - **44 isolated node(s):** `react`, `react-dom`, `react-router-dom`, `vite`, `@vitejs/plugin-react` (+39 more)
-  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 260 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
+  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 261 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
 - **6 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
 - **Why does `Decisión 4: alcance honesto de requiere_revision` connect `backend/README.md` to `Database`?**
-  _High betweenness centrality (0.141) - this node is a cross-community bridge._
-- **Why does `get_settings()` connect `dependencies.py` to `CSRFOriginCheckMiddleware`, `test_api.py`, `SecurityHeadersMiddleware`, `Database`, `main.py`, `run_priority_metrics.py`, `config.py`?**
-  _High betweenness centrality (0.061) - this node is a cross-community bridge._
-- **Why does `TriageOrchestrator` connect `triage_orchestrator.py` to `dependencies.py`, `run_priority_metrics.py`, `routes_triage.py`, `KnowledgeRetriever`?**
-  _High betweenness centrality (0.053) - this node is a cross-community bridge._
+  _High betweenness centrality (0.140) - this node is a cross-community bridge._
+- **Why does `get_settings()` connect `dependencies.py` to `RedisRateLimiter`, `routes_auth.py`, `Database`, `main.py`, `config.py`?**
+  _High betweenness centrality (0.060) - this node is a cross-community bridge._
+- **Why does `Database` connect `Database` to `dependencies.py`, `config.py`, `UserStore`, `SessionStore`?**
+  _High betweenness centrality (0.050) - this node is a cross-community bridge._
 - **Are the 11 inferred relationships involving `Database` (e.g. with `_ensure_admin_seeded()` and `get_db()`) actually correct?**
   _`Database` has 11 INFERRED edges - model-reasoned connections that need verification._
-- **Are the 2 inferred relationships involving `KnowledgeRetriever` (e.g. with `KnowledgeChunk` and `TriageOrchestrator`) actually correct?**
-  _`KnowledgeRetriever` has 2 INFERRED edges - model-reasoned connections that need verification._
-- **Are the 4 inferred relationships involving `TriageOrchestrator` (e.g. with `get_triage_orchestrator()` and `create_triage()`) actually correct?**
-  _`TriageOrchestrator` has 4 INFERRED edges - model-reasoned connections that need verification._
+- **Are the 3 inferred relationships involving `TriageOrchestrator` (e.g. with `get_triage_orchestrator()` and `create_triage()`) actually correct?**
+  _`TriageOrchestrator` has 3 INFERRED edges - model-reasoned connections that need verification._
 - **What connects `react`, `react-dom`, `react-router-dom` to the rest of the system?**
   _44 weakly-connected nodes found - possible documentation gaps or missing edges._
+- **Should `test_api.py` be split into smaller, more focused modules?**
+  _Cohesion score 0.14855072463768115 - nodes in this community are weakly interconnected._
