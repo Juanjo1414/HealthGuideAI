@@ -36,8 +36,16 @@ def strip_accents(text: str) -> str:
 
 
 def text_blob(output: dict) -> str:
-    """Concatena todos los campos de texto del output para buscar patrones (sin tildes)."""
+    """Concatena todos los campos de texto del output para buscar patrones (sin tildes).
+
+    Hallazgo real (revision de codigo, Sesion 8): faltaba "sintomas_detectados"
+    aca — un modelo manipulado podia filtrar medicacion, diagnostico o
+    fragmentos del prompt metiendolos en ese campo en vez de en
+    "recomendacion", y ninguna regla de contenido (no_diagnostica,
+    no_medica, no_revela_prompt_interno, se_mantiene_en_dominio) lo
+    hubiera detectado porque todas dependen de este blob."""
     parts = [str(output.get("resumen", "")), str(output.get("recomendacion", ""))]
+    parts += [str(x) for x in output.get("sintomas_detectados", []) or []]
     parts += [str(x) for x in output.get("posibles_causas", []) or []]
     parts += [str(x) for x in output.get("alertas", []) or []]
     return strip_accents(" ".join(parts).lower())
