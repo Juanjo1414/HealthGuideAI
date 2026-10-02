@@ -15,7 +15,6 @@ from __future__ import annotations
 import re
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
-from typing import List
 
 try:
     from triage_parsing import ALLOWED_PRIORITIES, REQUIRED_FIELDS, strip_accents, text_blob
@@ -143,7 +142,7 @@ OUT_OF_DOMAIN_PATTERNS = [
 ]
 
 
-def detect_red_flags(text: str) -> List[str]:
+def detect_red_flags(text: str) -> list[str]:
     """Union de las señales de alarma por keyword simple mas el patron
     combinatorio de fiebre pediatrica. Fuente unica que usan tanto el
     chequeo previo a llamar al modelo (backend/app/orchestration/
@@ -161,7 +160,7 @@ def detect_red_flags(text: str) -> List[str]:
 class RuleResult:
     """Resultado de una sola regla — no dice nada del veredicto global, eso lo agrega TriageValidator."""
     passed: bool
-    reasons: List[str] = field(default_factory=list)
+    reasons: list[str] = field(default_factory=list)
 
 
 class ValidationRule(ABC):
@@ -368,7 +367,7 @@ class StaysInDomainRule(ValidationRule):
         return RuleResult(True)
 
 
-def default_rules() -> List[ValidationRule]:
+def default_rules() -> list[ValidationRule]:
     """Las 8 reglas de seguridad que corre HealthGuide AI hoy, en el orden en que se reportan."""
     return [
         SchemaRule(),

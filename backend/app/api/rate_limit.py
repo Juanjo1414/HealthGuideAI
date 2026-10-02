@@ -30,6 +30,7 @@ from collections import defaultdict, deque
 from functools import lru_cache
 from typing import Protocol
 
+import redis
 from fastapi import Depends, HTTPException, Request
 
 from ..config import get_settings

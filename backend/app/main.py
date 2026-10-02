@@ -50,7 +50,9 @@ settings = get_settings()
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.cors_allowed_origins,
-    allow_methods=["POST", "GET"],
+    # DELETE: borrar historial desde el Perfil (Sesión 10/11). Sin esto el
+    # preflight del navegador lo bloquea siempre, aunque el endpoint exista.
+    allow_methods=["POST", "GET", "DELETE"],
     allow_headers=["*"],
     expose_headers=["X-Request-ID"],
     # Necesario para que la cookie de sesion viaje en requests cross-origin

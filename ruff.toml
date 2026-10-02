@@ -1,0 +1,14 @@
+# Lint de Python (Sesión 13). Corre en CI sobre backend/ y evals/.
+target-version = "py313"
+line-length = 120
+extend-exclude = ["graphify-out", "*.ipynb", "stitch_healthguide_ai_triage_web"]
+
+[lint]
+select = ["E", "F", "W", "I", "B", "UP"]
+ignore = [
+  "B008",  # Depends(...) en argumentos por defecto es el patrón estándar de FastAPI
+  "E501",  # sin formateador automático todavía; comentarios largos en español a propósito
+]
+
+[lint.isort]
+known-first-party = ["backend", "app", "evals"]

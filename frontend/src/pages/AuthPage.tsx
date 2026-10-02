@@ -25,7 +25,8 @@ function passwordStrength(password: string): { score: number; label: string; col
   if (/\d/.test(password) && /[a-zA-Z]/.test(password)) score += 1;
   if (/[^a-zA-Z0-9]/.test(password)) score += 1;
   const labels = ["Muy débil", "Débil", "Aceptable", "Buena", "Fuerte"];
-  const colors = ["text-outline", "text-error", "text-on-tertiary-container", "text-secondary", "text-secondary"];
+  // Todos ≥ 4.5:1 sobre blanco (el naranja de Stitch daba 2.02:1).
+  const colors = ["text-on-surface-variant", "text-error", "text-tertiary-container", "text-secondary", "text-secondary"];
   return { score, label: labels[score], color: colors[score] };
 }
 
@@ -416,7 +417,7 @@ export default function AuthPage() {
                     <span aria-hidden="true" className="material-symbols-outlined text-secondary-fixed text-[22px] flex-shrink-0 mt-0.5">{icon}</span>
                     <div className="flex flex-col">
                       <span className="font-label-lg text-label-lg font-bold">{title}</span>
-                      <span className="font-body-sm text-body-sm text-on-primary-container">{body}</span>
+                      <span className="font-body-sm text-body-sm text-primary-fixed-dim">{body}</span>
                     </div>
                   </div>
                 ))}

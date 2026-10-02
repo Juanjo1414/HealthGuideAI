@@ -78,7 +78,8 @@ export default function HistoryPage() {
 
   const activeFilter = FILTERS.find((f) => f.id === filter) ?? FILTERS[0];
   const visible = entries.filter((e) => activeFilter.match(e.prioridad));
-  const chart = [...entries].reverse().slice(-7);
+  // Las últimas 7, de la más antigua a la más reciente (entries viene al revés).
+  const chart = entries.slice(0, 7).map((_, i, recent) => recent[recent.length - 1 - i]);
 
   return (
     <PageShell>
@@ -370,6 +371,8 @@ export default function HistoryPage() {
   );
 }
 
+const chartY = (level: number) => 110 - (level - 1) * 30;
+
 /** Misma gráfica SVG de Stitch, alimentada con la prioridad real de cada consulta. */
 function PriorityChart({ entries }: { entries: HistoryEntry[] }) {
   if (entries.length < 2) {
@@ -382,9 +385,8 @@ function PriorityChart({ entries }: { entries: HistoryEntry[] }) {
   const width = 360;
   const left = 20;
   const right = 340;
-  const yFor = (level: number) => 110 - (level - 1) * 30;
   const step = (right - left) / (entries.length - 1);
-  const points = entries.map((e, i) => ({ x: left + i * step, y: yFor(getPriorityMeta(e.prioridad).level), entry: e }));
+  const points = entries.map((e, i) => ({ x: left + i * step, y: chartY(getPriorityMeta(e.prioridad).level), entry: e }));
   const line = points.map((p, i) => `${i === 0 ? "M" : "L"} ${p.x.toFixed(1)} ${p.y}`).join(" ");
   const area = `${line} L ${right} 120 L ${left} 120 Z`;
   const last = getPriorityMeta(entries[entries.length - 1].prioridad);

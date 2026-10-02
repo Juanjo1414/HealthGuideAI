@@ -17,7 +17,7 @@ from __future__ import annotations
 
 import hashlib
 import uuid
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 import psycopg2.extras
 
@@ -51,7 +51,7 @@ class EvidenceStore:
             (
                 request_id,
                 user_id,
-                datetime.now(timezone.utc),
+                datetime.now(UTC),
                 hashlib.sha256(symptoms_text.encode("utf-8")).hexdigest(),
                 len(symptoms_text),
                 sorted(model_output.keys()),
@@ -78,7 +78,7 @@ class EvidenceStore:
             (
                 request_id,
                 user_id,
-                datetime.now(timezone.utc),
+                datetime.now(UTC),
                 hashlib.sha256(symptoms_text.encode("utf-8")).hexdigest(),
                 len(symptoms_text),
                 type(error).__name__,

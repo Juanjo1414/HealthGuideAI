@@ -477,6 +477,7 @@ function ToggleCard({
           className="sr-only peer"
           type="checkbox"
           role="switch"
+          aria-checked={checked}
           checked={checked}
           disabled={disabled}
           onChange={(e) => onChange?.(e.target.checked)}

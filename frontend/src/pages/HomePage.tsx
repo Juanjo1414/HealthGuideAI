@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type FormEvent } from "react";
+import { useRef, useState, type FormEvent } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import PageShell from "../components/layout/PageShell";
 import OfflinePanel from "../components/triage/OfflinePanel";
@@ -82,7 +82,10 @@ export default function HomePage() {
   const navigate = useNavigate();
   const location = useLocation();
   const { isAuthenticated } = useAuth();
-  const [text, setText] = useState("");
+  // "Reevaluar" desde el resultado o el historial llega con el texto ya cargado.
+  const [text, setText] = useState(() =>
+    ((location.state as { prefill?: string } | null)?.prefill ?? "").slice(0, MAX_LENGTH)
+  );
   const [duration, setDuration] = useState<Duration | null>(null);
   const [status, setStatus] = useState<"idle" | "loading" | "offline" | "error">("idle");
   const [errorMessage, setErrorMessage] = useState("");
@@ -90,12 +93,6 @@ export default function HomePage() {
   const dictation = useSpeechDictation((transcript) =>
     setText((prev) => `${prev}${prev && !prev.endsWith(" ") ? " " : ""}${transcript}`.slice(0, MAX_LENGTH))
   );
-
-  // "Reevaluar" desde la pantalla de resultado vuelve acá con el texto ya cargado.
-  useEffect(() => {
-    const prefill = (location.state as { prefill?: string } | null)?.prefill;
-    if (prefill) setText(prefill.slice(0, MAX_LENGTH));
-  }, [location.state]);
 
   async function submit(symptoms: string) {
     const trimmed = symptoms.trim();
@@ -458,7 +455,7 @@ export default function HomePage() {
             {STEPS.map((step) => (
               <div key={step.n} className="bg-surface-container-low p-space-lg rounded-2xl flex flex-col justify-between">
                 <div>
-                  <span className="text-display-lg-mobile font-display-lg text-secondary-fixed-dim/60 font-bold">{step.n}</span>
+                  <span className="text-display-lg-mobile font-display-lg text-secondary font-bold">{step.n}</span>
                   <h3 className="font-headline-sm text-headline-sm text-primary mt-space-xs mb-space-xs">{step.title}</h3>
                   <p className="font-body-sm text-body-sm text-on-surface-variant">{step.body}</p>
                 </div>

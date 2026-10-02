@@ -11,9 +11,13 @@ interface SpeechRecognitionLike {
   interimResults: boolean;
   start: () => void;
   stop: () => void;
-  onresult: ((event: { resultIndex: number; results: ArrayLike<{ isFinal: boolean; 0: { transcript: string } }> }) => void) | null;
-  onend: (() => void) | null;
-  onerror: (() => void) | null;
+  addEventListener(type: "result", listener: (event: RecognitionResultEvent) => void): void;
+  addEventListener(type: "end" | "error", listener: () => void): void;
+}
+
+interface RecognitionResultEvent {
+  resultIndex: number;
+  results: ArrayLike<{ isFinal: boolean; 0: { transcript: string } }>;
 }
 
 type RecognitionCtor = new () => SpeechRecognitionLike;
@@ -28,8 +32,11 @@ export function useSpeechDictation(onTranscript: (text: string) => void) {
   const [listening, setListening] = useState(false);
   const recognitionRef = useRef<SpeechRecognitionLike | null>(null);
   const callbackRef = useRef(onTranscript);
-  callbackRef.current = onTranscript;
   const supported = getRecognitionCtor() !== null;
+
+  useEffect(() => {
+    callbackRef.current = onTranscript;
+  }, [onTranscript]);
 
   useEffect(() => () => recognitionRef.current?.stop(), []);
 
@@ -44,14 +51,14 @@ export function useSpeechDictation(onTranscript: (text: string) => void) {
     recognition.lang = "es-ES";
     recognition.continuous = true;
     recognition.interimResults = false;
-    recognition.onresult = (event) => {
+    recognition.addEventListener("result", (event) => {
       for (let i = event.resultIndex; i < event.results.length; i += 1) {
         const result = event.results[i];
         if (result.isFinal) callbackRef.current(result[0].transcript.trim());
       }
-    };
-    recognition.onend = () => setListening(false);
-    recognition.onerror = () => setListening(false);
+    });
+    recognition.addEventListener("end", () => setListening(false));
+    recognition.addEventListener("error", () => setListening(false));
     recognitionRef.current = recognition;
     recognition.start();
     setListening(true);

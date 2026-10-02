@@ -48,21 +48,25 @@ export default function ResultPage() {
   const [reevaluating, setReevaluating] = useState(false);
   const topRef = useRef<HTMLDivElement>(null);
 
+  // Foco al resultado cada vez que llega uno nuevo (lectores de pantalla).
+  const submittedAt = state?.submittedAt;
   useEffect(() => {
-    topRef.current?.focus();
-  }, [state?.submittedAt]);
+    if (submittedAt) topRef.current?.focus();
+  }, [submittedAt]);
 
-  // Sin estado (recarga o acceso directo): no hay nada que mostrar. A
-  // propósito no se persiste el resultado en storage — son datos de salud.
+  // Sin estado (acceso directo o pestaña nueva): no hay nada que mostrar. El
+  // resultado viaja en el estado de navegación de React Router: sobrevive a un
+  // F5 en la misma pestaña y desaparece al cerrarla. A propósito nunca se
+  // copia a localStorage/sessionStorage — son datos de salud.
   if (!state?.result) return <Navigate to="/" replace />;
 
-  const { result, symptoms, duration, submittedAt } = state;
+  const { result, symptoms, duration } = state;
   const meta = getPriorityMeta(result.prioridad);
   const isEmergency = result.prioridad === "EMERGENCIA";
   const wordCount = symptoms.trim().split(/\s+/).length;
   const needsMoreInfo = wordCount < MIN_WORDS && (result.prioridad === "BAJA" || result.prioridad === "MEDIA");
   const folio = result.request_id.replace(/-/g, "").slice(0, 8).toUpperCase();
-  const time = new Intl.DateTimeFormat("es-ES", { hour: "2-digit", minute: "2-digit" }).format(submittedAt);
+  const time = new Intl.DateTimeFormat("es-ES", { hour: "2-digit", minute: "2-digit" }).format(state.submittedAt);
 
   const selfCare = splitSentences(result.recomendacion);
   const doctorQuestions = [

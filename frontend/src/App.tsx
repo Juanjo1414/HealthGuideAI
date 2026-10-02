@@ -17,11 +17,12 @@ import ProtectedRoute from "./components/ProtectedRoute";
  * historial y perfil exigen sesión, porque para eso existe la cuenta.
  */
 export default function App() {
-  const { pathname, hash } = useLocation();
+  const location = useLocation();
 
+  // Cada navegación arranca arriba, salvo los anclas (#como-funciona).
   useEffect(() => {
-    if (!hash) window.scrollTo(0, 0);
-  }, [pathname, hash]);
+    if (!location.hash) window.scrollTo(0, 0);
+  }, [location]);
 
   return (
     <Routes>

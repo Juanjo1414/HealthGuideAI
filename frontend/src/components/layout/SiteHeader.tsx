@@ -90,12 +90,14 @@ export default function SiteHeader() {
   );
 }
 
+const mobileItemClass = ({ isActive }: { isActive: boolean }) =>
+  `flex flex-col items-center gap-0.5 px-4 py-1 font-label-sm text-label-sm ${
+    isActive ? "text-primary" : "text-on-surface-variant"
+  }`;
+
 /** Stitch no trae menú móvil (oculta el nav bajo md) — esto lo cubre con sus mismos tokens. */
 export function MobileTabBar() {
-  const item = ({ isActive }: { isActive: boolean }) =>
-    `flex flex-col items-center gap-0.5 px-4 py-1 font-label-sm text-label-sm ${
-      isActive ? "text-primary" : "text-on-surface-variant"
-    }`;
+  const item = mobileItemClass;
   return (
     <nav
       className="md:hidden fixed inset-x-0 bottom-0 z-50 flex items-center justify-around border-t border-outline-variant/30 bg-white/95 backdrop-blur-md py-1.5"
