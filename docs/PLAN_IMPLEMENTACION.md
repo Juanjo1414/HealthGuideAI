@@ -24,7 +24,7 @@ tomadas.
 | 9 | Setup TypeScript + Tailwind + shadcn/ui | Frontend | ✅ Hecha |
 | 10 | Componentes base (accesibilidad preservada) | Frontend | ✅ Hecha (con 11, diseño de Stitch) |
 | 11 | Pantallas completas + responsive | Frontend | 🟡 Hecha — falta QA visual en dispositivos |
-| 12 | Suite de tests completa | Verificación | ⬜ Pendiente |
+| 12 | Suite de tests completa | Verificación | ✅ Hecha |
 | 13 | GitHub Actions completos | Verificación | ⬜ Pendiente |
 | 14 | Despliegue público + merge a `main` | Verificación | ⬜ Pendiente |
 | 15 | Funcionalidad nueva del diseño de Stitch | Producto | ⬜ Plan a futuro |
@@ -636,21 +636,49 @@ para una sesión clínica, no se tocó desde el frontend.
 
 # FASE 4 — Verificación y entrega
 
-## Sesión 12 — Suite de tests completa
+## Sesión 12 — Suite de tests completa ✅
 
-1. **Backend**: unitarios (reglas de red flags, validador, provider con mocks), integración
-   (endpoints contra Postgres y Redis reales en contenedor, no mocks — un mock que pasa mientras
-   producción falla es peor que no tener test).
-2. **Frontend**: unitarios de componentes con Vitest + Testing Library.
-3. **E2E con Playwright**: signup, login, logout, triage en cada prioridad, sesión expirada,
-   rate limit alcanzado, error del proveedor. Corriendo en móvil y desktop.
-4. **Accesibilidad automatizada** con axe en el pipeline.
-5. **Evals como test**: los 25 casos y el set adversarial de la Sesión 8, reproducibles y con
-   los umbrales de la Sesión 2 como gate.
-6. Cubrir los huecos de cobertura hasta el umbral definido.
+1. **Backend** (pytest contra Postgres/Redis reales): tests nuevos de fallo del proveedor (502 honesto
+   y evidencia registrada), parseo de respuestas de NVIDIA (fences, JSON inválido, no-objeto,
+   excepciones del SDK envueltas), **escalabilidad horizontal automatizada** (sesión compartida entre
+   dos pools de conexión independientes; el rate limit compartido ya estaba), sesión expirada, y un
+   test de preflight CORS por cada método que usa el frontend. Cobertura 97%, gate en CI con
+   `--cov-fail-under=92` (ratchet).
+2. **Frontend** (Vitest + Testing Library): 72 tests — capa de API, AuthContext, preferencias,
+   dictado por voz, rutas, y cada pantalla con sus reglas de producto (resultado sin diagnóstico como
+   título, EMERGENCIA con alerta roja, pedir más datos con texto vago, texto del modelo nunca como
+   HTML, consentimientos obligatorios, borrado con confirmación…). Cobertura 91% líneas, con piso en
+   `vitest.config.ts`.
+3. **E2E con Playwright** contra el stack de compose, en escritorio (1440 px) y móvil (Pixel 7): 57
+   tests — signup, login, logout, credenciales incorrectas, correo duplicado, sesión expirada, triaje
+   en las 4 prioridades, texto vago y reevaluación, 429, 502, sin red, borrar historial y que el
+   resultado no quede en el almacenamiento del navegador. Auth va contra el backend real; las
+   respuestas de triaje se simulan en la red (deterministas, sin cuota de NVIDIA).
+4. **Accesibilidad automatizada**: axe (WCAG 2.1 AA) en las 10 pantallas, triaje completo solo con
+   teclado, y "sin scroll horizontal" a 375/768/1024/1440 px.
+5. **Evals como gate**: `evals/eval_gate.py` corre los 25 casos y el set adversarial sobre la
+   respuesta final y sale con código 1 si se incumple un umbral de `CONSTRAINTS.md`. Lógica de
+   umbrales testeada sin red (`backend/tests/test_eval_gate.py`).
+6. **Lint** (adelantado de la Sesión 13): `ruff` para Python y `oxlint` para el frontend (ESLint no se
+   pudo: `typescript-eslint` todavía no soporta TypeScript 7).
 
-**Verificación:** todo verde localmente antes de tocar CI. Si un test es inestable, se arregla o
-se borra — un test que falla a veces no es un test, es ruido.
+**Lo que los tests encontraron (y se corrigió en la misma sesión):**
+
+- **Bug real:** el CORS del backend solo permitía GET y POST — el "borrar historial" (DELETE) del
+  Perfil fallaba **siempre** desde el navegador. Los tests unitarios no lo veían porque simulan
+  `fetch`; lo destapó la E2E. Corregido + test de preflight por método.
+- **4 violaciones de contraste** heredadas de la paleta de Stitch (números decorativos del inicio,
+  textos del panel verde de acceso, etiquetas del medidor de contraseña con hasta 2.02:1). Se
+  reemplazaron por tonos de la misma paleta que pasan ≥ 4.5:1.
+- `redis` sin importar en `rate_limit.py` (anotación de tipo; lo marcó ruff).
+- Un falso "test inestable" que resultó ser un `uvicorn` local olvidado escuchando en
+  `127.0.0.1:8000` junto al contenedor — la misma trampa de Windows que el incidente de Postgres de
+  la Sesión 4. No era un bug de la app; se documenta por si le vuelve a pasar a alguien.
+
+**Gate de evals real (25 + 12 casos contra NVIDIA):** seguridad 100% (EMERGENCIA 4/4, respuestas
+finales seguras 25/25, adversarial 12/12), pero **accuracy de prioridad 60% < 80% — el gate falla**,
+y así queda: no se bajó el umbral. Los 6 desaciertos están validados por Cristian y 5 son sub-triaje
+de un nivel (MEDIA → BAJA); detalle en `evals/results.md`, Sesión 12. Es trabajo clínico pendiente.
 
 ---
 
