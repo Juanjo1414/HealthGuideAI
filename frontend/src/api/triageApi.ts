@@ -1,7 +1,11 @@
+import type { TriageResponse } from "./types";
+
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000/api";
 
 export class TriageApiError extends Error {
-  constructor(message, status) {
+  status: number;
+
+  constructor(message: string, status: number) {
     super(message);
     this.name = "TriageApiError";
     this.status = status;
@@ -13,8 +17,8 @@ export class TriageApiError extends Error {
  * que existe fetch ni la forma de la URL — si el endpoint cambia, cambia
  * este archivo, no los componentes.
  */
-export async function requestTriage(symptomsText) {
-  let response;
+export async function requestTriage(symptomsText: string): Promise<TriageResponse> {
+  let response: Response;
   const controller = new AbortController();
   const timeoutId = window.setTimeout(() => controller.abort(), 35000);
   try {
@@ -26,7 +30,7 @@ export async function requestTriage(symptomsText) {
       signal: controller.signal,
     });
   } catch (networkError) {
-    if (networkError?.name === "AbortError") {
+    if (networkError instanceof DOMException && networkError.name === "AbortError") {
       throw new TriageApiError(
         "La evaluación tardó demasiado. No esperes esta respuesta si tus síntomas son urgentes.",
         0
