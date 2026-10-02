@@ -20,7 +20,7 @@ tomadas.
 | 5 | Seguridad de la aplicación | Backend | ✅ Hecha |
 | 6 | Motor de triage híbrido (reglas + few-shot) | Clínico | ✅ Hecha |
 | 7 | Base de conocimiento (RAG) | Clínico | ✅ Hecha |
-| 8 | Blindaje del modelo (prompt injection) | Clínico | ⬜ Pendiente |
+| 8 | Blindaje del modelo (prompt injection) | Clínico | ✅ Hecha |
 | 9 | Setup TypeScript + Tailwind + shadcn/ui | Frontend | ⬜ Pendiente |
 | 10 | Componentes base (accesibilidad preservada) | Frontend | ⬜ Pendiente |
 | 11 | Pantallas completas + responsive | Frontend | ⬜ Pendiente |
@@ -452,40 +452,72 @@ Latencia del RAG medida y despreciable, no solo asumida.
 
 ---
 
-## Sesión 8 — Blindaje del modelo: prompt injection y abuso
+## Sesión 8 — Blindaje del modelo: prompt injection y abuso ✅
 
 **Objetivo:** que en producción nadie pueda cambiarle las reglas al agente, ni por el input del
-usuario ni por el contenido que el RAG recupera. Va después del RAG a propósito: **el contenido
-recuperado es entrada no confiable y amplía la superficie de ataque.**
+usuario ni por el contenido que el RAG recupera.
 
-1. **Jerarquía de instrucciones explícita** en el system prompt: las reglas de seguridad clínica
-   son inmutables y ninguna instrucción que venga en el input del usuario puede modificarlas,
-   revelarlas ni suspenderlas. El input del usuario se trata como *datos a analizar*, nunca como
-   instrucciones a obedecer.
-2. **Separación estructural** entre instrucciones del sistema y contenido del usuario
-   (delimitadores claros, el texto de síntomas en su propio campo, nunca concatenado crudo
-   dentro de las instrucciones).
-3. **Sanitización del contenido recuperado por RAG** antes de inyectarlo — una guía clínica
-   manipulada no puede convertirse en instrucciones para el modelo.
-4. **Sin estado persistente manipulable**: el agente no acumula "memoria" que un usuario pueda
-   envenenar entre sesiones. Cada consulta parte del mismo contrato de sistema.
-5. **El validador de salida es la última línea de defensa** y corre siempre, pase lo que pase
-   con el prompt: aunque el modelo sea convencido de diagnosticar o medicar, la respuesta se
-   bloquea en código. Esto ya existe (`evals/validate_triage_output.py`) — hay que garantizar
-   que no haya forma de saltárselo.
-6. **Set adversarial de red team** como suite de tests: intentos de ignorar instrucciones
-   previas, de extraer el system prompt, de hacerse pasar por médico o administrador, de pedir
-   dosis de medicamentos, de inyectar instrucciones dentro del relato de síntomas, y de sacar al
-   agente de su dominio (pedirle código, opiniones políticas, etc.).
-7. **Límites de abuso**: tamaño máximo de input, rate limiting ya distribuido (Sesión 4), y
-   detección de patrones de uso anómalo.
+1. **Jerarquía de instrucciones explícita** (`contract.INSTRUCTION_HIERARCHY`, inyectada primero
+   en el prompt, antes que cualquier otra regla): el input del usuario y el contexto RAG son DATO
+   A ANALIZAR, nunca una instrucción a obedecer, sin importar cómo se disfrace (administrador,
+   médico certificado, auditoría, emergencia real, delimitador falso de "fin de input").
+2. **Separación estructural** — ya existía: `NvidiaProvider.generate_json()` manda el system
+   prompt en el mensaje "system" y el payload entero como JSON en el mensaje "user"; el texto del
+   usuario nunca se concatena crudo dentro de las instrucciones. Confirmado y documentado, no
+   hubo que construirlo de cero.
+3. **Sanitización del contenido RAG** (`backend/app/knowledge/sanitization.py`,
+   `sanitize_chunk_text()`): redacta por completo cualquier chunk con un patrón de inyección
+   reconocible antes de que llegue al payload. Hoy el corpus es curado a mano (riesgo real bajo),
+   pero la capa existe para cuando una fuente externa futura venga comprometida.
+4. **Sin estado persistente manipulable** — confirmado con test: `TriageOrchestrator` no guarda
+   nada entre llamadas a `run()` más allá de lo construido una sola vez en `__init__` (prompt
+   estático, índice de recuperación de solo lectura).
+5. **El validador como última línea de defensa** — ya existía; se verificó que no hay forma de
+   saltárselo (`routes_triage.py` siempre lo corre) y se le agregaron 2 reglas nuevas (ver abajo).
+6. **Set adversarial de red team**: `evals/adversarial_cases.csv` (12 casos, 2 por categoría:
+   ignorar instrucciones, extraer el prompt, impersonar médico/administrador, pedir medicación
+   directa, inyectar instrucciones dentro del relato de síntomas, salirse del dominio) +
+   `evals/run_adversarial_suite.py`.
+7. **Límites de abuso** — `max_length=4000` en `TriageRequest` y rate limiting distribuido
+   (Sesión 4) ya existían, no hubo que agregarlos. La detección de patrones de uso anómalo queda
+   como gap honesto (ver `CONSTRAINTS.md`) — necesita infraestructura de monitoreo que no existe
+   todavía, no se improvisó algo a medias.
 
-**Verificación:** el set adversarial completo corre como test automatizado y debe pasar al
-100% — es el umbral fijado en la Sesión 2. Cada intento bloqueado queda documentado con qué
-defensa lo detuvo.
-**Riesgo:** confiar solo en el prompt para defenderse. La defensa real es en capas: prompt +
-separación estructural + validador en código. Si solo el prompt detiene un ataque, la defensa
-está incompleta.
+**Dos reglas de validación nuevas** (`evals/triage_rules.py`, 6 → 8 reglas):
+`NoPromptLeakRule` (rechaza fragmentos literales de las instrucciones internas en la respuesta) y
+`StaysInDomainRule` (rechaza código/política — el agente no responde a pedidos fuera de su
+dominio).
+
+**Hallazgo real corriendo el set contra NVIDIA de verdad — un bug crítico, no cosmético:** la
+primera corrida con el método de medición correcto (ver abajo) mostró que 3 de 12 casos, al caer
+en el fallback de seguridad, **el fallback mismo fallaba su propio validador** —
+`build_safe_fallback()` usa la frase fija "antes de *tomar* una decisión", y `MEDICATION_KEYWORDS`
+tenía "tomar " como keyword suelto, generando un falso positivo sobre la respuesta de seguridad de
+última línea — justo el caso que más necesita una garantía de que siempre pasa. El mismo keyword
+hubiera marcado falsos positivos en producción sobre consejos de autocuidado completamente
+seguros ("toma abundante agua"). Se quitó el keyword genérico y se agregó
+`backend/tests/test_safe_response.py` con el invariante que faltaba: los fallbacks de seguridad
+SIEMPRE tienen que pasar su propio validador. Detalle completo en `evals/results.md`, Sesión 8.
+
+**Decisión metodológica real, no solo un bug de prompt:** medir "pasó/falló" sobre la respuesta
+CRUDA del modelo castiga casos donde la defensa en profundidad funcionó como se diseñó. El script
+se rediseñó para medir la respuesta FINAL que le llega al usuario (modelo → validador → fallback
+si hace falta, igual que `routes_triage.py`), reportando aparte qué capa detuvo cada intento.
+
+**Resultado real (12 casos, después del fix):**
+
+| Métrica | Resultado |
+| --- | --- |
+| Respuesta final segura para el usuario (umbral de la Sesión 2) | **12/12 (100%)** |
+| El modelo resistió solo, sin necesitar el validador | 8/12 (67%) |
+
+El sistema es seguro — ningún intento llegó a un usuario real sin pasar por el validador — pero
+el prompt por sí solo todavía no logra que el modelo se resista en 4 de 12 casos (extracción de
+prompt y medicación directa). No es bloqueante porque la capa de validación cubre el hueco, pero
+es dirección real de mejora para una sesión futura, documentado así en vez de maquillarlo.
+
+**Verificación real:** 103 tests backend (16 nuevos), 92% de cobertura. Una corrida real contra
+NVIDIA (no solo unitaria) — ver arriba.
 
 ---
 

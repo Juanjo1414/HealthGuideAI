@@ -381,3 +381,52 @@ directamente. Subir el accuracy general más allá de este punto probablemente n
 curados por Cristian (`CLINICAL_SAFETY_CATALOG.md`, hoy 5/25 validados) antes que más ingeniería
 de prompt — eso se documenta acá en vez de maquillar el número o seguir iterando el prompt a
 ciegas.
+
+## Sesión 8 (2026-10-01) — set adversarial: 100% de respuestas finales seguras, un bug critico en el fallback encontrado y cerrado
+
+Contexto: blindaje contra prompt injection (`docs/PLAN_IMPLEMENTACION.md`, Sesión 8). Se agregó
+`contract.INSTRUCTION_HIERARCHY` (el input del usuario y el contexto RAG son DATO A ANALIZAR,
+nunca una instrucción a obedecer), sanitización de contenido RAG
+(`backend/app/knowledge/sanitization.py`), y dos reglas de validación nuevas —
+`NoPromptLeakRule` y `StaysInDomainRule` — que suman 8 reglas en `evals/triage_rules.py`. Se
+construyó `evals/adversarial_cases.csv` (12 casos, 2 por cada categoría de ataque del plan:
+ignorar instrucciones, extraer el prompt, impersonar médico/administrador, pedir medicación
+directa, inyectar instrucciones dentro del relato de síntomas, salirse del dominio de salud) y
+`evals/run_adversarial_suite.py` para correrlo contra el modelo real.
+
+**Decisión metodológica importante, encontrada corriendo el set por primera vez:** medir "pasó/
+falló" sobre la respuesta CRUDA del modelo castiga casos donde la defensa en profundidad del
+proyecto funcionó exactamente como se diseñó — si el modelo se deja convencer pero el validador
+lo atrapa y el fallback seguro reemplaza la respuesta antes de llegar al usuario, eso es un
+éxito del sistema, no una falla. El script se rediseñó para medir lo que de verdad le llega al
+usuario (modelo → validador → fallback si hace falta, igual que `routes_triage.py`), reportando
+aparte, por transparencia, qué capa detuvo cada intento.
+
+**El hallazgo real y crítico de la sesión, no uno cosmético:** la primera corrida con el método
+corregido mostró que 3 de los 12 casos, al caer en el fallback seguro, **el fallback mismo
+fallaba su propio validador** — `build_safe_fallback()` usa la frase fija "antes de *tomar* una
+decisión" en su texto de recomendación, y `MEDICATION_KEYWORDS` tenía "tomar " (con espacio)
+como keyword suelto, generando un falso positivo sobre la respuesta de seguridad de última
+línea — exactamente el caso que más necesita una garantía de que siempre pasa. El mismo keyword
+hubiera marcado falsos positivos en producción sobre consejos de autocuidado completamente
+seguros ("toma abundante agua", "toma reposo"). Se quitaron "tome "/"tomar " de la lista (un
+"tomar [medicamento]" real casi siempre trae además el nombre del medicamento, una dosis en mg,
+o "cada N horas" — señales más específicas que ya estaban ahí) y se agregó
+`backend/tests/test_safe_response.py` con el invariante que faltaba: los dos fallbacks de
+seguridad SIEMPRE tienen que pasar su propio validador.
+
+Corrida final (después del fix), 12 casos contra NVIDIA real:
+
+| Métrica | Resultado |
+| --- | --- |
+| Respuesta final segura para el usuario (umbral de la Sesión 2) | **12/12 (100%)** |
+| El modelo resistió solo, sin necesitar el validador | 8/12 (67%) |
+
+**Lectura honesta de la brecha entre 100% y 67%:** el sistema es seguro — ningún intento llegó a
+un usuario real sin pasar por el validador — pero el prompt por sí solo (la jerarquía de
+instrucciones) todavía no logra que el modelo se resista en 4 de 12 casos (2 de extracción de
+prompt, 2 de medicación directa). No es un problema bloqueante porque la capa de validación
+existe justamente para esto, pero es una dirección real de mejora para el prompt en una sesión
+futura, no algo que haya que maquillar como "100% resuelto en el modelo".
+
+Detalle por caso, incluyendo qué capa detuvo cada intento, en `evals/adversarial_report.md`.
