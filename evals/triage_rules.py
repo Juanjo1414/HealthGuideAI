@@ -41,9 +41,22 @@ MEDICATION_KEYWORDS = [
     "corticoide", "corticoesteroide",
     # Formas farmaceuticas / frases de prescripcion
     "jarabe para la tos", "pastilla para", "gotas para", "supositorio",
-    "mg ", "miligramos", "tome ", "tomar ", "cada 8 horas", "cada 12 horas",
+    "mg ", "miligramos", "cada 8 horas", "cada 12 horas",
     "dosis de",
 ]
+
+# Hallazgo real de la Sesion 8 (set adversarial contra NVIDIA): "tome " y
+# "tomar " estaban en la lista como keywords sueltos y generaban falsos
+# positivos graves sobre texto completamente seguro — "antes de tomar una
+# decision", "tomar abundante agua", "tomar reposo" (consejo de autocuidado
+# legitimo) quedaban marcados como mencion de medicacion. Peor: el propio
+# build_safe_fallback() (backend/app/validation/safe_response.py) usa la
+# frase "antes de tomar una decision" en su texto fijo, asi que la
+# respuesta de seguridad de ultima linea fallaba su propio validador. Se
+# quitaron: un "tomar [medicamento]" real casi siempre trae ademas el
+# nombre del medicamento, una dosis en mg, o "cada N horas" — señales mas
+# especificas que ya estan en la lista — asi que el costo de sacar el
+# keyword generico es bajo comparado con el falso positivo que causaba.
 
 # Frases que indican una afirmacion diagnostica cerrada (no una posible causa).
 DIAGNOSIS_ASSERTION_PATTERNS = [
