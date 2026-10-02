@@ -53,7 +53,7 @@
 .sidebar-footer__status strong, .sidebar-footer__status small { display: block; }
 .sidebar-footer__status strong { font-size: 11px; }
 .sidebar-footer__status small { color: var(--color-text-muted); font-size: 10px; margin-top: 3px; }
-.status-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--color-cta); box-shadow: 0 0 10px rgba(184, 244, 125, 0.8); }
+.status-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--color-cta); box-shadow: 0 0 10px rgba(5, 150, 105, 0.8); }
 .sidebar-footer p { margin: 18px 0 0; color: #536471; font-size: 10px; }
 
 .app-content { width: min(100%, 1320px); margin: 0 auto; padding: 40px clamp(22px, 4vw, 64px) 34px; }
@@ -61,7 +61,10 @@
 .app-header__eyebrow, .section-kicker { margin: 0 0 11px; color: var(--color-primary); font-size: 10px; letter-spacing: 0.18em; font-weight: 800; }
 .app-header h1 { color: var(--color-text); font-size: clamp(26px, 3.5vw, 42px); font-weight: 600; letter-spacing: -0.045em; }
 .app-header__subtitle { margin: 10px 0 0; color: var(--color-text-muted); font-size: 14px; }
-.app-header__date { min-width: 250px; padding: 15px 18px; border: 1px solid #05658d; border-radius: 8px; background: var(--color-primary); text-align: right; box-shadow: 0 8px 18px rgba(8, 126, 174, 0.16); }
+/* Hallazgo real (Sesion 9): fondo --color-primary con texto blanco encima
+   (strong/span abajo) da 3.68:1 -- ni siquiera pasa AA (4.5:1) para texto
+   de este tamaño. Pasa a --color-primary-hover (7.27:1, AAA). */
+.app-header__date { min-width: 250px; padding: 15px 18px; border: 1px solid var(--color-primary); border-radius: 8px; background: var(--color-primary-hover); text-align: right; box-shadow: 0 8px 18px rgba(8, 145, 178, 0.16); }
 .app-header__date span { display: block; color: rgba(255, 255, 255, 0.78); font-size: 9px; letter-spacing: 0.16em; font-weight: 800; }
 .app-header__date strong { display: block; margin-top: 6px; color: #ffffff; font-size: 12px; font-weight: 700; }
 
@@ -83,7 +86,7 @@
 .results-workspace { animation-delay: 0ms; }
 .workspace-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 20px; }
 .workspace-heading h2 { font-weight: 600; letter-spacing: -0.04em; }
-.workspace-badge { padding: 6px 9px; border: 1px solid #4b9fbe; border-radius: 5px; color: #05658d; font-size: 9px; letter-spacing: 0.1em; font-weight: 800; }
+.workspace-badge { padding: 6px 9px; border: 1px solid #4b9fbe; border-radius: 5px; color: var(--color-primary-hover); font-size: 9px; letter-spacing: 0.1em; font-weight: 800; }
 .workspace-badge--mint { border-color: #4b9fbe; color: #3d782a; }
 .workspace-intro { max-width: 640px; margin: 8px 0 22px; color: var(--color-text-muted); font-size: 14px; }
 
@@ -96,8 +99,15 @@
 .symptom-form__footer { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
 .symptom-form__hint { margin: 0; color: var(--color-text-muted); font-size: 12px; }
 .button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; padding: 11px 20px; border: 0; border-radius: 7px; font-size: 13px; font-weight: 800; transition: background-color var(--transition-fast), transform var(--transition-fast); white-space: nowrap; }
-.button--primary { background: var(--color-cta); color: #10170d; }
-.button--primary:hover:not(:disabled) { background: var(--color-cta-hover); transform: translateY(-1px); }
+/* Hallazgo real (Sesion 9): el texto era casi negro (#10170d), pensado
+   para el CTA viejo que era verde claro (#b8f47d). El nuevo --color-cta es
+   verde oscuro (#059669) — con texto oscuro el boton quedaria casi
+   ilegible, y con texto blanco encima el contraste es 3.77:1 (AA de texto
+   grande nomas, no AAA). El reposo usa --color-cta-hover (7.68:1, AAA) y
+   el hover aclara hacia --color-cta -- mismos dos tokens, sin inventar un
+   tercero solo para esto. */
+.button--primary { background: var(--color-cta-hover); color: #ffffff; }
+.button--primary:hover:not(:disabled) { background: var(--color-cta); transform: translateY(-1px); }
 .button:disabled { cursor: not-allowed; opacity: 0.55; }
 
 .error-banner { padding: 14px 16px; border: 1px solid var(--priority-emergencia-border); border-radius: var(--radius-md); background: var(--priority-emergencia-bg); color: var(--priority-emergencia-text); font-size: 14px; }
