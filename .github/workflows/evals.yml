@@ -1,0 +1,54 @@
+name: Evals clínicos
+
+# Gate de evals (Sesión 12) contra NVIDIA real: 25 casos + set adversarial,
+# sobre la respuesta final que vería el usuario. Falla si se incumple
+# cualquier umbral de CONSTRAINTS.md (cero falsos negativos de EMERGENCIA,
+# 100% adversarial seguro, accuracy ≥ 80%...).
+#
+# NO corre en cada push ni en cada PR: son ~37 llamadas reales a NVIDIA por
+# corrida. Una vez por semana + manual cuando se toque el prompt, el
+# proveedor, las reglas o el RAG. Hoy falla por accuracy (60% < 80%, ver
+# evals/results.md, Sesión 12) — está en rojo a propósito hasta que se cierre
+# esa brecha clínica, no se bajó el umbral.
+on:
+  schedule:
+    - cron: "0 7 * * 1" # lunes 07:00 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  gate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      NVIDIA_API_KEY: ${{ secrets.NVIDIA_API_KEY }}
+      NVIDIA_MAX_RETRIES: "2"
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verificar que el secreto existe
+        run: |
+          if [ -z "$NVIDIA_API_KEY" ]; then
+            echo "::error::Falta el secreto NVIDIA_API_KEY en el repositorio (Settings > Secrets > Actions)."
+            exit 1
+          fi
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+          cache-dependency-path: backend/requirements*.txt
+      - run: pip install -r backend/requirements.txt
+      - name: Gate de evals
+        run: python evals/eval_gate.py
+      - name: Publicar reporte
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: evals-gate-report
+          path: |
+            evals/gate_report.md
+          retention-days: 90
+      - name: Resumen en la corrida
+        if: always()
+        run: cat evals/gate_report.md >> "$GITHUB_STEP_SUMMARY" || true

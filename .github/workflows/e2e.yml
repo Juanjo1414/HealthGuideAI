@@ -1,0 +1,61 @@
+name: E2E
+
+# Playwright contra el stack completo de compose (backend + frontend +
+# Postgres + Redis reales), en escritorio y móvil, con axe incluido. Las
+# respuestas de triaje se simulan en la red dentro de cada test, así que no
+# hace falta NVIDIA_API_KEY ni se gasta cuota.
+on:
+  push:
+    branches: [dev/Juanjo, main]
+  pull_request:
+    branches: [main, dev/Juanjo]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: e2e-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  playwright:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - name: Configurar .env para compose (sin secretos reales)
+        run: cp .env.example .env
+      - name: Levantar el stack
+        run: docker compose up -d --build --wait postgres redis backend frontend
+      - name: Esperar backend y frontend
+        run: |
+          for i in $(seq 1 60); do
+            curl -fsS http://localhost:8000/health && curl -fsS -o /dev/null http://localhost:8080/ && exit 0
+            sleep 2
+          done
+          docker compose logs backend
+          exit 1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Instalar dependencias y Chromium
+        working-directory: frontend
+        run: npm ci && npx playwright install --with-deps chromium
+      - name: Playwright (escritorio + móvil, axe incluido)
+        working-directory: frontend
+        run: npm run test:e2e
+      - name: Reporte de Playwright
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: frontend/playwright-report
+          retention-days: 7
+      - name: Logs del backend
+        if: failure()
+        run: docker compose logs backend
+      - name: Bajar el stack
+        if: always()
+        run: docker compose down -v

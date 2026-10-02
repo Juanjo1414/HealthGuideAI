@@ -25,7 +25,7 @@ tomadas.
 | 10 | Componentes base (accesibilidad preservada) | Frontend | ✅ Hecha (con 11, diseño de Stitch) |
 | 11 | Pantallas completas + responsive | Frontend | 🟡 Hecha — falta QA visual en dispositivos |
 | 12 | Suite de tests completa | Verificación | ✅ Hecha |
-| 13 | GitHub Actions completos | Verificación | ⬜ Pendiente |
+| 13 | GitHub Actions completos | Verificación | 🟡 Hecha — falta protección de rama (requiere `gh auth login`) |
 | 14 | Despliegue público + merge a `main` | Verificación | ⬜ Pendiente |
 | 15 | Funcionalidad nueva del diseño de Stitch | Producto | ⬜ Plan a futuro |
 
@@ -682,24 +682,34 @@ de un nivel (MEDIA → BAJA); detalle en `evals/results.md`, Sesión 12. Es trab
 
 ---
 
-## Sesión 13 — GitHub Actions completos
+## Sesión 13 — GitHub Actions completos 🟡
 
-Hoy solo existe `ci.yml` con 3 jobs. Falta el resto:
+1. **`ci.yml` ampliado**, en push y PR hacia `dev/Juanjo` **y** `main`: ruff, migraciones (corridas dos
+   veces para confirmar idempotencia), pytest contra Postgres/Redis de servicio con
+   `--cov-fail-under=92`; oxlint, typecheck, Vitest con umbrales de cobertura y build; y build de las
+   dos imágenes Docker.
+2. **`e2e.yml`**: levanta el stack de compose (con `.env.example`, sin secretos) y corre Playwright en
+   escritorio y móvil, axe incluido. Sube el reporte HTML si falla.
+3. **`security.yml`**: CodeQL (Python y JS/TS), `pip-audit`, `npm audit --audit-level=high` y
+   `gitleaks` sobre todo el historial. También corre los lunes, porque aparecen CVEs nuevos aunque
+   el código no cambie. Gitleaks encontró 3 falsos positivos (contraseñas de ejemplo de OpenAPI y la
+   de los tests E2E), ignorados por huella exacta en `.gitleaksignore`, no apagando la regla.
+4. **`evals.yml`**: el gate de evals contra NVIDIA real, **solo los lunes y manual**
+   (`workflow_dispatch`) — ~37 llamadas por corrida, no se gasta en cada push. Publica
+   `gate_report.md` como artefacto y en el resumen de la corrida. Requiere el secreto
+   `NVIDIA_API_KEY` en el repo; si falta, falla con un mensaje claro. **Hoy va a fallar por accuracy
+   (60% < 80%)**, a propósito.
+5. **`release.yml`**: al crear un tag `vX.Y.Z`, publica las imágenes en GitHub Container Registry
+   (`ghcr.io/<owner>/healthguideai-{backend,frontend}`), etiquetadas por versión y commit.
+6. **Dependabot** semanal para pip, npm, GitHub Actions y las imágenes base de Docker.
 
-1. **`ci.yml` ampliado**: lint + typecheck + unitarios + integración con servicios
-   Postgres/Redis, y que corra también en PRs hacia `dev/Juanjo`, no solo hacia `main`.
-2. **`e2e.yml`**: Playwright contra el stack levantado con compose.
-3. **`security.yml`**: CodeQL, escaneo de dependencias, detección de secretos.
-4. **`evals.yml`**: corrida programada de los 25 casos + set adversarial, con los umbrales
-   clínicos y de seguridad como gate, publicando el reporte como artefacto. Ojo: consume cuota
-   real de NVIDIA — definir frecuencia con cabeza.
-5. **`release.yml`**: build y publicación de imágenes versionadas.
-6. **Dependabot** y protección de rama para `main`.
+**Pendiente — protección de rama de `main`:** exigir PR con CI, E2E y Security en verde antes de
+mergear. Es configuración del repositorio en GitHub y necesita `gh` autenticado (`gh auth login`),
+que no estaba disponible en esta sesión. Comando listo para cuando lo esté:
+`gh api -X PUT repos/Juanjo1414/HealthGuideAI/branches/main/protection --input docs/branch-protection-main.json`.
 
-**Verificación:** abrir un PR de prueba y confirmar que todos los checks corren y bloquean lo que
-deben.
-
----
+**Deuda aceptada (igual que en la Sesión 5):** las actions están pineadas por tag mayor (`@v4`), no
+por SHA. Dependabot las mantiene al día.
 
 ## Sesión 14 — Despliegue público y merge a `main`
 
