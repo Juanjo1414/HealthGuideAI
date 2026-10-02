@@ -22,11 +22,12 @@ tomadas.
 | 7 | Base de conocimiento (RAG) | Clínico | ✅ Hecha |
 | 8 | Blindaje del modelo (prompt injection) | Clínico | ✅ Hecha |
 | 9 | Setup TypeScript + Tailwind + shadcn/ui | Frontend | ✅ Hecha |
-| 10 | Componentes base (accesibilidad preservada) | Frontend | ⬜ Pendiente |
-| 11 | Pantallas completas + responsive | Frontend | ⬜ Pendiente |
+| 10 | Componentes base (accesibilidad preservada) | Frontend | ✅ Hecha (con 11, diseño de Stitch) |
+| 11 | Pantallas completas + responsive | Frontend | 🟡 Hecha — falta QA visual en dispositivos |
 | 12 | Suite de tests completa | Verificación | ⬜ Pendiente |
 | 13 | GitHub Actions completos | Verificación | ⬜ Pendiente |
 | 14 | Despliegue público + merge a `main` | Verificación | ⬜ Pendiente |
+| 15 | Funcionalidad nueva del diseño de Stitch | Producto | ⬜ Plan a futuro |
 
 ---
 
@@ -120,9 +121,18 @@ verificado por tests reales — no por suposiciones.
 | Frontend | **TypeScript + Tailwind + shadcn/ui** | Migración completa desde `.jsx` + CSS plano |
 | Rama de trabajo | **`dev/Juanjo`** | Todo se prueba ahí; a `main` solo cuando esté funcional y testeado |
 
-**Design system** (vía skill `ui-ux-pro-max`, estilo "Accessible & Ethical", WCAG AAA):
-Primary `#0891B2` · Secondary `#22D3EE` · CTA `#059669` · Bg `#ECFEFF` · Text `#134E4A` ·
-Figtree + Noto Sans. **Prohibido:** neón, animaciones pesadas, gradientes morado/rosa de IA genérica.
+**Design system — actualizado (2026-10-02):** el diseño visual es el que el equipo armó en Google
+Stitch ("Serene Clinical Intelligence"), y reemplaza la paleta "Accessible & Ethical" de la Sesión 9.
+Superficie `#F9F9FF`, primary `#00392E` / primary-container `#0F5144`, secondary `#006C49`, Plus
+Jakarta Sans, íconos Material Symbols. Tokens portados 1:1 a `frontend/src/styles/tailwind.css`;
+escala de prioridad propia (4 niveles, ≥4.5:1). Todo el detalle — mapeo de pantallas, copy
+reescrito y backlog — en [`DESIGN_STITCH.md`](DESIGN_STITCH.md). **Prohibido igual que antes:**
+neón, animaciones pesadas, y además cualquier texto que afirme algo que el producto no hace
+(certificaciones, métricas o médicos inventados).
+
+| Decisión (2026-10-02) | Elegido | Implicación |
+| --- | --- | --- |
+| Acceso al triage | **Sin cuenta** | La cuenta solo sirve para guardar historial (`DECISION_LOG.md`, Decisión 5) |
 
 ---
 
@@ -571,56 +581,56 @@ real, como pedía el plan.
 
 ---
 
-## Sesión 10 — Componentes base sin perder la accesibilidad ya lograda
+## Sesiones 10 y 11 — Diseño de Stitch, componentes y pantallas completas ✅ (QA visual pendiente)
 
-**La sesión de mayor riesgo del frontend.** El código actual ya tiene accesibilidad que va más
-allá del default de shadcn, y es fácil perderla copiando componentes "de fábrica".
+**Cambio de rumbo respecto al plan original:** el equipo diseñó la interfaz completa en Google Stitch
+(10 pantallas). En vez de construir componentes shadcn "de fábrica" y después pantallas, se portó el
+HTML de cada pantalla de Stitch casi literal a TSX, con sus mismos tokens (el `tailwind.config` de
+Stitch, idéntico en las 10, quedó en `tailwind.css`). Detalle completo en
+[`DESIGN_STITCH.md`](DESIGN_STITCH.md). Las dos sesiones se hicieron juntas.
 
-1. Instalar solo los componentes shadcn necesarios.
-2. `PriorityBadge`: preservar **color + ícono + texto** (nunca solo color) con la escala nueva.
-3. `ResultCard`: checklist explícito ANTES/DESPUÉS de `aria-live="polite"`, foco programático al
-   mostrar el resultado, `role="status"`/`"alert"`. **No asumir que "shadcn ya trae ARIA" — esto
-   es propio.**
-4. Formularios a `Form` de shadcn, verificando que los `id` generados sigan ligados a
-   `aria-describedby`.
-5. Carga/error: `Skeleton` (el triage puede tardar hasta 35s) + `Sonner` para errores.
-6. `icons.jsx` → `lucide-react`, manteniendo `aria-hidden` en los decorativos.
-7. `DisclaimerBanner` visible y permanente, no escondido en un footer.
+**Backend (lo que el diseño necesitaba de verdad):**
 
-**Verificación:** navegación 100% por teclado; axe antes vs. después sin regresión;
-`prefers-reduced-motion` respetado.
+1. **Triage sin cuenta** (`DECISION_LOG.md`, Decisión 5): `POST /triage` usa `get_current_user`
+   (opcional). Sin sesión, evidencia con `user_id NULL` y sin texto; con sesión, el contenido se
+   guarda para el historial.
+2. **`GET /api/v1/triage/history`** filtrado por `user_id` en SQL. Si la salida del modelo no pasó el
+   validador, el historial reconstruye el fallback seguro — nunca expone la respuesta cruda insegura.
+3. **`DELETE /api/v1/triage/history`** (derecho al olvido desde el Perfil).
+4. **`created_at`** expuesto en `UserResponse` (lo pedía la pantalla de Perfil desde la Sesión 2).
 
----
+**Frontend:**
 
-## Sesión 11 — Pantallas completas, responsive e intuitivas
+1. 9 pantallas: inicio con triage directo, resultado, protocolo de urgencias, acceso (login /
+   registro / recuperar), historial, perfil/configuración, términos, 500 y 404. Migración completa a
+   TypeScript (`App.tsx`, `main.tsx`, todas las páginas); se retiraron `tokens.css`, `App.css`,
+   `icons.jsx` y los componentes `.jsx` viejos (grep previo, sin referencias colgando).
+2. Los 3 paneles del protocolo de Stitch son parte del flujo real: alerta roja en EMERGENCIA, panel
+   de "entrada insuficiente" con menos de 8 palabras (umbral del validador), panel offline sin red.
+3. Accesibilidad preservada: foco programático y `aria-live` en el resultado, `role="alert"` en
+   emergencias y errores, íconos `aria-hidden`, prioridad siempre con color + ícono + texto,
+   `motion-reduce` en todas las animaciones de pulso, labels reales en todos los campos.
+4. Funciones reales detrás de la visual: dictado por voz (Web Speech API), duración, autocompletar,
+   imprimir/PDF, copiar resumen y preguntas, gráfica de prioridad del historial, exportar JSON,
+   alias / país / escala de letra / reducción de movimiento (en el navegador, no datos de salud).
+5. **Copy reescrito** donde el diseño afirmaba cosas falsas (certificaciones, médicos y métricas
+   inventadas, "recomendaciones farmacológicas") — tabla completa en `DESIGN_STITCH.md`.
 
-**Objetivo:** todas las pestañas del inventario de la Sesión 2, funcionales y agradables de usar.
+**Verificación real:** 112 tests backend en verde (7 nuevos en `test_triage_history.py` + uno
+reescrito en `test_auth.py`); `npm run typecheck` y `npm run build` limpios; cada página compila en
+el servidor de desarrollo; las utilidades de Stitch confirmadas en el CSS compilado; flujo completo
+contra NVIDIA real (triage anónimo → 401 en historial → registro → triage con cuenta → historial con
+detalle → borrado → historial vacío). Bundle nuevo: 410 KB JS / 109 KB gzip (línea base para el
+presupuesto de la Sesión 12).
 
-1. `TriagePage` con el `Sidebar` de shadcn (hoy es un div custom), y las stat cards mostrando
-   **datos reales** — hoy son texto estático que dice "Disponible" sin verificar nada.
-2. `LoginPage`/`SignupPage` a `Card` + `Form`, con el responsive extendido (hoy no tienen
-   breakpoints propios).
-3. Implementar las pantallas faltantes del inventario. **Ojo:** dos de ellas necesitan trabajo de
-   backend primero, según `docs/PANTALLAS.md` — no es solo frontend:
-   - **Historial de consultas** requiere `GET /api/v1/triage/history` filtrado por `user_id` (hoy
-     `EvidenceStore` guarda evidencia pero nada la expone por usuario vía API).
-   - **Revisión humana** requiere `GET /api/v1/admin/flagged` protegido con
-     `Depends(require_admin)` — esa dependencia **ya existe** (`backend/app/api/dependencies.py`,
-     confirmado en la Sesión 3), solo falta el endpoint. Alcance deliberadamente el de un visor
-     de la lista, no una cola con asignación/SLA (ver `DECISION_LOG.md`, Decisión 4, y no
-     contradecirla "de paso").
-   - **Perfil** no necesita endpoints nuevos para la versión mínima (usa `/api/auth/me` y
-     `/api/auth/logout`, que ya existen).
-4. **Responsive real probado en dispositivo**, no solo redimensionando el navegador: 375px /
-   768px / 1024px / 1440px. Touch targets de 44x44px mínimo.
-5. Seguridad de frontend: manejo del token CSRF, sanitización de todo lo que se renderiza (la
-   respuesta del modelo se muestra como texto, nunca como HTML), sin datos sensibles en
-   `localStorage`.
-6. `grep` de `--color-`/`--priority-` antes de borrar `tokens.css`.
+**Pendiente (por eso la 11 queda en 🟡):** revisión visual en navegador a 375 / 768 / 1024 / 1440 px
+y axe — la sesión de navegador se desconectó antes. La pantalla de **Revisión humana** (admin) no
+tiene diseño en Stitch y sigue sin hacerse.
 
-**Verificación:** flujos completos (signup → login → triage en las 4 prioridades → historial) en
-móvil, tablet y desktop; validar contra el mood "médico, limpio, confiable" rechazando el look
-shadcn-default.
+**Hallazgo anotado, no corregido acá:** "fiebre… *sin* dificultad para respirar" se clasificó
+EMERGENCIA — la detección de señales de alarma por palabra clave no entiende negaciones. Es
+sobre-triaje (falla hacia el lado seguro) y ya es una debilidad conocida (CLAUDE.md sección 9); queda
+para una sesión clínica, no se tocó desde el frontend.
 
 ---
 
@@ -682,6 +692,27 @@ deben.
 
 ---
 
+## Sesión 15 — Funcionalidad nueva del diseño de Stitch (plan a futuro)
+
+**Objetivo:** que todo lo que el diseño de Stitch dibuja funcione de verdad. Hoy esas partes están
+marcadas "próximamente" o reemplazadas por algo real y más chico — ver la tabla de backlog en
+[`DESIGN_STITCH.md`](DESIGN_STITCH.md#backlog--funcionalidad-que-el-diseño-trae-y-todavía-no-existe).
+Orden sugerido, de más valor/menos riesgo a más:
+
+1. **Recuperar contraseña por correo** (proveedor de correo + token de un solo uso de 15 min).
+2. **Guardar una consulta anónima tras registrarse** (reclamar por `request_id`; revisar el modelo
+   de amenaza: el `request_id` hoy no es un secreto pensado para eso).
+3. **Login con Google** y **enlace mágico**.
+4. **Seguimiento 24 h / 48 h**: registrar evolución ("mejoró / igual / peor") y recordatorios
+   (correo / push; SMS solo si hay presupuesto).
+5. **Pase clínico** para el médico (enlace temporal firmado, solo lectura).
+6. **Conversación con preguntas de descarte** (triage multi-turno) — el más grande: cambia el
+   contrato del orquestador y necesita evals propios antes de mostrarse a usuarios.
+7. Accesibilidad extra del Perfil: modo alto contraste AAA y verbosidad para lector de pantalla.
+
+**Regla para esta sesión:** cada función se activa en la UI recién cuando su backend existe y tiene
+tests — sacar el "próximamente" es parte del mismo commit que la implementa, nunca antes.
+
 ## Dependencias y paralelización
 
 - **Sesión 1 primero siempre.** Rápida, y corrige el contexto que alimenta todo lo demás.
@@ -696,6 +727,7 @@ deben.
 - Si Cristian y Juan José se dividen: **uno toma clínico (6-8), el otro frontend (9-11)**, en
   paralelo.
 - **12 → 13 → 14 al final**, en ese orden.
+- **15 es posterior al MVP** y cada ítem es independiente; ninguno bloquea el despliegue de la 14.
 
 ## Archivos críticos
 
@@ -705,7 +737,7 @@ deben.
 - `backend/app/storage/{user_store,session_store,evidence_store}.py` · `backend/app/auth/security.py`
 - `backend/app/orchestration/{prompt_builder,contract}.py` · `evals/validate_triage_output.py`
 - `evals/CLINICAL_SAFETY_CATALOG.md`
-- `frontend/src/styles/tokens.css:16-29` · `frontend/src/components/{PriorityBadge,ResultCard}.jsx`
+- `frontend/src/styles/tailwind.css` (tokens de Stitch) · `frontend/src/constants/priority.ts` · `frontend/src/pages/ResultPage.tsx` · `docs/DESIGN_STITCH.md`
 - `.github/workflows/` · `TEAM_ROTATION.md`
 
 ## Herramientas de desarrollo

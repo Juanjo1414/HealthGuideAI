@@ -149,3 +149,35 @@ honesto (y más profesional) decir con claridad qué existe y qué no.
 `backend/scripts/list_flagged_for_review.py` lee `evidence.jsonl` y escribe
 `backend/data/flagged_for_review.jsonl` con los casos marcados. No es una cola, no notifica a
 nadie — es "un humano puede correr esto y ver qué quedó pendiente", ni más ni menos.
+
+## Decisión 5 — Triage sin cuenta; la cuenta existe solo para guardar el historial
+
+**Estado:** implementada (2026-10-02, Sesión 10/11, junto con el diseño de Stitch).
+
+Hasta acá `POST /triage` exigía sesión (`require_authenticated`). Decisión del equipo: **cualquiera
+puede consultar sin crear cuenta**, y la cuenta sirve para una sola cosa — que sus consultas queden
+guardadas en su historial. Es coherente con el problema que el producto resuelve (alguien con un
+síntoma y ansiedad no debería tener que registrarse antes de saber si va a urgencias) y con el diseño
+de Stitch, que lo pone en la portada ("Sin registro obligatorio").
+
+**Qué cambió, concretamente:**
+
+| Pieza | Antes | Ahora |
+| --- | --- | --- |
+| `POST /triage` | 401 sin sesión | Funciona sin sesión (`get_current_user`, opcional) |
+| Evidencia sin sesión | — | `user_id = NULL`, sin texto ni respuesta guardados (igual que el default anterior) |
+| Evidencia con sesión | Contenido solo si `EVIDENCE_INCLUDE_SENSITIVE_PAYLOADS=true` | Contenido **siempre** (es para lo que el usuario creó la cuenta) |
+| `GET /triage/history` | No existía | Solo del propio usuario, filtrado en SQL |
+| `DELETE /triage/history` | No existía | Derecho al olvido desde el Perfil |
+
+**Riesgos y cómo quedan cubiertos:**
+
+- *Abuso del endpoint abierto* — el rate limiting ya era por IP (Sesión 4), no por usuario; no cambia.
+- *Datos de salud guardados* — solo con cuenta, con consentimiento explícito en el registro, y con
+  borrado real (DELETE en la tabla, no un flag). Las consultas anónimas siguen sin guardar texto.
+- *Historial mostrando una respuesta insegura* — el historial reconstruye el fallback seguro si la
+  salida del modelo no pasó el validador (`_history_entry_from_row`), igual que lo vio el usuario en
+  su momento. Hay test dedicado (`test_history_never_exposes_unsafe_raw_output`).
+
+**Fuera de alcance (backlog en `docs/DESIGN_STITCH.md`):** asociar a la cuenta una consulta hecha
+antes de registrarse, login con Google / enlace mágico y recuperación de contraseña por correo.
