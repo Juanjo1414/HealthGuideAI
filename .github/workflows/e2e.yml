@@ -21,6 +21,10 @@ jobs:
   playwright:
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    env:
+      # Playwright registra decenas de cuentas desde la misma IP; el freno anti
+      # fuerza bruta (10/min por defecto) se prueba en el backend, no acá.
+      AUTH_RATE_LIMIT_MAX_REQUESTS: "1000"
     steps:
       - uses: actions/checkout@v4
       - name: Configurar .env para compose (sin secretos reales)

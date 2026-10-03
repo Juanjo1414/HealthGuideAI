@@ -15,6 +15,7 @@ from ..schemas.auth import LoginRequest, SignupRequest, UserResponse
 from ..storage.session_store import SessionStore
 from ..storage.user_store import EmailAlreadyRegisteredError, User, UserStore
 from .dependencies import get_session_store, get_user_store, require_authenticated
+from .rate_limit import enforce_auth_rate_limit
 
 router = APIRouter()
 
@@ -40,8 +41,12 @@ def _set_session_cookie(response: Response, token: str) -> None:
     "/auth/signup",
     response_model=UserResponse,
     status_code=201,
+    dependencies=[Depends(enforce_auth_rate_limit)],
     summary="Crea una cuenta y deja la sesión iniciada",
-    responses={409: {"description": "Ya existe una cuenta con ese correo."}},
+    responses={
+        409: {"description": "Ya existe una cuenta con ese correo."},
+        429: {"description": "Demasiados intentos desde esta IP."},
+    },
 )
 def signup(
     payload: SignupRequest,
@@ -66,8 +71,12 @@ def signup(
 @router.post(
     "/auth/login",
     response_model=UserResponse,
+    dependencies=[Depends(enforce_auth_rate_limit)],
     summary="Inicia sesión con email y contraseña",
-    responses={401: {"description": "Correo o contraseña incorrectos."}},
+    responses={
+        401: {"description": "Correo o contraseña incorrectos."},
+        429: {"description": "Demasiados intentos desde esta IP."},
+    },
 )
 def login(
     payload: LoginRequest,

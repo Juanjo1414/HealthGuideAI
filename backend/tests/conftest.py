@@ -27,3 +27,16 @@ def db():
     yield database
     database.drop_schema()
     database.close()
+
+
+@pytest.fixture(autouse=True)
+def permissive_auth_rate_limit():
+    """Los tests hacen muchos signup/login desde la misma IP del TestClient: sin
+    esto el límite anti fuerza bruta (Sesión 13) los cortaría a mitad. El 429 en
+    sí se prueba aparte, en test_auth_rate_limit.py, con su propio limitador."""
+    from backend.app.api.rate_limit import InMemoryRateLimiter, get_auth_rate_limiter
+    from backend.app.main import app
+
+    limiter = InMemoryRateLimiter(max_requests=10_000, window_seconds=60)
+    app.dependency_overrides.setdefault(get_auth_rate_limiter, lambda: limiter)
+    yield
