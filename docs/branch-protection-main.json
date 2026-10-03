@@ -9,7 +9,8 @@
       "Dependencias (pip-audit + npm audit)",
       "Secretos (gitleaks)",
       "CodeQL (python)",
-      "CodeQL (javascript-typescript)"
+      "CodeQL (javascript-typescript)",
+      "CodeQL"
     ]
   },
   "enforce_admins": false,

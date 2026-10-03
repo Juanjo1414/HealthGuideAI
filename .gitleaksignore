@@ -1,7 +1,0 @@
-# Falsos positivos revisados a mano (Sesión 13). Se ignoran por huella exacta,
-# no desactivando la regla: cualquier secreto nuevo sigue bloqueando el CI.
-# Contraseña de ejemplo del esquema OpenAPI (json_schema_extra), no una credencial real.
-bd77790710b9ccd91dee18627bd24d3dfe304098:backend/app/schemas/auth.py:generic-api-key:15
-bd77790710b9ccd91dee18627bd24d3dfe304098:backend/app/schemas/auth.py:generic-api-key:26
-# Contraseña de prueba de los tests E2E (usuarios desechables @example.com).
-ddd3b94b7e2408cdd6eafc80ca8a6deaba30fee9:frontend/e2e/fixtures.ts:generic-api-key:42
