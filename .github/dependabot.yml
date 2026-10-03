@@ -1,27 +1,67 @@
 version: 2
+
+# Todo llega primero a dev/Juanjo y sube a main en el PR normal, después de la
+# revisión (CLAUDE.md sección 10). Ojo: dependabot.yml se lee desde la rama por
+# defecto, así que este cambio rige recién cuando esté mergeado en main. Las
+# alertas de seguridad de Dependabot siempre apuntan a main, eso no se configura.
+#
+# Las versiones mayores se ignoran en código e imágenes: React 19, Vite 8 o el
+# SDK de openai 3.x rompen el build o el proveedor de NVIDIA (que CI no prueba
+# con el SDK real), y migrarlos es una sesión dedicada, no un PR automático.
 updates:
   - package-ecosystem: pip
     directory: /backend
+    target-branch: dev/Juanjo
     schedule:
       interval: weekly
     open-pull-requests-limit: 5
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
+    groups:
+      backend:
+        patterns: ["*"]
+
   - package-ecosystem: npm
     directory: /frontend
+    target-branch: dev/Juanjo
     schedule:
       interval: weekly
     open-pull-requests-limit: 5
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
     groups:
       testing:
         patterns: ["vitest", "@vitest/*", "@testing-library/*", "@playwright/test", "@axe-core/*", "jsdom"]
+      frontend:
+        patterns: ["*"]
+
+  # Las mayores de Actions sí se aceptan: CI entero las ejerce en el mismo PR.
   - package-ecosystem: github-actions
     directory: /
+    target-branch: dev/Juanjo
     schedule:
       interval: weekly
+    groups:
+      actions:
+        patterns: ["*"]
+
+  # Imágenes base sin saltos de mayor: Node 26 no coincide con el Node 22 de CI.
   - package-ecosystem: docker
     directory: /backend
+    target-branch: dev/Juanjo
     schedule:
       interval: weekly
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
+
   - package-ecosystem: docker
     directory: /frontend
+    target-branch: dev/Juanjo
     schedule:
       interval: weekly
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
