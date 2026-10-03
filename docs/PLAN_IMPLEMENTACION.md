@@ -714,7 +714,12 @@ de un nivel (MEDIA → BAJA); detalle en `evals/results.md`, Sesión 12. Es trab
   intermitente según el timing): ahora es `role="status"`, con su propio test E2E de axe.
 - El inicio mostraba "100% Anónimo" con sesión iniciada; ahora dice que se guarda en el historial.
 - El logout fingía cerrar la sesión aunque el backend no respondiera; ahora avisa del error.
-- `engines.node >= 20` en `frontend/package.json`.
+- Node 22 en CI, en la imagen del frontend y en `engines` (`^22.12.0 || >=24`): Vitest 5 y Vite 7 ya
+  no soportan Node 20, aunque los workflows todavía lo usaban.
+- Segunda pasada de QA: los tests del freno de login ahora prueban de verdad que no bloquea triage y
+  que el límite sale de la configuración; las E2E que no prueban el registro crean la cuenta por API
+  (por la UI, el hash de contraseña con 6 workers volvía intermitentes los timeouts); `pitch/` al
+  `.gitignore`; "Garantía" → "Compromiso" en el copy, porque el producto no garantiza nada.
 
 **Pendiente — protección de rama de `main`:** exigir PR con CI, E2E y Security en verde antes de
 mergear. Es configuración del repositorio en GitHub y necesita `gh` autenticado (`gh auth login`),
@@ -734,12 +739,15 @@ por SHA. Dependabot las mantiene al día.
 2. Configurar secretos reales: `NVIDIA_API_KEY`, credenciales admin fuertes,
    `CORS_ALLOWED_ORIGINS`, cookies `Secure`. **Frontend y backend bajo el mismo dominio** para
    evitar romper las cookies.
-3. Observabilidad mínima: logs estructurados, endpoint de métricas, alerta si el proveedor falla
+3. Rate limiting detrás del proxy de la plataforma: uvicorn con `--proxy-headers
+   --forwarded-allow-ips` limitado a la red del proxy, más un test, para que los frenos de login y
+   triage sigan siendo por IP real (gap de `CONSTRAINTS.md`, hallazgo de QA de la Sesión 13).
+4. Observabilidad mínima: logs estructurados, endpoint de métricas, alerta si el proveedor falla
    o si se dispara un patrón de abuso.
-4. Smoke test end-to-end desde una red externa, confirmando que `admin/12345` **no** funciona y
+5. Smoke test end-to-end desde una red externa, confirmando que `admin/12345` **no** funciona y
    que los intentos de injection siguen bloqueados en el entorno real.
-5. Merge `dev/Juanjo` → `main` vía PR con todos los checks en verde.
-6. `README.md` con el link público y las instrucciones reales.
+6. Merge `dev/Juanjo` → `main` vía PR con todos los checks en verde.
+7. `README.md` con el link público y las instrucciones reales.
 
 ---
 
