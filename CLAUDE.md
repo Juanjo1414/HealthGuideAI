@@ -174,7 +174,8 @@ docs/
 
 gateway/nginx.conf                -> gateway reverse proxy opcional (Sesión 3), aditivo, puerto 8888
 compose.yml                       -> orquesta backend + frontend + Postgres + Redis + gateway con Docker
-.github/workflows/ci.yml          -> backend-tests, frontend-build, docker-build
+.github/workflows/                -> ci (lint+tests+cobertura+build), e2e (Playwright+axe), security (CodeQL,
+                                     audits, gitleaks), evals (gate semanal contra NVIDIA), release (imágenes GHCR)
 DECISION_LOG.md                   -> decisiones de producto con alternativas comparadas (proveedor, canal, arquitectura, alcance de requiere_revision)
 DECISION_TABLE.md                 -> comparativa NVIDIA vs Gemini con datos reales
 TEAM_ROTATION.md, MAKERS_REVIEW.md, REFLEXION_MAKERS_REVIEW.md -> feedback de mentores y ownership del equipo
@@ -328,10 +329,12 @@ su estado. Resumen rápido de lo ya hecho vs. lo que falta:
 - [ ] Blindaje explícito contra prompt injection sobre el modelo (más allá del validador de
       salida que ya existe).
 - [x] Frontend en TypeScript + Tailwind con el diseño de Stitch: 9 pantallas, triage sin cuenta,
-      historial y perfil reales (Sesiones 9-11). Pendiente: QA visual en dispositivos y axe.
+      historial y perfil reales (Sesiones 9-11). Axe y viewports automatizados en las E2E (Sesión 12).
 - [ ] Funcionalidad nueva que trae el diseño de Stitch (Google/enlace mágico, recuperar contraseña,
       seguimiento 24/48 h, conversación multi-turno...) — Sesión 15, backlog en `docs/DESIGN_STITCH.md`.
-- [ ] Suite de tests E2E y GitHub Actions más allá de `ci.yml`.
+- [x] Suite de tests completa (pytest, Vitest, Playwright E2E con axe) y GitHub Actions (CI, E2E,
+      seguridad, evals programados, release) — Sesiones 12-13. Pendiente: protección de rama de `main`.
+- [ ] Gate de accuracy clínico en 80% (hoy 60%, ver `evals/results.md`).
 - [ ] Despliegue público con link accesible.
 - [ ] `TEAM_ROTATION.md` con roles asignados (hoy en `TBD` pese a que el ownership real ya existe).
 

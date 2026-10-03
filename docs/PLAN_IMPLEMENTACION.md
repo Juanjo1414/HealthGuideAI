@@ -691,9 +691,12 @@ de un nivel (MEDIA → BAJA); detalle en `evals/results.md`, Sesión 12. Es trab
 2. **`e2e.yml`**: levanta el stack de compose (con `.env.example`, sin secretos) y corre Playwright en
    escritorio y móvil, axe incluido. Sube el reporte HTML si falla.
 3. **`security.yml`**: CodeQL (Python y JS/TS), `pip-audit`, `npm audit --audit-level=high` y
-   `gitleaks` sobre todo el historial. También corre los lunes, porque aparecen CVEs nuevos aunque
-   el código no cambie. Gitleaks encontró 3 falsos positivos (contraseñas de ejemplo de OpenAPI y la
-   de los tests E2E), ignorados por huella exacta en `.gitleaksignore`, no apagando la regla.
+   `gitleaks`. También corre los lunes, porque aparecen CVEs nuevos aunque el código no cambie. En
+   push/PR gitleaks escanea los commits nuevos; la corrida de los lunes recorre todo el historial.
+   Encontró 3 falsos positivos (la contraseña de ejemplo de OpenAPI y la de los tests E2E): se
+   permiten **por texto exacto** en `.gitleaks.toml`, no por huella de commit — las huellas dependen
+   del SHA y se rompían al hacer squash-merge del PR. CodeQL sube alertas pero no tumba el job; lo
+   que bloquea es el check `CodeQL` de code scanning, exigido en `docs/branch-protection-main.json`.
 4. **`evals.yml`**: el gate de evals contra NVIDIA real, **solo los lunes y manual**
    (`workflow_dispatch`) — ~37 llamadas por corrida, no se gasta en cada push. Publica
    `gate_report.md` como artefacto y en el resumen de la corrida. Requiere el secreto
@@ -702,6 +705,16 @@ de un nivel (MEDIA → BAJA); detalle en `evals/results.md`, Sesión 12. Es trab
 5. **`release.yml`**: al crear un tag `vX.Y.Z`, publica las imágenes en GitHub Container Registry
    (`ghcr.io/<owner>/healthguideai-{backend,frontend}`), etiquetadas por versión y commit.
 6. **Dependabot** semanal para pip, npm, GitHub Actions y las imágenes base de Docker.
+
+**Correcciones tras la revisión de QA (antes del PR a `main`):**
+- Login y registro no tenían freno contra fuerza bruta: ahora 10 intentos/min por IP, en un bucket
+  de Redis aparte del de triage (`enforce_auth_rate_limit`, `test_auth_rate_limit.py`). Las E2E lo
+  suben a 1000 con `AUTH_RATE_LIMIT_MAX_REQUESTS` porque registran decenas de cuentas desde una IP.
+- El esqueleto de carga del historial tenía `aria-busy` en un `div` sin rol (falla de axe
+  intermitente según el timing): ahora es `role="status"`, con su propio test E2E de axe.
+- El inicio mostraba "100% Anónimo" con sesión iniciada; ahora dice que se guarda en el historial.
+- El logout fingía cerrar la sesión aunque el backend no respondiera; ahora avisa del error.
+- `engines.node >= 20` en `frontend/package.json`.
 
 **Pendiente — protección de rama de `main`:** exigir PR con CI, E2E y Security en verde antes de
 mergear. Es configuración del repositorio en GitHub y necesita `gh` autenticado (`gh auth login`),
