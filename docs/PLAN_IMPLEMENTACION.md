@@ -708,8 +708,12 @@ de un nivel (MEDIA → BAJA); detalle en `evals/results.md`, Sesión 12. Es trab
    la primera tanda (15 PRs directo contra `main`, 3 rompiendo el build): ahora apunta a `dev/Juanjo`
    y sube a `main` en el PR normal; agrupa por ecosistema; e ignora versiones mayores en código e
    imágenes (React 19, Vite 8, openai 3.x y Node 26 quedan para una sesión de migración). Las
-   mayores de Actions sí pasan, porque CI entero las ejerce. Los PRs de esa primera tanda se
-   cerraron con un comentario explicando el motivo.
+   mayores de Actions sí pasan, porque CI entero las ejerce. Los PRs de esa tanda (y de una segunda
+   que se abrió al liberarse los cupos, con la config vieja todavía en `main`) se cerraron con un
+   comentario explicando el motivo. De paso apareció que `requirements.txt` no tenía techos de
+   mayor: el contenedor ya corría openai 3.x sin que nadie lo decidiera. Se verificó contra un
+   servidor que imita a NVIDIA (misma petición, misma lectura) y se pusieron techos (`openai<4`,
+   `fastapi<1`, `pydantic<3`...).
 
 **Correcciones tras la revisión de QA (antes del PR a `main`):**
 - Login y registro no tenían freno contra fuerza bruta: ahora 10 intentos/min por IP, en un bucket
