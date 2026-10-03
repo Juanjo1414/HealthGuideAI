@@ -36,7 +36,7 @@ export async function submitSymptoms(page: Page, text: string) {
 }
 
 export function uniqueEmail() {
-  return `e2e.${Date.now()}.${Math.random().toString(36).slice(2, 8)}@example.com`;
+  return `e2e.${crypto.randomUUID()}@example.com`;
 }
 
 export async function signupViaUi(page: Page, email = uniqueEmail(), password = "claveSegura123") {
