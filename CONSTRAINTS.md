@@ -15,7 +15,7 @@ filtrado no son el tipo de cosas que uno quiere descubrir después.
 ## Floor (siempre enforced, sin instalar nada nuevo)
 
 - Sin comentarios de supresión nuevos: `# type: ignore`, `# noqa`, `eslint-disable` (cuando el
-  frontend tenga linter, sesión 9+).
+  frontend: el linter es oxlint, Sesión 12).
 - Sin stubs sin implementar: `raise NotImplementedError` dejado a propósito, `except: pass`
   vacío, `TODO` parado donde debería ir la implementación real.
 - Sin tests saltados (`@pytest.mark.skip`) o borrados sin razón explícita en el mensaje de commit.
@@ -45,14 +45,15 @@ filtrado no son el tipo de cosas que uno quiere descubrir después.
 | Seguridad de salida (8 reglas) | Ningún caso viola esquema / diagnóstico / medicación / input incompleto / red flags / reporte de tercero / fuga de prompt / dominio | `evals/validate_triage_output.py` vía `run_eval_suite()` | cada sesión que toque el prompt o el proveedor |
 | Accuracy clínico | ≥ 90% PASS en los 25 casos, accuracy de prioridad ≥ 80% — **Sesión 12: 60% (9/15), no cumple** (sub-triaje MEDIA → BAJA en casos validados por Cristian, ver `evals/results.md`); antes 67% (10/15), subió desde 75% (6/8) de la Sesión 6 pero sobre una muestra mayor (15 vs 8) y sin errores de proveedor por primera vez; todavía no cumple el umbral | `python evals/eval_gate.py` (sale con código 1 si se incumple cualquier umbral de esta tabla) | `evals.yml` programado (Sesión 13) |
 | Red flags de EMERGENCIA | **Cero** falsos negativos — ninguna EMERGENCIA real clasificada por debajo | mismo run de evals, columna `expected_priority` vs `prioridad` en casos con `red_flag=true` — **cumplido en la corrida 2 de la Sesión 7** (4/4 EMERGENCIA correctos) tras corregir un bug real encontrado en la corrida 1 (ver `evals/results.md`, Sesión 7: el escalado toleraba que el modelo dijera ALTA sin corregir, violando el gate) | bloqueante duro; repetir con muestra mayor cuando NVIDIA esté más estable |
-| Análisis estático de seguridad | Sin alertas de CodeQL abiertas | CodeQL Python + JavaScript/TypeScript (`security.yml`) | cada push/PR + semanal, CI |
+| Análisis estático de seguridad | Sin alertas nuevas de CodeQL en el PR | CodeQL Python + JavaScript/TypeScript (`security.yml`). El job sube las alertas; **lo que bloquea el merge es el check `CodeQL` de code scanning exigido por la protección de rama** (`docs/branch-protection-main.json`) — pendiente de aplicar, ver Sesión 13 | cada push/PR + semanal, CI |
 | Seguridad del modelo | 100% del set adversarial de prompt injection resuelto de forma segura para el usuario | `evals/run_adversarial_suite.py` sobre `evals/adversarial_cases.csv` — **cumplido: 12/12 (100%)**, corrida real contra NVIDIA del 2026-10-01 (ver `evals/results.md`, Sesión 8). Medido sobre la respuesta final (modelo + validador + fallback), no solo la respuesta cruda — el modelo solo resistió 8/12 (67%) sin ayuda del validador, métrica aparte, informativa | manual hoy, luego `evals.yml` (Sesión 13) |
-| Secretos | Ninguno en el código fuente ni en el historial de git | `gitleaks` sobre todo el historial (`security.yml`); falsos positivos revisados a mano en `.gitleaksignore`, por huella exacta | cada push/PR, CI |
+| Secretos | Ninguno en el código fuente ni en el historial de git | `gitleaks` (`security.yml`): en cada push/PR escanea los commits nuevos; la corrida semanal programada recorre **todo** el historial. Única excepción, por texto exacto en `.gitleaks.toml`: la contraseña de ejemplo de OpenAPI y de los tests E2E | cada push/PR + semanal, CI |
 | Dependencias (Python) | Nada en `high` o superior | `pip-audit -r backend/requirements.txt` (`security.yml`) | cada push/PR + semanal, CI |
 | Dependencias (Node) | Nada en `high` o superior | `npm audit --audit-level=high` en `frontend/` (`security.yml`) | cada push/PR + semanal, CI |
 | Accesibilidad | Cero violaciones `critical`/`serious`, contraste ≥ 4.5:1, navegación 100% por teclado | `e2e/a11y-responsive.spec.ts` (axe WCAG 2.1 AA en todas las pantallas) + `e2e/desktop-only.spec.ts` (triaje solo con teclado) | CI (`e2e.yml`) |
 | Responsive | Sin scroll horizontal en 375px / 768px / 1024px / 1440px y en móvil emulado (Pixel 7) | `e2e/desktop-only.spec.ts` (anchos fijos) + proyecto `mobile` de Playwright | CI (`e2e.yml`) |
 | Cookies de sesión | `Secure` ligado a `ENVIRONMENT`, `HttpOnly` + `SameSite=Lax` siempre | `backend/tests/test_auth.py` (`test_session_cookie_is_secure_in_production` y su contraparte) | cada edit, CI |
+| Fuerza bruta en login/registro | Máximo 10 intentos por minuto por IP (`AUTH_RATE_LIMIT_MAX_REQUESTS`), en un bucket aparte del de triage | `backend/tests/test_auth_rate_limit.py` | cada edit, CI |
 | CSRF | Todo POST/PUT/PATCH/DELETE exige un `Origin`/`Referer` confiable si trae alguno | `backend/tests/test_csrf.py` | cada edit, CI |
 | Headers de seguridad | `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`, CSP en toda respuesta | `backend/tests/test_security_headers.py` | cada edit, CI |
 | Validación de entrada | `SignupRequest`/`LoginRequest`/`TriageRequest` rechazan campos inesperados (422) | `test_signup_rejects_unexpected_field`, `test_triage_rejects_unexpected_field` | cada edit, CI |
@@ -66,20 +67,22 @@ Cada fila nombra el comando que produce el veredicto. Una fila con número y sin
 
 | Métrica | Hoy | Dirección |
 |---|---|---|
-| Cobertura backend | 92% (103 tests, medido 2026-10-01, Sesión 8 — corre contra Postgres/Redis reales, no mocks) | no debe bajar |
+| Cobertura backend | 97% (medido 2026-10-02, Sesión 13 — corre contra Postgres/Redis reales, no mocks) | no debe bajar del piso de 92% |
 | Bundle JS frontend | ~410 KB / ~109 KB gzip tras el diseño de Stitch (Sesión 11; antes ~197 KB / ~64 KB) | se fija presupuesto duro (Lighthouse/`size-limit`) después de la migración a Tailwind+shadcn (Sesiones 9-11) — poner un número ahora quedaría obsoleto de inmediato |
 | Bundle CSS frontend | ~83 KB / ~13 KB gzip (antes ~13 KB / ~3.5 KB) | igual que arriba |
-| Latencia `/api/triage` | hasta 35s observados (timeout de `frontend/src/api/triageApi.js:19`, ligado a la latencia de NVIDIA, no del código propio) | separar "overhead de orquestación" vs. latencia del proveedor cuando se instrumente (Sesión 3, `/ready` y logging) |
+| Latencia `/api/triage` | hasta 35s observados (timeout de `frontend/src/api/triageApi.ts`, ligado a la latencia de NVIDIA, no del código propio) | separar "overhead de orquestación" vs. latencia del proveedor cuando se instrumente (Sesión 3, `/ready` y logging) |
 
 ## Gaps conocidos (por qué no todo tiene comando todavía)
 
 Ser honesto en vez de aparentar que esto ya está completo:
 
-- **Ya hay un check externo real** (Sesión 5): `pip-audit`/`npm audit` consultan bases de CVEs de
-  verdad (PyPI/OSV, npm advisory database), no una regla propia del proyecto. Sigue faltando el
-  equivalente para accesibilidad (WCAG vía `axe`, Sesión 10) y el escaneo de secretos/CVEs
-  automatizado en CI (`gitleaks`/`osv-scanner`, Sesión 13) — hoy `pip-audit`/`npm audit` se
-  corrieron a mano, no en cada push.
+- **Checks externos reales, en CI desde la Sesión 13:** `pip-audit`/`npm audit` (CVEs de PyPI/OSV y
+  npm), gitleaks, CodeQL y axe (WCAG 2.1 AA en las E2E). Lo que todavía no está activo es la
+  **protección de rama de `main`** que convierte esos checks en obligatorios para mergear: necesita
+  `gh` autenticado (`docs/branch-protection-main.json`). Hasta entonces, "bloquea" depende de
+  respetar el proceso de PR, no de que GitHub lo impida.
+- **El gate de accuracy clínico está en rojo** (60% < 80%, Sesión 12) y no hay excepción
+  registrada: ver `evals/results.md`. Es trabajo clínico (rúbrica MEDIA vs. BAJA), no de código.
 - **El set adversarial (Sesión 8) tiene 12 casos, 2 por categoría de ataque** — cubre lo que pide
   el plan, pero 12 casos no agota el espacio de ataques posibles contra un LLM. Correrlo
   periódicamente (y ampliarlo cuando se encuentre un caso nuevo) sigue siendo trabajo activo, no
@@ -89,8 +92,6 @@ Ser honesto en vez de aparentar que esto ya está completo:
   ya existían; la detección de anomalías (ej. un mismo IP mandando muchos intentos de jailbreak
   seguidos) necesitaría infraestructura de monitoreo que no existe todavía — no se improvisó algo
   a medias solo para marcar la casilla.
-- **El frontend no tiene linter ni type-checker instalado.** Llega con la migración a TypeScript
-  (Sesión 9): `tsc --noEmit` se vuelve parte del floor en cuanto exista `tsconfig.json`.
 - **Los 4 ejemplos few-shot del prompt (`contract.FEW_SHOT_EXAMPLES`, Sesión 6) no están
   validados clínicamente por Cristian todavía** — son un punto de partida razonable, escritos
   deliberadamente fuera del catálogo de evals para no contaminar el accuracy, pero no tienen el
