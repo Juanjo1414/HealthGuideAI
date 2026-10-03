@@ -704,7 +704,12 @@ de un nivel (MEDIA → BAJA); detalle en `evals/results.md`, Sesión 12. Es trab
    (60% < 80%)**, a propósito.
 5. **`release.yml`**: al crear un tag `vX.Y.Z`, publica las imágenes en GitHub Container Registry
    (`ghcr.io/<owner>/healthguideai-{backend,frontend}`), etiquetadas por versión y commit.
-6. **Dependabot** semanal para pip, npm, GitHub Actions y las imágenes base de Docker.
+6. **Dependabot** semanal para pip, npm, GitHub Actions y las imágenes base de Docker. Ajustado tras
+   la primera tanda (15 PRs directo contra `main`, 3 rompiendo el build): ahora apunta a `dev/Juanjo`
+   y sube a `main` en el PR normal; agrupa por ecosistema; e ignora versiones mayores en código e
+   imágenes (React 19, Vite 8, openai 3.x y Node 26 quedan para una sesión de migración). Las
+   mayores de Actions sí pasan, porque CI entero las ejerce. Los PRs de esa primera tanda se
+   cerraron con un comentario explicando el motivo.
 
 **Correcciones tras la revisión de QA (antes del PR a `main`):**
 - Login y registro no tenían freno contra fuerza bruta: ahora 10 intentos/min por IP, en un bucket
