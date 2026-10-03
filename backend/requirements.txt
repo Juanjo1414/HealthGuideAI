@@ -5,7 +5,7 @@ python-dotenv>=1.0
 openai>=1.50
 passlib>=1.7,<2
 bcrypt>=4.0,<4.1
-email-validator>=2.2,<3
+email-validator>=2.3.0,<3
 # Sesion 4: escalabilidad horizontal. psycopg2 (no async) porque el resto del
 # backend ya es sincrono (rutas def, no async def) — introducir un driver
 # async aca solo para la DB mezclaria dos modelos de concurrencia sin
