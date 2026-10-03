@@ -81,6 +81,12 @@ Ser honesto en vez de aparentar que esto ya está completo:
   **protección de rama de `main`** que convierte esos checks en obligatorios para mergear: necesita
   `gh` autenticado (`docs/branch-protection-main.json`). Hasta entonces, "bloquea" depende de
   respetar el proceso de PR, no de que GitHub lo impida.
+- **Detrás de un proxy, los frenos de tasa no son "por IP".** Login, registro y triage usan
+  `request.client.host`, y uvicorn no confía en `X-Forwarded-For`: entrando por el gateway o por el
+  proxy de un hosting, todos los clientes comparten un bucket (10 logins fallidos por minuto dejarían
+  a todos sin entrar). Directo al backend, como corre hoy, sí es por IP. Se arregla con
+  `--proxy-headers --forwarded-allow-ips=<subred del proxy>` y un test — **requisito de la Sesión 14
+  antes de desplegar**.
 - **El gate de accuracy clínico está en rojo** (60% < 80%, Sesión 12) y no hay excepción
   registrada: ver `evals/results.md`. Es trabajo clínico (rúbrica MEDIA vs. BAJA), no de código.
 - **El set adversarial (Sesión 8) tiene 12 casos, 2 por categoría de ataque** — cubre lo que pide
