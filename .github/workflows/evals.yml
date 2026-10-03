@@ -26,7 +26,7 @@ jobs:
       NVIDIA_API_KEY: ${{ secrets.NVIDIA_API_KEY }}
       NVIDIA_MAX_RETRIES: "2"
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Verificar que el secreto existe
         run: |
           if [ -z "$NVIDIA_API_KEY" ]; then
