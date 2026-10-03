@@ -6,8 +6,10 @@ import { renderAt, USER } from "../test/utils";
 import { deleteTriageHistory, getTriageHistory } from "../api/triageApi";
 import { useAuth } from "../context/AuthContext";
 import { loadAlias, loadCountry } from "../lib/preferences";
+import { toast } from "sonner";
 
 vi.mock("../context/AuthContext", () => ({ useAuth: vi.fn() }));
+vi.mock("sonner", () => ({ toast: { success: vi.fn(), error: vi.fn(), info: vi.fn() } }));
 vi.mock("../api/triageApi", async (importOriginal) => ({
   ...(await importOriginal<typeof import("../api/triageApi")>()),
   getTriageHistory: vi.fn(),
@@ -43,6 +45,15 @@ describe("ProfilePage", () => {
     await userEvent.click(screen.getByRole("button", { name: /cerrar sesión/i }));
 
     expect(logout).toHaveBeenCalled();
+  });
+
+  it("si el logout falla lo avisa en vez de fingir que cerró la sesión", async () => {
+    logout.mockRejectedValue(new Error("sin red"));
+    renderAt(<ProfilePage />);
+
+    await userEvent.click(screen.getByRole("button", { name: /cerrar sesión/i }));
+
+    await waitFor(() => expect(toast.error).toHaveBeenCalledWith(expect.stringMatching(/no se pudo cerrar la sesión/i)));
   });
 
   it("borrar el historial exige confirmación", async () => {

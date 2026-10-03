@@ -46,7 +46,9 @@ export async function signupViaUi(page: Page, email = uniqueEmail(), password = 
   await page.getByRole("checkbox", { name: /acepto los términos/i }).check();
   await page.getByRole("checkbox", { name: /inteligencia artificial/i }).check();
   await page.getByRole("button", { name: /crear cuenta segura/i }).click();
-  await expect(page).toHaveURL(/\/$/);
+  // El hash de la contraseña es caro a propósito; con varios workers en
+  // paralelo el registro puede pasar de los 5 s por defecto.
+  await expect(page).toHaveURL(/\/$/, { timeout: 15_000 });
   return { email, password };
 }
 
@@ -55,6 +57,8 @@ export async function expectNoSeriousA11yViolations(page: Page) {
   // Las animaciones de entrada pueden dejar contraste intermedio: se espera
   // a que la fuente de íconos y el layout estén estables antes de auditar.
   await page.evaluate(() => document.fonts.ready);
+  // Auditar la página ya cargada, no el skeleton (lo que el usuario usa de verdad).
+  await expect(page.locator('[aria-busy="true"]')).toHaveCount(0);
   const results = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"]).analyze();
   const serious = results.violations.filter((v) => v.impact === "critical" || v.impact === "serious");
   expect(

@@ -162,7 +162,7 @@ export default function HistoryPage() {
             </div>
 
             {state === "loading" && (
-              <div className="flex flex-col gap-space-md" aria-busy="true" aria-label="Cargando historial">
+              <div className="flex flex-col gap-space-md" role="status" aria-busy="true" aria-label="Cargando historial">
                 {[0, 1, 2].map((i) => (
                   <div key={i} className="h-40 rounded-2xl bg-surface-container-low animate-pulse" />
                 ))}

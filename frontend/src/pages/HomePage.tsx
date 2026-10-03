@@ -145,7 +145,7 @@ export default function HomePage() {
               </div>
               <div className="hidden sm:flex items-center gap-space-xs text-on-surface-variant font-label-sm text-label-sm">
                 <span aria-hidden="true" className="material-symbols-outlined text-base text-secondary">verified_user</span>
-                <span>Sin registro obligatorio • 100% Anónimo</span>
+                <span>{isAuthenticated ? "Sesión iniciada • Se guarda en tu historial privado" : "Sin registro obligatorio • 100% Anónimo"}</span>
               </div>
             </div>
 

@@ -11,7 +11,11 @@ test.describe("cuenta", () => {
 
     await page.goto("/perfil");
     await expect(page.getByLabel(/correo de la cuenta/i)).toHaveValue(email);
+    // Esperar la respuesta del logout: navegar antes cancela el fetch y la
+    // cookie sigue viva (el logout ya no se da por hecho si el backend no responde).
+    const loggedOut = page.waitForResponse((r) => r.url().includes("/auth/logout") && r.ok());
     await page.getByRole("button", { name: /cerrar sesión/i }).click();
+    await loggedOut;
     await page.goto("/historial");
     await expect(page).toHaveURL(/\/login$/);
 

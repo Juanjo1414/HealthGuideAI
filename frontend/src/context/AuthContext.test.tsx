@@ -41,15 +41,15 @@ describe("AuthContext", () => {
     expect(result.current.user).toBeNull();
   });
 
-  it("logout limpia la sesión local aunque el backend falle", async () => {
+  it("si el backend no confirma el logout, NO finge haber cerrado la sesión", async () => {
     vi.mocked(authApi.getCurrentUser).mockResolvedValue(USER);
     vi.mocked(authApi.logout).mockRejectedValue(new authApi.AuthApiError("sin red", 0));
     const { result } = renderHook(() => useAuth(), { wrapper });
     await waitFor(() => expect(result.current.isAuthenticated).toBe(true));
 
-    await act(() => result.current.logout());
+    await act(() => expect(result.current.logout()).rejects.toThrow("sin red"));
 
-    expect(result.current.isAuthenticated).toBe(false);
+    expect(result.current.isAuthenticated).toBe(true);
   });
 
   it("useAuth fuera del provider falla con un mensaje claro", () => {

@@ -55,6 +55,14 @@ export default function ProfilePage() {
   const memberSince = user ? new Intl.DateTimeFormat("es-ES", { dateStyle: "long" }).format(new Date(user.created_at)) : "";
   const countryInfo = COUNTRIES.find((c) => c.code === country) ?? COUNTRIES[0];
 
+  async function handleLogout() {
+    try {
+      await logout();
+    } catch {
+      toast.error("No se pudo cerrar la sesión en el servidor. Revisa tu conexión e inténtalo de nuevo.");
+    }
+  }
+
   function saveProfile() {
     saveAlias(alias.trim() || null);
     saveCountry(country);
@@ -231,7 +239,7 @@ export default function ProfilePage() {
                   </a>
                 </div>
                 <div className="mt-space-lg flex flex-wrap justify-between gap-space-sm">
-                  <button type="button" onClick={() => logout()} className="h-[48px] px-space-lg bg-surface-container text-on-surface rounded-full font-label-md text-label-md hover:bg-surface-container-high inline-flex items-center gap-space-xs">
+                  <button type="button" onClick={handleLogout} className="h-[48px] px-space-lg bg-surface-container text-on-surface rounded-full font-label-md text-label-md hover:bg-surface-container-high inline-flex items-center gap-space-xs">
                     <span aria-hidden="true" className="material-symbols-outlined text-[18px]">logout</span>
                     Cerrar sesión
                   </button>

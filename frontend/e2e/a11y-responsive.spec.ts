@@ -1,3 +1,4 @@
+import { AxeBuilder } from "@axe-core/playwright";
 import { expect, test } from "@playwright/test";
 import { expectNoHorizontalOverflow, expectNoSeriousA11yViolations, mockTriage, signupViaUi, submitSymptoms, triageBody } from "./fixtures";
 
@@ -35,4 +36,22 @@ test.describe("accesibilidad (axe) y responsive", () => {
       await expectNoHorizontalOverflow(page);
     }
   });
+});
+
+test("el estado de carga del historial también es accesible", async ({ page }) => {
+  await signupViaUi(page);
+  // La respuesta queda retenida hasta terminar la auditoría: con un timer fijo
+  // el skeleton podía desaparecer antes de que axe llegara a verlo.
+  let release!: () => void;
+  const audited = new Promise<void>((resolve) => (release = resolve));
+  await page.route("**/api/triage/history", async (route) => {
+    await audited;
+    await route.fallback();
+  });
+  await page.goto("/historial");
+  await expect(page.getByRole("status", { name: /cargando historial/i })).toBeVisible();
+
+  const results = await new AxeBuilder({ page }).include('[aria-busy="true"]').analyze();
+  release();
+  expect(results.violations.filter((v) => v.impact === "critical" || v.impact === "serious")).toEqual([]);
 });
