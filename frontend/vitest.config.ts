@@ -13,6 +13,9 @@ export default defineConfig({
     setupFiles: ["./src/test/setup.ts"],
     include: ["src/**/*.test.{ts,tsx}"],
     restoreMocks: true,
+    // userEvent.type escribe tecla por tecla: con la máquina o el runner de CI
+    // cargados, 5s (default) no alcanza y aparecen fallos que no son bugs.
+    testTimeout: 20000,
     coverage: {
       provider: "v8",
       include: ["src/**/*.{ts,tsx}"],

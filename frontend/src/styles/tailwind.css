@@ -1,6 +1,8 @@
 @import "tailwindcss";
 @import "tw-animate-css";
-@import "shadcn/tailwind.css";
+/* shadcn/tailwind.css se quitó (Sesión 13): el paquete `shadcn` es el CLI y arrastraba
+   una vulnerabilidad sin parche (braces, vía fast-glob). Ninguna utilidad suya se usa;
+   el CLI se sigue usando con `npx shadcn@latest add`. */
 
 /*
  ---break---
