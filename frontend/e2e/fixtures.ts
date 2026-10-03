@@ -52,6 +52,29 @@ export async function signupViaUi(page: Page, email = uniqueEmail(), password = 
   return { email, password };
 }
 
+/** Mismo backend al que habla el bundle del stack de compose (VITE_API_BASE_URL). */
+const API_URL = process.env.E2E_API_URL ?? "http://localhost:8000/api";
+
+/**
+ * Crea la cuenta por API para los tests que necesitan sesión pero no prueban
+ * el registro: por la UI, con varios workers, el hash de la contraseña volvía
+ * intermitentes los timeouts. La cookie queda en el contexto del navegador.
+ */
+export async function signupViaApi(page: Page, email = uniqueEmail(), password = "claveSegura123") {
+  const baseURL = process.env.E2E_BASE_URL ?? "http://localhost:8080";
+  const response = await page.request.post(`${API_URL}/auth/signup`, {
+    data: { email, password },
+    headers: { Origin: baseURL },
+  });
+  expect(response.status(), await response.text()).toBe(201);
+  await page.goto("/");
+  // La app recupera la sesión con /auth/me al arrancar; sin esperar, un test
+  // que borra cookies justo después corre contra un estado a medio cargar.
+  // (en móvil el aviso existe pero va oculto, por eso toBeAttached).
+  await expect(page.getByText(/sesión iniciada/i)).toBeAttached();
+  return { email, password };
+}
+
 /** CONSTRAINTS.md: cero violaciones critical/serious de axe. */
 export async function expectNoSeriousA11yViolations(page: Page) {
   // Las animaciones de entrada pueden dejar contraste intermedio: se espera

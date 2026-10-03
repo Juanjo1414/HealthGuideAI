@@ -1,6 +1,6 @@
 import { AxeBuilder } from "@axe-core/playwright";
 import { expect, test } from "@playwright/test";
-import { expectNoHorizontalOverflow, expectNoSeriousA11yViolations, mockTriage, signupViaUi, submitSymptoms, triageBody } from "./fixtures";
+import { expectNoHorizontalOverflow, expectNoSeriousA11yViolations, mockTriage, signupViaApi, submitSymptoms, triageBody } from "./fixtures";
 
 const PUBLIC_PAGES = ["/", "/login", "/signup", "/recuperar", "/terminos", "/protocolo", "/500", "/ruta-que-no-existe"];
 
@@ -28,7 +28,7 @@ test.describe("accesibilidad (axe) y responsive", () => {
   }
 
   test("historial y perfil (con sesión): accesibles y sin desbordes", async ({ page }) => {
-    await signupViaUi(page);
+    await signupViaApi(page);
     for (const path of ["/historial", "/perfil"]) {
       await page.goto(path);
       await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
@@ -39,7 +39,7 @@ test.describe("accesibilidad (axe) y responsive", () => {
 });
 
 test("el estado de carga del historial también es accesible", async ({ page }) => {
-  await signupViaUi(page);
+  await signupViaApi(page);
   // La respuesta queda retenida hasta terminar la auditoría: con un timer fijo
   // el skeleton podía desaparecer antes de que axe llegara a verlo.
   let release!: () => void;

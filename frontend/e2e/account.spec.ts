@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { signupViaUi, uniqueEmail } from "./fixtures";
+import { signupViaApi, signupViaUi, uniqueEmail } from "./fixtures";
 
 /** Auth contra el backend real (Postgres + Redis del stack de compose). */
 test.describe("cuenta", () => {
@@ -37,7 +37,7 @@ test.describe("cuenta", () => {
   });
 
   test("correo ya registrado al crear cuenta", async ({ page, browser }) => {
-    const { email } = await signupViaUi(page);
+    const { email } = await signupViaApi(page);
     const other = await (await browser.newContext()).newPage();
 
     await other.goto("/signup");
@@ -51,7 +51,7 @@ test.describe("cuenta", () => {
   });
 
   test("sesión expirada: el historial lo informa en vez de mostrar datos", async ({ page, context }) => {
-    await signupViaUi(page);
+    await signupViaApi(page);
     await context.clearCookies();
 
     // Navegación del lado del cliente: la app todavía cree tener sesión, pero
@@ -62,7 +62,7 @@ test.describe("cuenta", () => {
   });
 
   test("borrar el historial desde el perfil funciona en el navegador (CORS DELETE)", async ({ page }) => {
-    await signupViaUi(page);
+    await signupViaApi(page);
     await page.goto("/perfil");
     await page.getByRole("button", { name: /privacidad y datos/i }).click();
 
