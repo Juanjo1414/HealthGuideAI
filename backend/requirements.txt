@@ -4,7 +4,7 @@ pydantic>=2.9
 python-dotenv>=1.0
 openai>=1.50
 passlib>=1.7,<2
-bcrypt>=4.0,<4.1
+bcrypt>=5.0.0,<5.1
 email-validator>=2.2,<3
 # Sesion 4: escalabilidad horizontal. psycopg2 (no async) porque el resto del
 # backend ya es sincrono (rutas def, no async def) — introducir un driver
