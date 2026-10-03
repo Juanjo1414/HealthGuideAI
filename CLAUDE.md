@@ -14,6 +14,13 @@ de trabajo nueva, y actualiza su estado por sesión cuando termines una.
 **Nivel de calidad exigido:** leer [`CONSTRAINTS.md`](CONSTRAINTS.md) antes de escribir código.
 No se debilita ese archivo para que un cambio pase — se discute y se cambia en su propio commit.
 
+**Diseño visual:** la interfaz sigue el diseño de Google Stitch del equipo. Antes de tocar
+cualquier pantalla, leer [`docs/DESIGN_STITCH.md`](docs/DESIGN_STITCH.md): qué pantalla de Stitch es
+qué ruta, dónde consultar el original (MCP `stitch`, proyecto `18249657096517303274`, o el export
+local `stitch_healthguide_ai_triage_web/`, que **no se sube a git**), cómo se usan sus tokens y qué
+funcionalidad del diseño está pendiente. Regla: la visual se copia tal cual; el texto nunca afirma
+algo que el producto no hace (certificaciones, métricas o médicos inventados).
+
 ---
 
 ## 1. Qué problema resuelve esto
@@ -137,13 +144,17 @@ backend/                          -> FastAPI, monolito modular por capas (ver se
   tests/                          -> pytest, usa un StubOrchestrator (no llama a NVIDIA real) + Postgres/Redis reales para storage
   Dockerfile, docker-entrypoint.sh (corre migraciones antes de levantar el server), README.md
 
-frontend/                         -> React 18 + Vite + react-router-dom, CSS con custom properties
+frontend/                         -> React 18 + Vite + TypeScript + Tailwind v4, diseño de Stitch (docs/DESIGN_STITCH.md)
+  public/stitch/                  -> imágenes del diseño (copiadas localmente, no hotlink)
   src/
-    api/                          -> authApi.js, triageApi.js — capa de fetch aislada del resto
-    components/                   -> SymptomForm, ResultCard, PriorityBadge, AuthForm, ProtectedRoute, etc.
+    api/                          -> authApi.ts, triageApi.ts, healthApi.ts, types.ts — capa de fetch aislada
+    components/layout/            -> PageShell, SiteHeader, SiteFooter (header/footer de Stitch)
+    components/triage/            -> EmergencyPanel, VagueInputPanel, OfflinePanel (protocolo de urgencias)
+    constants/priority.ts         -> textos/colores por prioridad, alineados con contract.PRIORITY_RUBRIC
     context/                      -> AuthContext (sesión de usuario)
-    pages/                        -> LoginPage, SignupPage, TriagePage
-    styles/                       -> tokens.css (design tokens), global.css
+    lib/                          -> preferences (alias/país/accesibilidad en el navegador), useSpeechDictation
+    pages/                        -> Home, Result, Auth, History, Profile, Protocol, Terms, ServerError, NotFound
+    styles/                       -> tailwind.css (tokens de Stitch + escala de prioridad), global.css
   Dockerfile, nginx.conf, README.md
 
 evals/
@@ -158,10 +169,13 @@ evals/
 docs/
   arquitectura.md, arquitectura.png -> diagrama y decisiones de diseño de la web app
   PLAN_IMPLEMENTACION.md            -> roadmap multi-sesión de lo que falta (léelo primero)
+  DESIGN_STITCH.md                  -> diseño visual de Stitch: mapeo de pantallas, copy reescrito, backlog
+  PANTALLAS.md                      -> criterio de aceptación por pantalla
 
 gateway/nginx.conf                -> gateway reverse proxy opcional (Sesión 3), aditivo, puerto 8888
 compose.yml                       -> orquesta backend + frontend + Postgres + Redis + gateway con Docker
-.github/workflows/ci.yml          -> backend-tests, frontend-build, docker-build
+.github/workflows/                -> ci (lint+tests+cobertura+build), e2e (Playwright+axe), security (CodeQL,
+                                     audits, gitleaks), evals (gate semanal contra NVIDIA), release (imágenes GHCR)
 DECISION_LOG.md                   -> decisiones de producto con alternativas comparadas (proveedor, canal, arquitectura, alcance de requiere_revision)
 DECISION_TABLE.md                 -> comparativa NVIDIA vs Gemini con datos reales
 TEAM_ROTATION.md, MAKERS_REVIEW.md, REFLEXION_MAKERS_REVIEW.md -> feedback de mentores y ownership del equipo
@@ -314,8 +328,13 @@ su estado. Resumen rápido de lo ya hecho vs. lo que falta:
 - [ ] Ground truth clínico completo (solo 5/25 casos validados por Cristian hoy).
 - [ ] Blindaje explícito contra prompt injection sobre el modelo (más allá del validador de
       salida que ya existe).
-- [ ] Migración del frontend a TypeScript + Tailwind + shadcn/ui.
-- [ ] Suite de tests E2E y GitHub Actions más allá de `ci.yml`.
+- [x] Frontend en TypeScript + Tailwind con el diseño de Stitch: 9 pantallas, triage sin cuenta,
+      historial y perfil reales (Sesiones 9-11). Axe y viewports automatizados en las E2E (Sesión 12).
+- [ ] Funcionalidad nueva que trae el diseño de Stitch (Google/enlace mágico, recuperar contraseña,
+      seguimiento 24/48 h, conversación multi-turno...) — Sesión 15, backlog en `docs/DESIGN_STITCH.md`.
+- [x] Suite de tests completa (pytest, Vitest, Playwright E2E con axe) y GitHub Actions (CI, E2E,
+      seguridad, evals programados, release) — Sesiones 12-13. Pendiente: protección de rama de `main`.
+- [ ] Gate de accuracy clínico en 80% (hoy 60%, ver `evals/results.md`).
 - [ ] Despliegue público con link accesible.
 - [ ] `TEAM_ROTATION.md` con roles asignados (hoy en `TBD` pese a que el ownership real ya existe).
 

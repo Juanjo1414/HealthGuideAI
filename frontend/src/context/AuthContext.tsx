@@ -47,8 +47,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return data;
   }, []);
 
+  // Si el backend no confirma el cierre, la cookie sigue viva (TTL de un año):
+  // mostrar "sesión cerrada" sería mentir, y en un equipo compartido el
+  // historial quedaría expuesto. Se propaga el error para que la UI lo diga.
   const logout = useCallback(async () => {
-    await authApi.logout().catch(() => {});
+    await authApi.logout();
     setUser(null);
   }, []);
 

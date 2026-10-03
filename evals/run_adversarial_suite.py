@@ -40,18 +40,63 @@ sys.path.insert(0, str(REPO_ROOT))
 sys.path.insert(0, str(REPO_ROOT / "backend"))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
+from validate_triage_output import validate_triage_output  # noqa: E402
+
 from app.config import get_settings  # noqa: E402
 from app.orchestration.triage_orchestrator import TriageOrchestrator  # noqa: E402
 from app.providers.base import ModelProviderError  # noqa: E402
 from app.providers.nvidia_provider import NvidiaProvider  # noqa: E402
 from app.validation.safe_response import build_safe_fallback  # noqa: E402
 
-from validate_triage_output import validate_triage_output  # noqa: E402
-
 
 def load_cases(csv_path: str) -> list[dict]:
     with open(csv_path, encoding="utf-8", newline="") as f:
         return list(csv.DictReader(f))
+
+
+def evaluate_case(orchestrator, case: dict) -> dict:
+    """Un caso adversarial por el mismo pipeline que routes_triage.py
+    (modelo -> validador -> fallback). Lo reutiliza evals/eval_gate.py."""
+    case_id = case["case_id"]
+    attack_category = case["attack_category"]
+    input_text = case["input"]
+    try:
+        raw_output = orchestrator.run(input_text)
+        raw_validation = validate_triage_output(raw_output, input_text)
+        model_resisted = bool(raw_validation["pass"])
+
+        if model_resisted:
+            defense_layer = "modelo (resistió la instrucción inyectada)"
+            final_reasons = []
+        else:
+            # Mismo camino que routes_triage.py: la respuesta cruda nunca
+            # llega al usuario, se reemplaza por el fallback seguro.
+            final_output = build_safe_fallback(raw_validation, raw_output)
+            final_validation = validate_triage_output(final_output, input_text)
+            defense_layer = (
+                f"validador + fallback seguro (reglas violadas en el modelo: "
+                f"{raw_validation['reasons']})"
+            )
+            final_reasons = final_validation["reasons"] if not final_validation["pass"] else []
+            # Si esto no pasa, build_safe_fallback() dejó de ser seguro —
+            # un bug real, no un hallazgo esperado del set adversarial.
+            if not final_validation["pass"]:
+                defense_layer += " — ALERTA: el fallback seguro no pasó su propio validador"
+        final_safe = model_resisted or not final_reasons
+    except ModelProviderError as exc:
+        model_resisted = False
+        final_safe = False
+        defense_layer = f"ninguna — error de proveedor: {exc}"
+        final_reasons = [str(exc)]
+
+    return {
+        "case_id": case_id,
+        "attack_category": attack_category,
+        "model_resisted": model_resisted,
+        "final_safe": final_safe,
+        "defense_layer": defense_layer,
+        "final_reasons": final_reasons,
+    }
 
 
 def main() -> None:
@@ -78,52 +123,12 @@ def main() -> None:
     model_resisted_count = 0
     final_safe_count = 0
     for case in cases:
-        case_id = case["case_id"]
-        attack_category = case["attack_category"]
-        input_text = case["input"]
-        try:
-            raw_output = orchestrator.run(input_text)
-            raw_validation = validate_triage_output(raw_output, input_text)
-            model_resisted = bool(raw_validation["pass"])
-
-            if model_resisted:
-                defense_layer = "modelo (resistió la instrucción inyectada)"
-                final_reasons = []
-            else:
-                # Mismo camino que routes_triage.py: la respuesta cruda nunca
-                # llega al usuario, se reemplaza por el fallback seguro.
-                final_output = build_safe_fallback(raw_validation, raw_output)
-                final_validation = validate_triage_output(final_output, input_text)
-                defense_layer = (
-                    f"validador + fallback seguro (reglas violadas en el modelo: "
-                    f"{raw_validation['reasons']})"
-                )
-                final_reasons = final_validation["reasons"] if not final_validation["pass"] else []
-                # Si esto no pasa, build_safe_fallback() dejó de ser seguro —
-                # un bug real, no un hallazgo esperado del set adversarial.
-                if not final_validation["pass"]:
-                    defense_layer += " — ALERTA: el fallback seguro no pasó su propio validador"
-            final_safe = model_resisted or not final_reasons
-        except ModelProviderError as exc:
-            model_resisted = False
-            final_safe = False
-            defense_layer = f"ninguna — error de proveedor: {exc}"
-            final_reasons = [str(exc)]
-
-        model_resisted_count += int(model_resisted)
-        final_safe_count += int(final_safe)
-        rows.append(
-            {
-                "case_id": case_id,
-                "attack_category": attack_category,
-                "model_resisted": model_resisted,
-                "final_safe": final_safe,
-                "defense_layer": defense_layer,
-                "final_reasons": final_reasons,
-            }
-        )
-        estado = "OK" if final_safe else "FALLO REAL"
-        print(f"  [{estado}] {case_id} ({attack_category}) — {defense_layer}")
+        row = evaluate_case(orchestrator, case)
+        model_resisted_count += int(row["model_resisted"])
+        final_safe_count += int(row["final_safe"])
+        rows.append(row)
+        estado = "OK" if row["final_safe"] else "FALLO REAL"
+        print(f"  [{estado}] {row['case_id']} ({row['attack_category']}) — {row['defense_layer']}")
 
     total = len(cases)
     model_rate = model_resisted_count / total if total else 0.0

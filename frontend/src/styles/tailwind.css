@@ -1,6 +1,8 @@
 @import "tailwindcss";
 @import "tw-animate-css";
-@import "shadcn/tailwind.css";
+/* shadcn/tailwind.css se quitó (Sesión 13): el paquete `shadcn` es el CLI y arrastraba
+   una vulnerabilidad sin parche (braces, vía fast-glob). Ninguna utilidad suya se usa;
+   el CLI se sigue usando con `npx shadcn@latest add`. */
 
 /*
  ---break---
@@ -8,58 +10,155 @@
 @custom-variant dark (&:is(.dark *));
 
 /*
- * Design tokens del tema (Sesion 9). Paleta "Accessible & Ethical" definida
- * en docs/PLAN_IMPLEMENTACION.md (seccion "Decisiones tomadas") via la skill
- * ui-ux-pro-max: medico/accesible, nada de los violetas/grises por defecto
- * de shadcn ni la tipografia Geist que trae el preset (eso es exactamente
- * el "AI slop" que el plan pide evitar).
+ * Design tokens (Sesión 10/11) — portados 1:1 del `tailwind.config` que
+ * exporta Stitch (las 10 pantallas comparten exactamente el mismo; ver
+ * docs/DESIGN_STITCH.md). Se usan los MISMOS nombres de clase que el HTML
+ * de Stitch (bg-surface, text-on-surface-variant, bg-primary-container,
+ * font-headline-lg, px-margin, gap-space-md, etc.) para que portar cada
+ * pantalla sea copiar su marcado, no reinterpretarlo.
  *
- * La escala de prioridad reemplaza el bug real de tokens.css: BAJA/MEDIA/
- * ALTA tenian fondo oscuro pero EMERGENCIA tenia fondo CLARO (#fff0f1) —
- * la severidad se invertia justo en el nivel mas grave. Los 4 valores de
- * abajo fueron verificados con calculo real de contraste WCAG (relative
- * luminance), no elegidos a ojo: los 4 fondos quedan en la misma franja de
- * luminosidad oscura (0.008-0.019) y cada par texto/fondo supera AAA
- * (10.6-13.6:1 para texto, 6.0-8.7:1 para bordes).
+ * primary / secondary / background no se declaran acá: chocan con los
+ * tokens semánticos de shadcn, así que viven en :root más abajo (con los
+ * mismos valores de Stitch) y @theme inline los expone como utilidades.
  */
 @theme {
-  /* --color-brand-primary es el teal de marca (uso decorativo). Para
-     fondos con texto blanco (botones shadcn con primary),
-     --color-brand-primary-hover es el tono "seguro": 7.27:1 (AAA) contra
-     3.68:1 (ni siquiera AA) del teal base — ver --primary mas abajo. */
-  --color-brand-primary: #0891b2;
-  --color-brand-primary-hover: #155e75;
-  --color-brand-secondary: #22d3ee;
-  /* --color-brand-cta es el verde de marca (uso decorativo). Para fondos
-     con texto (botones shadcn con accent), --color-brand-cta-hover es el
-     tono "seguro": 7.68:1 con texto blanco (AAA) contra 3.77:1 (solo AA
-     de texto grande) del verde base — ver --accent mas abajo. */
-  --color-brand-cta: #059669;
-  --color-brand-cta-hover: #065f46;
-  --color-brand-bg: #ecfeff;
-  --color-brand-surface: #ffffff;
-  --color-brand-text: #134e4a;
-  --color-brand-text-muted: #4b6b68;
-  --color-brand-border: #67e8f9;
+  --color-on-primary: #ffffff;
+  --color-primary-container: #0f5144;
+  --color-on-primary-container: #86c2b1;
+  --color-inverse-primary: #96d2c1;
+  --color-primary-fixed: #b1efdd;
+  --color-primary-fixed-dim: #96d2c1;
+  --color-on-primary-fixed: #00201a;
+  --color-on-primary-fixed-variant: #0d5043;
+  --color-surface-tint: #2c685a;
 
-  --color-priority-baja-bg: #0d2018;
-  --color-priority-baja-border: #5fcf8f;
-  --color-priority-baja-text: #b8f4cf;
+  --color-on-secondary: #ffffff;
+  --color-secondary-container: #6cf8bb;
+  --color-on-secondary-container: #00714d;
+  --color-secondary-fixed: #6ffbbe;
+  --color-secondary-fixed-dim: #4edea3;
+  --color-on-secondary-fixed: #002113;
+  --color-on-secondary-fixed-variant: #005236;
 
-  --color-priority-media-bg: #2c2513;
-  --color-priority-media-border: #e8ba5b;
-  --color-priority-media-text: #ffe2a0;
+  --color-tertiary: #4e2700;
+  --color-on-tertiary: #ffffff;
+  --color-tertiary-container: #6f3a00;
+  --color-on-tertiary-container: #ffa04c;
+  --color-tertiary-fixed: #ffdcc3;
+  --color-tertiary-fixed-dim: #ffb77d;
+  --color-on-tertiary-fixed: #2f1500;
+  --color-on-tertiary-fixed-variant: #6e3900;
 
-  --color-priority-alta-bg: #301b0f;
-  --color-priority-alta-border: #f08a4b;
-  --color-priority-alta-text: #ffc59d;
+  --color-error: #ba1a1a;
+  --color-on-error: #ffffff;
+  --color-error-container: #ffdad6;
+  --color-on-error-container: #93000a;
 
-  --color-priority-emergencia-bg: #2e0a0d;
-  --color-priority-emergencia-border: #ff5c6c;
-  --color-priority-emergencia-text: #ffb3bb;
+  --color-surface: #f9f9ff;
+  --color-surface-dim: #cfdaf2;
+  --color-surface-bright: #f9f9ff;
+  --color-surface-container-lowest: #ffffff;
+  --color-surface-container-low: #f0f3ff;
+  --color-surface-container: #e7eeff;
+  --color-surface-container-high: #dee8ff;
+  --color-surface-container-highest: #d8e3fb;
+  --color-surface-variant: #d8e3fb;
+  --color-on-surface: #111c2d;
+  --color-on-surface-variant: #404945;
+  --color-on-background: #111c2d;
+  --color-inverse-surface: #263143;
+  --color-inverse-on-surface: #ecf1ff;
+  --color-outline: #707975;
+  --color-outline-variant: #bfc9c4;
 
-  --font-heading: "Figtree", "Segoe UI", sans-serif;
-  --font-body: "Noto Sans", "Segoe UI", sans-serif;
+  /*
+   * Escala de prioridad — NO viene de Stitch (Stitch solo diseñó 3 niveles
+   * en su DESIGN.md y el contrato tiene 4). Verificada con cálculo real de
+   * contraste WCAG (≥4.5:1 todos; EMERGENCIA 8.31:1). EMERGENCIA es la
+   * única con fondo SÓLIDO: tiene que leerse como la más grave sin
+   * ambigüedad (mismo principio que el bug corregido en la Sesión 9).
+   */
+  --color-priority-baja-bg: #dcfce7;
+  --color-priority-baja-border: #15803d;
+  --color-priority-baja-text: #15803d;
+  --color-priority-media-bg: #fef3c7;
+  --color-priority-media-border: #92400e;
+  --color-priority-media-text: #92400e;
+  --color-priority-alta-bg: #fee2e2;
+  --color-priority-alta-border: #b91c1c;
+  --color-priority-alta-text: #b91c1c;
+  --color-priority-emergencia-bg: #991b1b;
+  --color-priority-emergencia-border: #7a1515;
+  --color-priority-emergencia-text: #ffffff;
+
+  --font-heading: "Plus Jakarta Sans", "Segoe UI", sans-serif;
+  --font-body: "Plus Jakarta Sans", "Segoe UI", sans-serif;
+  --font-display-lg: "Plus Jakarta Sans", sans-serif;
+  --font-display-lg-mobile: "Plus Jakarta Sans", sans-serif;
+  --font-headline-lg: "Plus Jakarta Sans", sans-serif;
+  --font-headline-lg-mobile: "Plus Jakarta Sans", sans-serif;
+  --font-headline-md: "Plus Jakarta Sans", sans-serif;
+  --font-headline-sm: "Plus Jakarta Sans", sans-serif;
+  --font-body-lg: "Plus Jakarta Sans", sans-serif;
+  --font-body-md: "Plus Jakarta Sans", sans-serif;
+  --font-body-sm: "Plus Jakarta Sans", sans-serif;
+  --font-label-lg: "Plus Jakarta Sans", sans-serif;
+  --font-label-md: "Plus Jakarta Sans", sans-serif;
+  --font-label-sm: "Plus Jakarta Sans", sans-serif;
+
+  --text-display-lg: 3rem;
+  --text-display-lg--line-height: 3.5rem;
+  --text-display-lg--letter-spacing: -0.02em;
+  --text-display-lg--font-weight: 700;
+  --text-display-lg-mobile: 2rem;
+  --text-display-lg-mobile--line-height: 2.5rem;
+  --text-display-lg-mobile--letter-spacing: -0.015em;
+  --text-display-lg-mobile--font-weight: 700;
+  --text-headline-lg: 2rem;
+  --text-headline-lg--line-height: 2.5rem;
+  --text-headline-lg--letter-spacing: -0.01em;
+  --text-headline-lg--font-weight: 600;
+  --text-headline-lg-mobile: 1.625rem;
+  --text-headline-lg-mobile--line-height: 2.125rem;
+  --text-headline-lg-mobile--letter-spacing: -0.01em;
+  --text-headline-lg-mobile--font-weight: 600;
+  --text-headline-md: 1.5rem;
+  --text-headline-md--line-height: 2rem;
+  --text-headline-md--letter-spacing: -0.005em;
+  --text-headline-md--font-weight: 600;
+  --text-headline-sm: 1.25rem;
+  --text-headline-sm--line-height: 1.75rem;
+  --text-headline-sm--font-weight: 600;
+  --text-body-lg: 1.125rem;
+  --text-body-lg--line-height: 1.75rem;
+  --text-body-lg--font-weight: 400;
+  --text-body-md: 1rem;
+  --text-body-md--line-height: 1.5rem;
+  --text-body-md--font-weight: 400;
+  --text-body-sm: 0.875rem;
+  --text-body-sm--line-height: 1.25rem;
+  --text-body-sm--font-weight: 400;
+  --text-label-lg: 0.9375rem;
+  --text-label-lg--line-height: 1.25rem;
+  --text-label-lg--font-weight: 600;
+  --text-label-md: 0.8125rem;
+  --text-label-md--line-height: 1.125rem;
+  --text-label-md--font-weight: 600;
+  --text-label-sm: 0.6875rem;
+  --text-label-sm--line-height: 1rem;
+  --text-label-sm--letter-spacing: 0.04em;
+  --text-label-sm--font-weight: 700;
+
+  --spacing-space-xs: 0.25rem;
+  --spacing-space-sm: 0.5rem;
+  --spacing-space-md: 1rem;
+  --spacing-space-lg: 1.5rem;
+  --spacing-space-xl: 2.5rem;
+  --spacing-gutter: 1.25rem;
+  --spacing-gutter-desktop: 2rem;
+  --spacing-margin: 1rem;
+  --spacing-margin-tablet: 2rem;
+  --spacing-margin-desktop: 3.5rem;
 }
 
 /*
@@ -98,13 +197,15 @@
   --color-card: var(--card);
   --color-foreground: var(--foreground);
   --color-background: var(--background);
-  --radius-sm: calc(var(--radius) * 0.6);
-  --radius-md: calc(var(--radius) * 0.8);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) * 1.4);
-  --radius-2xl: calc(var(--radius) * 1.8);
-  --radius-3xl: calc(var(--radius) * 2.2);
-  --radius-4xl: calc(var(--radius) * 2.6);
+  /* Radios: mismos valores que el tailwind.config de Stitch (y que la
+     escala por defecto de Tailwind), no los múltiplos de --radius de Nova. */
+  --radius-sm: 0.125rem;
+  --radius-md: 0.375rem;
+  --radius-lg: 0.5rem;
+  --radius-xl: 0.75rem;
+  --radius-2xl: 1rem;
+  --radius-3xl: 1.5rem;
+  --radius-4xl: 2rem;
 }
 
 /*
@@ -112,87 +213,42 @@
  */
 
 /*
- * Tokens semanticos que consumen los componentes shadcn (Button, Card,
- * etc.) — se definen a partir de la paleta de marca de arriba, nunca con
- * los valores grises del preset Nova. destructive queda ligado al mismo
- * rojo de la escala de prioridad EMERGENCIA para que "accion peligrosa" y
- * "maxima severidad clinica" usen el mismo lenguaje visual en toda la app.
- *
- * .dark queda con los valores por defecto que genero el preset: la app no
- * tiene todavia un toggle de modo oscuro (fuera del alcance de la Sesion
- * 9), asi que es codigo inerte por ahora — no se invirtio tiempo en
- * adaptarlo a la marca hasta que exista una razon real de usarlo.
+ * Tokens semánticos de shadcn = los mismos valores de Stitch. Así un
+ * <Button> de shadcn y un botón copiado del HTML de Stitch se ven igual.
  */
 :root {
-  --background: var(--color-brand-bg);
-  --foreground: var(--color-brand-text);
-  --card: var(--color-brand-surface);
-  --card-foreground: var(--color-brand-text);
-  --popover: var(--color-brand-surface);
-  --popover-foreground: var(--color-brand-text);
-  --primary: var(--color-brand-primary-hover);
+  --background: #f9f9ff;
+  --foreground: #111c2d;
+  --card: #ffffff;
+  --card-foreground: #111c2d;
+  --popover: #ffffff;
+  --popover-foreground: #111c2d;
+  --primary: #00392e;
   --primary-foreground: #ffffff;
-  --secondary: var(--color-brand-secondary);
-  --secondary-foreground: var(--color-brand-text);
-  --muted: #d7f5f3;
-  --muted-foreground: var(--color-brand-text-muted);
-  --accent: var(--color-brand-cta-hover);
-  --accent-foreground: #ffffff;
-  --destructive: var(--color-priority-emergencia-border);
-  --border: var(--color-brand-border);
-  --input: var(--color-brand-border);
-  --ring: var(--color-brand-primary);
-  --chart-1: var(--color-priority-baja-border);
-  --chart-2: var(--color-priority-media-border);
-  --chart-3: var(--color-priority-alta-border);
-  --chart-4: var(--color-priority-emergencia-border);
-  --chart-5: var(--color-brand-secondary);
-  --radius: 0.625rem;
-  --sidebar: var(--color-brand-surface);
-  --sidebar-foreground: var(--color-brand-text);
-  --sidebar-primary: var(--color-brand-primary);
+  --secondary: #006c49;
+  --secondary-foreground: #ffffff;
+  --muted: #f0f3ff;
+  --muted-foreground: #404945;
+  --accent: #e7eeff;
+  --accent-foreground: #111c2d;
+  --destructive: #ba1a1a;
+  --border: #bfc9c4;
+  --input: #bfc9c4;
+  --ring: #0f5144;
+  --chart-1: #15803d;
+  --chart-2: #92400e;
+  --chart-3: #b91c1c;
+  --chart-4: #991b1b;
+  --chart-5: #006c49;
+  --radius: 0.25rem;
+  --sidebar: #ffffff;
+  --sidebar-foreground: #111c2d;
+  --sidebar-primary: #00392e;
   --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: var(--color-brand-bg);
-  --sidebar-accent-foreground: var(--color-brand-text);
-  --sidebar-border: var(--color-brand-border);
-  --sidebar-ring: var(--color-brand-primary);
-}
-
-/*
- ---break---
- */
-.dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+  --sidebar-accent: #f0f3ff;
+  --sidebar-accent-foreground: #111c2d;
+  --sidebar-border: #bfc9c4;
+  --sidebar-ring: #0f5144;
 }
 
 /*
@@ -203,9 +259,20 @@
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-surface text-on-surface font-body-md antialiased;
   }
   html {
     @apply font-sans;
   }
+}
+
+/* Íconos: mismo set que usa Stitch (Material Symbols Outlined, cargado en
+   index.html). `.icon-filled` reemplaza el style inline FILL 1 del HTML. */
+.material-symbols-outlined {
+  font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 24;
+  line-height: 1;
+  user-select: none;
+}
+.material-symbols-outlined.icon-filled {
+  font-variation-settings: "FILL" 1, "wght" 400, "GRAD" 0, "opsz" 24;
 }

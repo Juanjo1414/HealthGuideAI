@@ -1,0 +1,60 @@
+name: Security
+
+# Sesión 13: lo que en la Sesión 5 se corrió a mano pasa a correr solo.
+# CONSTRAINTS.md: nada en severidad high o superior, ningún secreto en el código.
+on:
+  push:
+    branches: [dev/Juanjo, main]
+  pull_request:
+    branches: [main, dev/Juanjo]
+  schedule:
+    - cron: "0 6 * * 1" # lunes 06:00 UTC: CVEs nuevos aparecen sin que cambie el código
+
+permissions:
+  contents: read
+
+jobs:
+  codeql:
+    name: CodeQL (${{ matrix.language }})
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+    strategy:
+      fail-fast: false
+      matrix:
+        language: [python, javascript-typescript]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: github/codeql-action/init@v3
+        with:
+          languages: ${{ matrix.language }}
+      - uses: github/codeql-action/analyze@v3
+
+  dependencias:
+    name: Dependencias (pip-audit + npm audit)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - name: pip-audit (backend)
+        run: pip install "pip-audit>=2.7,<3" && pip-audit -r backend/requirements.txt
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: npm audit (frontend, severidad high o superior)
+        working-directory: frontend
+        run: npm audit --audit-level=high
+
+  secretos:
+    name: Secretos (gitleaks)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

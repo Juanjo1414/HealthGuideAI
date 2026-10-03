@@ -1,7 +1,7 @@
 # Build multi-stage: compilamos con Node y servimos los estaticos con nginx —
 # la imagen final no lleva Node ni node_modules, solo el resultado de `vite build`.
 
-FROM node:20-slim AS build
+FROM node:22-slim AS build
 WORKDIR /app
 
 # package*.json antes que el resto del codigo, mismo criterio de cacheo que

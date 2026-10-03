@@ -1,0 +1,23 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  // oxlint y no ESLint: typescript-eslint todavía no soporta TypeScript 7
+  // (el que usa el proyecto). oxlint parsea TS/JSX por su cuenta.
+  "plugins": ["react", "typescript", "jsx-a11y", "unicorn", "import"],
+  "categories": {
+    "correctness": "error",
+    "suspicious": "error"
+  },
+  "rules": {
+    "react/react-in-jsx-scope": "off",
+    "react-hooks/rules-of-hooks": "error",
+    "react-hooks/exhaustive-deps": "error",
+    // Los labels envuelven el control y el texto va en spans anidados.
+    "jsx-a11y/label-has-associated-control": ["error", { "depth": 5 }],
+    // role="status" en un div y role="img" en un <svg> son ARIA correcto; la
+    // alternativa (<output>, <img>) cambia la semántica o no aplica a SVG inline.
+    "jsx-a11y/prefer-tag-over-role": "off",
+    // Los imports de CSS (main.tsx) son efecto secundario a propósito.
+    "import/no-unassigned-import": "off"
+  },
+  "ignorePatterns": ["dist", "node_modules", "playwright-report", "test-results", "coverage"]
+}

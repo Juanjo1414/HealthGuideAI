@@ -10,12 +10,20 @@ disclaimer de IA obligatorio, nunca diagnosticar ni medicar) están en
 [`CONSTRAINTS.md`](../CONSTRAINTS.md) y en [`CLAUDE.md`](../CLAUDE.md) sección 2 — no se repiten
 acá pantalla por pantalla, aplican a las seis por igual.
 
+**Actualización Sesión 10/11 (2026-10-02):** las pantallas se implementaron con el diseño de
+Google Stitch — mapeo pantalla → ruta, copy reescrito y backlog en
+[`DESIGN_STITCH.md`](DESIGN_STITCH.md). Cambio de criterio importante en la pantalla 3: **el triage
+ya no exige sesión** (`DECISION_LOG.md`, Decisión 5); la cuenta solo sirve para el historial.
+Pantallas nuevas que trajo el diseño y no estaban en este inventario: protocolo de urgencias
+(`/protocolo`), términos (`/terminos`), error 500 (`/500`) y 404. Sigue pendiente la QA visual en
+dispositivos reales (375 / 768 / 1024 / 1440 px) y la pantalla 6 (sin diseño en Stitch).
+
 **Convención de estado:** ✅ existe y funciona · 🟡 existe pero no cumple el criterio completo ·
 ⬜ no existe todavía.
 
 ---
 
-## 1. Login — ✅ existe (`frontend/src/pages/LoginPage.jsx`)
+## 1. Login — ✅ existe (`frontend/src/pages/AuthPage.tsx`, ruta `/login`)
 
 **Quién la usa:** cualquier persona con cuenta ya creada.
 
@@ -32,7 +40,7 @@ acá pantalla por pantalla, aplican a las seis por igual.
 
 ---
 
-## 2. Signup — ✅ existe (`frontend/src/pages/SignupPage.jsx`)
+## 2. Signup — ✅ existe (`frontend/src/pages/AuthPage.tsx`, ruta `/signup`)
 
 **Quién la usa:** alguien sin cuenta.
 
@@ -47,7 +55,7 @@ acá pantalla por pantalla, aplican a las seis por igual.
 
 ---
 
-## 3. Triage — ✅ existe (`frontend/src/pages/TriagePage.jsx`), 🟡 no cumple todo el criterio
+## 3. Triage — ✅ existe (`HomePage.tsx` en `/` + `ResultPage.tsx` en `/resultado`), sin cuenta desde la Sesión 10/11
 
 Es la pantalla principal: formulario de síntomas + resultado.
 
@@ -78,7 +86,7 @@ existen — hasta entonces el estado del sistema no se puede mostrar honestament
 
 ---
 
-## 4. Historial de consultas — ⬜ no existe
+## 4. Historial de consultas — ✅ existe (`HistoryPage.tsx`, `/historial`; endpoint `GET /api/v1/triage/history`)
 
 **Quién la usa:** un usuario logueado que quiere ver sus propias consultas pasadas.
 
@@ -99,7 +107,7 @@ planifique la Sesión 11 en detalle.
 
 ---
 
-## 5. Perfil — ⬜ no existe
+## 5. Perfil — ✅ existe (`ProfilePage.tsx`, `/perfil`; incluye exportar JSON y borrar historial)
 
 **Quién la usa:** un usuario logueado que quiere ver/editar sus datos básicos o cerrar sesión
 desde un lugar central (hoy el logout, si existe, no tiene una pantalla propia).
@@ -148,7 +156,7 @@ chico de lo que este spec asumía originalmente — no hay que tocar el modelo d
 
 ---
 
-## Resumen de bloqueos de backend antes de la Sesión 11
+## Resumen de bloqueos de backend antes de la Sesión 11 (Historial ya resuelto)
 
 Dos pantallas del inventario no se pueden construir solo con frontend — necesitan un endpoint
 nuevo primero:

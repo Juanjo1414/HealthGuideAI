@@ -83,3 +83,19 @@ def test_get_request_is_never_blocked_by_csrf():
     # 401 (sin sesión), no 403 — GET es un método seguro, el middleware ni
     # lo mira.
     assert response.status_code == 401
+
+
+def test_cors_preflight_allows_every_method_the_frontend_uses():
+    """El frontend usa GET, POST y DELETE (borrar historial). Si un método no
+    está en allow_methods, el navegador bloquea el pedido en el preflight
+    aunque el endpoint exista — los tests de frontend simulan fetch y no lo ven."""
+    client = TestClient(app)
+    for method in ("GET", "POST", "DELETE"):
+        response = client.options(
+            "/api/v1/triage/history",
+            headers={"Origin": "http://localhost:8080", "Access-Control-Request-Method": method},
+        )
+
+        assert response.status_code == 200, method
+        assert response.headers["access-control-allow-origin"] == "http://localhost:8080"
+        assert method in response.headers["access-control-allow-methods"]

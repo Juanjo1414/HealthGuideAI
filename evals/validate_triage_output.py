@@ -51,7 +51,7 @@ Uso:
 
 from __future__ import annotations
 
-from typing import Any, List, Optional
+from typing import Any
 
 try:
     from triage_rules import ValidationRule, default_rules
@@ -67,7 +67,7 @@ class TriageValidator:
     (incluso inyectar reglas de prueba en un test) sin tocar esta clase.
     """
 
-    def __init__(self, rules: Optional[List[ValidationRule]] = None):
+    def __init__(self, rules: list[ValidationRule] | None = None):
         self.rules = rules if rules is not None else default_rules()
 
     def validate(self, output: Any, input_text: str) -> dict:
@@ -78,7 +78,7 @@ class TriageValidator:
                 "reasons": ["La salida debe ser un objeto JSON."],
             }
         checks = {}
-        reasons: List[str] = []
+        reasons: list[str] = []
         for rule in self.rules:
             result = rule.evaluate(output, input_text)
             checks[rule.name] = result.passed

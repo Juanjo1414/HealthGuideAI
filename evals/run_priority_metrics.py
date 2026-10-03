@@ -23,11 +23,11 @@ sys.path.insert(0, str(REPO_ROOT))
 sys.path.insert(0, str(REPO_ROOT / "backend"))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
+from metrics import compute_priority_metrics, load_cases, render_markdown_report  # noqa: E402
+
 from app.config import get_settings  # noqa: E402
 from app.orchestration.triage_orchestrator import TriageOrchestrator  # noqa: E402
 from app.providers.nvidia_provider import NvidiaProvider  # noqa: E402
-
-from metrics import compute_priority_metrics, load_cases, render_markdown_report  # noqa: E402
 
 
 def main() -> None:

@@ -1,0 +1,13 @@
+# gitleaks (Sesión 13). Reglas por defecto + una excepción revisada a mano.
+# Se permite por TEXTO exacto, no por SHA de commit, para que siga valiendo si
+# el PR se mergea con squash/rebase (hallazgo de QA). Cualquier otra contraseña
+# o secreto sigue bloqueando el CI.
+title = "HealthGuideAI"
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Contraseña de ejemplo del esquema OpenAPI y de los tests E2E (cuentas desechables @example.com)"
+regexTarget = "match"
+regexes = ['''(?i)password"?\s*[:=]\s*"(una)?clavesegura123"''']

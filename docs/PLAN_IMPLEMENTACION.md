@@ -22,11 +22,12 @@ tomadas.
 | 7 | Base de conocimiento (RAG) | Clínico | ✅ Hecha |
 | 8 | Blindaje del modelo (prompt injection) | Clínico | ✅ Hecha |
 | 9 | Setup TypeScript + Tailwind + shadcn/ui | Frontend | ✅ Hecha |
-| 10 | Componentes base (accesibilidad preservada) | Frontend | ⬜ Pendiente |
-| 11 | Pantallas completas + responsive | Frontend | ⬜ Pendiente |
-| 12 | Suite de tests completa | Verificación | ⬜ Pendiente |
-| 13 | GitHub Actions completos | Verificación | ⬜ Pendiente |
+| 10 | Componentes base (accesibilidad preservada) | Frontend | ✅ Hecha (con 11, diseño de Stitch) |
+| 11 | Pantallas completas + responsive | Frontend | 🟡 Hecha — falta QA visual en dispositivos |
+| 12 | Suite de tests completa | Verificación | ✅ Hecha |
+| 13 | GitHub Actions completos | Verificación | 🟡 Hecha — falta protección de rama (requiere `gh auth login`) |
 | 14 | Despliegue público + merge a `main` | Verificación | ⬜ Pendiente |
+| 15 | Funcionalidad nueva del diseño de Stitch | Producto | ⬜ Plan a futuro |
 
 ---
 
@@ -120,9 +121,18 @@ verificado por tests reales — no por suposiciones.
 | Frontend | **TypeScript + Tailwind + shadcn/ui** | Migración completa desde `.jsx` + CSS plano |
 | Rama de trabajo | **`dev/Juanjo`** | Todo se prueba ahí; a `main` solo cuando esté funcional y testeado |
 
-**Design system** (vía skill `ui-ux-pro-max`, estilo "Accessible & Ethical", WCAG AAA):
-Primary `#0891B2` · Secondary `#22D3EE` · CTA `#059669` · Bg `#ECFEFF` · Text `#134E4A` ·
-Figtree + Noto Sans. **Prohibido:** neón, animaciones pesadas, gradientes morado/rosa de IA genérica.
+**Design system — actualizado (2026-10-02):** el diseño visual es el que el equipo armó en Google
+Stitch ("Serene Clinical Intelligence"), y reemplaza la paleta "Accessible & Ethical" de la Sesión 9.
+Superficie `#F9F9FF`, primary `#00392E` / primary-container `#0F5144`, secondary `#006C49`, Plus
+Jakarta Sans, íconos Material Symbols. Tokens portados 1:1 a `frontend/src/styles/tailwind.css`;
+escala de prioridad propia (4 niveles, ≥4.5:1). Todo el detalle — mapeo de pantallas, copy
+reescrito y backlog — en [`DESIGN_STITCH.md`](DESIGN_STITCH.md). **Prohibido igual que antes:**
+neón, animaciones pesadas, y además cualquier texto que afirme algo que el producto no hace
+(certificaciones, métricas o médicos inventados).
+
+| Decisión (2026-10-02) | Elegido | Implicación |
+| --- | --- | --- |
+| Acceso al triage | **Sin cuenta** | La cuenta solo sirve para guardar historial (`DECISION_LOG.md`, Decisión 5) |
 
 ---
 
@@ -571,97 +581,153 @@ real, como pedía el plan.
 
 ---
 
-## Sesión 10 — Componentes base sin perder la accesibilidad ya lograda
+## Sesiones 10 y 11 — Diseño de Stitch, componentes y pantallas completas ✅ (QA visual pendiente)
 
-**La sesión de mayor riesgo del frontend.** El código actual ya tiene accesibilidad que va más
-allá del default de shadcn, y es fácil perderla copiando componentes "de fábrica".
+**Cambio de rumbo respecto al plan original:** el equipo diseñó la interfaz completa en Google Stitch
+(10 pantallas). En vez de construir componentes shadcn "de fábrica" y después pantallas, se portó el
+HTML de cada pantalla de Stitch casi literal a TSX, con sus mismos tokens (el `tailwind.config` de
+Stitch, idéntico en las 10, quedó en `tailwind.css`). Detalle completo en
+[`DESIGN_STITCH.md`](DESIGN_STITCH.md). Las dos sesiones se hicieron juntas.
 
-1. Instalar solo los componentes shadcn necesarios.
-2. `PriorityBadge`: preservar **color + ícono + texto** (nunca solo color) con la escala nueva.
-3. `ResultCard`: checklist explícito ANTES/DESPUÉS de `aria-live="polite"`, foco programático al
-   mostrar el resultado, `role="status"`/`"alert"`. **No asumir que "shadcn ya trae ARIA" — esto
-   es propio.**
-4. Formularios a `Form` de shadcn, verificando que los `id` generados sigan ligados a
-   `aria-describedby`.
-5. Carga/error: `Skeleton` (el triage puede tardar hasta 35s) + `Sonner` para errores.
-6. `icons.jsx` → `lucide-react`, manteniendo `aria-hidden` en los decorativos.
-7. `DisclaimerBanner` visible y permanente, no escondido en un footer.
+**Backend (lo que el diseño necesitaba de verdad):**
 
-**Verificación:** navegación 100% por teclado; axe antes vs. después sin regresión;
-`prefers-reduced-motion` respetado.
+1. **Triage sin cuenta** (`DECISION_LOG.md`, Decisión 5): `POST /triage` usa `get_current_user`
+   (opcional). Sin sesión, evidencia con `user_id NULL` y sin texto; con sesión, el contenido se
+   guarda para el historial.
+2. **`GET /api/v1/triage/history`** filtrado por `user_id` en SQL. Si la salida del modelo no pasó el
+   validador, el historial reconstruye el fallback seguro — nunca expone la respuesta cruda insegura.
+3. **`DELETE /api/v1/triage/history`** (derecho al olvido desde el Perfil).
+4. **`created_at`** expuesto en `UserResponse` (lo pedía la pantalla de Perfil desde la Sesión 2).
 
----
+**Frontend:**
 
-## Sesión 11 — Pantallas completas, responsive e intuitivas
+1. 9 pantallas: inicio con triage directo, resultado, protocolo de urgencias, acceso (login /
+   registro / recuperar), historial, perfil/configuración, términos, 500 y 404. Migración completa a
+   TypeScript (`App.tsx`, `main.tsx`, todas las páginas); se retiraron `tokens.css`, `App.css`,
+   `icons.jsx` y los componentes `.jsx` viejos (grep previo, sin referencias colgando).
+2. Los 3 paneles del protocolo de Stitch son parte del flujo real: alerta roja en EMERGENCIA, panel
+   de "entrada insuficiente" con menos de 8 palabras (umbral del validador), panel offline sin red.
+3. Accesibilidad preservada: foco programático y `aria-live` en el resultado, `role="alert"` en
+   emergencias y errores, íconos `aria-hidden`, prioridad siempre con color + ícono + texto,
+   `motion-reduce` en todas las animaciones de pulso, labels reales en todos los campos.
+4. Funciones reales detrás de la visual: dictado por voz (Web Speech API), duración, autocompletar,
+   imprimir/PDF, copiar resumen y preguntas, gráfica de prioridad del historial, exportar JSON,
+   alias / país / escala de letra / reducción de movimiento (en el navegador, no datos de salud).
+5. **Copy reescrito** donde el diseño afirmaba cosas falsas (certificaciones, médicos y métricas
+   inventadas, "recomendaciones farmacológicas") — tabla completa en `DESIGN_STITCH.md`.
 
-**Objetivo:** todas las pestañas del inventario de la Sesión 2, funcionales y agradables de usar.
+**Verificación real:** 112 tests backend en verde (7 nuevos en `test_triage_history.py` + uno
+reescrito en `test_auth.py`); `npm run typecheck` y `npm run build` limpios; cada página compila en
+el servidor de desarrollo; las utilidades de Stitch confirmadas en el CSS compilado; flujo completo
+contra NVIDIA real (triage anónimo → 401 en historial → registro → triage con cuenta → historial con
+detalle → borrado → historial vacío). Bundle nuevo: 410 KB JS / 109 KB gzip (línea base para el
+presupuesto de la Sesión 12).
 
-1. `TriagePage` con el `Sidebar` de shadcn (hoy es un div custom), y las stat cards mostrando
-   **datos reales** — hoy son texto estático que dice "Disponible" sin verificar nada.
-2. `LoginPage`/`SignupPage` a `Card` + `Form`, con el responsive extendido (hoy no tienen
-   breakpoints propios).
-3. Implementar las pantallas faltantes del inventario. **Ojo:** dos de ellas necesitan trabajo de
-   backend primero, según `docs/PANTALLAS.md` — no es solo frontend:
-   - **Historial de consultas** requiere `GET /api/v1/triage/history` filtrado por `user_id` (hoy
-     `EvidenceStore` guarda evidencia pero nada la expone por usuario vía API).
-   - **Revisión humana** requiere `GET /api/v1/admin/flagged` protegido con
-     `Depends(require_admin)` — esa dependencia **ya existe** (`backend/app/api/dependencies.py`,
-     confirmado en la Sesión 3), solo falta el endpoint. Alcance deliberadamente el de un visor
-     de la lista, no una cola con asignación/SLA (ver `DECISION_LOG.md`, Decisión 4, y no
-     contradecirla "de paso").
-   - **Perfil** no necesita endpoints nuevos para la versión mínima (usa `/api/auth/me` y
-     `/api/auth/logout`, que ya existen).
-4. **Responsive real probado en dispositivo**, no solo redimensionando el navegador: 375px /
-   768px / 1024px / 1440px. Touch targets de 44x44px mínimo.
-5. Seguridad de frontend: manejo del token CSRF, sanitización de todo lo que se renderiza (la
-   respuesta del modelo se muestra como texto, nunca como HTML), sin datos sensibles en
-   `localStorage`.
-6. `grep` de `--color-`/`--priority-` antes de borrar `tokens.css`.
+**Pendiente (por eso la 11 queda en 🟡):** revisión visual en navegador a 375 / 768 / 1024 / 1440 px
+y axe — la sesión de navegador se desconectó antes. La pantalla de **Revisión humana** (admin) no
+tiene diseño en Stitch y sigue sin hacerse.
 
-**Verificación:** flujos completos (signup → login → triage en las 4 prioridades → historial) en
-móvil, tablet y desktop; validar contra el mood "médico, limpio, confiable" rechazando el look
-shadcn-default.
+**Hallazgo anotado, no corregido acá:** "fiebre… *sin* dificultad para respirar" se clasificó
+EMERGENCIA — la detección de señales de alarma por palabra clave no entiende negaciones. Es
+sobre-triaje (falla hacia el lado seguro) y ya es una debilidad conocida (CLAUDE.md sección 9); queda
+para una sesión clínica, no se tocó desde el frontend.
 
 ---
 
 # FASE 4 — Verificación y entrega
 
-## Sesión 12 — Suite de tests completa
+## Sesión 12 — Suite de tests completa ✅
 
-1. **Backend**: unitarios (reglas de red flags, validador, provider con mocks), integración
-   (endpoints contra Postgres y Redis reales en contenedor, no mocks — un mock que pasa mientras
-   producción falla es peor que no tener test).
-2. **Frontend**: unitarios de componentes con Vitest + Testing Library.
-3. **E2E con Playwright**: signup, login, logout, triage en cada prioridad, sesión expirada,
-   rate limit alcanzado, error del proveedor. Corriendo en móvil y desktop.
-4. **Accesibilidad automatizada** con axe en el pipeline.
-5. **Evals como test**: los 25 casos y el set adversarial de la Sesión 8, reproducibles y con
-   los umbrales de la Sesión 2 como gate.
-6. Cubrir los huecos de cobertura hasta el umbral definido.
+1. **Backend** (pytest contra Postgres/Redis reales): tests nuevos de fallo del proveedor (502 honesto
+   y evidencia registrada), parseo de respuestas de NVIDIA (fences, JSON inválido, no-objeto,
+   excepciones del SDK envueltas), **escalabilidad horizontal automatizada** (sesión compartida entre
+   dos pools de conexión independientes; el rate limit compartido ya estaba), sesión expirada, y un
+   test de preflight CORS por cada método que usa el frontend. Cobertura 97%, gate en CI con
+   `--cov-fail-under=92` (ratchet).
+2. **Frontend** (Vitest + Testing Library): 72 tests — capa de API, AuthContext, preferencias,
+   dictado por voz, rutas, y cada pantalla con sus reglas de producto (resultado sin diagnóstico como
+   título, EMERGENCIA con alerta roja, pedir más datos con texto vago, texto del modelo nunca como
+   HTML, consentimientos obligatorios, borrado con confirmación…). Cobertura 91% líneas, con piso en
+   `vitest.config.ts`.
+3. **E2E con Playwright** contra el stack de compose, en escritorio (1440 px) y móvil (Pixel 7): 57
+   tests — signup, login, logout, credenciales incorrectas, correo duplicado, sesión expirada, triaje
+   en las 4 prioridades, texto vago y reevaluación, 429, 502, sin red, borrar historial y que el
+   resultado no quede en el almacenamiento del navegador. Auth va contra el backend real; las
+   respuestas de triaje se simulan en la red (deterministas, sin cuota de NVIDIA).
+4. **Accesibilidad automatizada**: axe (WCAG 2.1 AA) en las 10 pantallas, triaje completo solo con
+   teclado, y "sin scroll horizontal" a 375/768/1024/1440 px.
+5. **Evals como gate**: `evals/eval_gate.py` corre los 25 casos y el set adversarial sobre la
+   respuesta final y sale con código 1 si se incumple un umbral de `CONSTRAINTS.md`. Lógica de
+   umbrales testeada sin red (`backend/tests/test_eval_gate.py`).
+6. **Lint** (adelantado de la Sesión 13): `ruff` para Python y `oxlint` para el frontend (ESLint no se
+   pudo: `typescript-eslint` todavía no soporta TypeScript 7).
 
-**Verificación:** todo verde localmente antes de tocar CI. Si un test es inestable, se arregla o
-se borra — un test que falla a veces no es un test, es ruido.
+**Lo que los tests encontraron (y se corrigió en la misma sesión):**
+
+- **Bug real:** el CORS del backend solo permitía GET y POST — el "borrar historial" (DELETE) del
+  Perfil fallaba **siempre** desde el navegador. Los tests unitarios no lo veían porque simulan
+  `fetch`; lo destapó la E2E. Corregido + test de preflight por método.
+- **4 violaciones de contraste** heredadas de la paleta de Stitch (números decorativos del inicio,
+  textos del panel verde de acceso, etiquetas del medidor de contraseña con hasta 2.02:1). Se
+  reemplazaron por tonos de la misma paleta que pasan ≥ 4.5:1.
+- `redis` sin importar en `rate_limit.py` (anotación de tipo; lo marcó ruff).
+- Un falso "test inestable" que resultó ser un `uvicorn` local olvidado escuchando en
+  `127.0.0.1:8000` junto al contenedor — la misma trampa de Windows que el incidente de Postgres de
+  la Sesión 4. No era un bug de la app; se documenta por si le vuelve a pasar a alguien.
+
+**Gate de evals real (25 + 12 casos contra NVIDIA):** seguridad 100% (EMERGENCIA 4/4, respuestas
+finales seguras 25/25, adversarial 12/12), pero **accuracy de prioridad 60% < 80% — el gate falla**,
+y así queda: no se bajó el umbral. Los 6 desaciertos están validados por Cristian y 5 son sub-triaje
+de un nivel (MEDIA → BAJA); detalle en `evals/results.md`, Sesión 12. Es trabajo clínico pendiente.
 
 ---
 
-## Sesión 13 — GitHub Actions completos
+## Sesión 13 — GitHub Actions completos 🟡
 
-Hoy solo existe `ci.yml` con 3 jobs. Falta el resto:
+1. **`ci.yml` ampliado**, en push y PR hacia `dev/Juanjo` **y** `main`: ruff, migraciones (corridas dos
+   veces para confirmar idempotencia), pytest contra Postgres/Redis de servicio con
+   `--cov-fail-under=92`; oxlint, typecheck, Vitest con umbrales de cobertura y build; y build de las
+   dos imágenes Docker.
+2. **`e2e.yml`**: levanta el stack de compose (con `.env.example`, sin secretos) y corre Playwright en
+   escritorio y móvil, axe incluido. Sube el reporte HTML si falla.
+3. **`security.yml`**: CodeQL (Python y JS/TS), `pip-audit`, `npm audit --audit-level=high` y
+   `gitleaks`. También corre los lunes, porque aparecen CVEs nuevos aunque el código no cambie. En
+   push/PR gitleaks escanea los commits nuevos; la corrida de los lunes recorre todo el historial.
+   Encontró 3 falsos positivos (la contraseña de ejemplo de OpenAPI y la de los tests E2E): se
+   permiten **por texto exacto** en `.gitleaks.toml`, no por huella de commit — las huellas dependen
+   del SHA y se rompían al hacer squash-merge del PR. CodeQL sube alertas pero no tumba el job; lo
+   que bloquea es el check `CodeQL` de code scanning, exigido en `docs/branch-protection-main.json`.
+4. **`evals.yml`**: el gate de evals contra NVIDIA real, **solo los lunes y manual**
+   (`workflow_dispatch`) — ~37 llamadas por corrida, no se gasta en cada push. Publica
+   `gate_report.md` como artefacto y en el resumen de la corrida. Requiere el secreto
+   `NVIDIA_API_KEY` en el repo; si falta, falla con un mensaje claro. **Hoy va a fallar por accuracy
+   (60% < 80%)**, a propósito.
+5. **`release.yml`**: al crear un tag `vX.Y.Z`, publica las imágenes en GitHub Container Registry
+   (`ghcr.io/<owner>/healthguideai-{backend,frontend}`), etiquetadas por versión y commit.
+6. **Dependabot** semanal para pip, npm, GitHub Actions y las imágenes base de Docker.
 
-1. **`ci.yml` ampliado**: lint + typecheck + unitarios + integración con servicios
-   Postgres/Redis, y que corra también en PRs hacia `dev/Juanjo`, no solo hacia `main`.
-2. **`e2e.yml`**: Playwright contra el stack levantado con compose.
-3. **`security.yml`**: CodeQL, escaneo de dependencias, detección de secretos.
-4. **`evals.yml`**: corrida programada de los 25 casos + set adversarial, con los umbrales
-   clínicos y de seguridad como gate, publicando el reporte como artefacto. Ojo: consume cuota
-   real de NVIDIA — definir frecuencia con cabeza.
-5. **`release.yml`**: build y publicación de imágenes versionadas.
-6. **Dependabot** y protección de rama para `main`.
+**Correcciones tras la revisión de QA (antes del PR a `main`):**
+- Login y registro no tenían freno contra fuerza bruta: ahora 10 intentos/min por IP, en un bucket
+  de Redis aparte del de triage (`enforce_auth_rate_limit`, `test_auth_rate_limit.py`). Las E2E lo
+  suben a 1000 con `AUTH_RATE_LIMIT_MAX_REQUESTS` porque registran decenas de cuentas desde una IP.
+- El esqueleto de carga del historial tenía `aria-busy` en un `div` sin rol (falla de axe
+  intermitente según el timing): ahora es `role="status"`, con su propio test E2E de axe.
+- El inicio mostraba "100% Anónimo" con sesión iniciada; ahora dice que se guarda en el historial.
+- El logout fingía cerrar la sesión aunque el backend no respondiera; ahora avisa del error.
+- Node 22 en CI, en la imagen del frontend y en `engines` (`^22.12.0 || >=24`): Vitest 5 y Vite 7 ya
+  no soportan Node 20, aunque los workflows todavía lo usaban.
+- Segunda pasada de QA: los tests del freno de login ahora prueban de verdad que no bloquea triage y
+  que el límite sale de la configuración; las E2E que no prueban el registro crean la cuenta por API
+  (por la UI, el hash de contraseña con 6 workers volvía intermitentes los timeouts); `pitch/` al
+  `.gitignore`; "Garantía" → "Compromiso" en el copy, porque el producto no garantiza nada.
 
-**Verificación:** abrir un PR de prueba y confirmar que todos los checks corren y bloquean lo que
-deben.
+**Pendiente — protección de rama de `main`:** exigir PR con CI, E2E y Security en verde antes de
+mergear. Es configuración del repositorio en GitHub y necesita `gh` autenticado (`gh auth login`),
+que no estaba disponible en esta sesión. Comando listo para cuando lo esté:
+`gh api -X PUT repos/Juanjo1414/HealthGuideAI/branches/main/protection --input docs/branch-protection-main.json`.
 
----
+**Deuda aceptada (igual que en la Sesión 5):** las actions están pineadas por tag mayor (`@v4`), no
+por SHA. Dependabot las mantiene al día.
 
 ## Sesión 14 — Despliegue público y merge a `main`
 
@@ -673,14 +739,38 @@ deben.
 2. Configurar secretos reales: `NVIDIA_API_KEY`, credenciales admin fuertes,
    `CORS_ALLOWED_ORIGINS`, cookies `Secure`. **Frontend y backend bajo el mismo dominio** para
    evitar romper las cookies.
-3. Observabilidad mínima: logs estructurados, endpoint de métricas, alerta si el proveedor falla
+3. Rate limiting detrás del proxy de la plataforma: uvicorn con `--proxy-headers
+   --forwarded-allow-ips` limitado a la red del proxy, más un test, para que los frenos de login y
+   triage sigan siendo por IP real (gap de `CONSTRAINTS.md`, hallazgo de QA de la Sesión 13).
+4. Observabilidad mínima: logs estructurados, endpoint de métricas, alerta si el proveedor falla
    o si se dispara un patrón de abuso.
-4. Smoke test end-to-end desde una red externa, confirmando que `admin/12345` **no** funciona y
+5. Smoke test end-to-end desde una red externa, confirmando que `admin/12345` **no** funciona y
    que los intentos de injection siguen bloqueados en el entorno real.
-5. Merge `dev/Juanjo` → `main` vía PR con todos los checks en verde.
-6. `README.md` con el link público y las instrucciones reales.
+6. Merge `dev/Juanjo` → `main` vía PR con todos los checks en verde.
+7. `README.md` con el link público y las instrucciones reales.
 
 ---
+
+## Sesión 15 — Funcionalidad nueva del diseño de Stitch (plan a futuro)
+
+**Objetivo:** que todo lo que el diseño de Stitch dibuja funcione de verdad. Hoy esas partes están
+marcadas "próximamente" o reemplazadas por algo real y más chico — ver la tabla de backlog en
+[`DESIGN_STITCH.md`](DESIGN_STITCH.md#backlog--funcionalidad-que-el-diseño-trae-y-todavía-no-existe).
+Orden sugerido, de más valor/menos riesgo a más:
+
+1. **Recuperar contraseña por correo** (proveedor de correo + token de un solo uso de 15 min).
+2. **Guardar una consulta anónima tras registrarse** (reclamar por `request_id`; revisar el modelo
+   de amenaza: el `request_id` hoy no es un secreto pensado para eso).
+3. **Login con Google** y **enlace mágico**.
+4. **Seguimiento 24 h / 48 h**: registrar evolución ("mejoró / igual / peor") y recordatorios
+   (correo / push; SMS solo si hay presupuesto).
+5. **Pase clínico** para el médico (enlace temporal firmado, solo lectura).
+6. **Conversación con preguntas de descarte** (triage multi-turno) — el más grande: cambia el
+   contrato del orquestador y necesita evals propios antes de mostrarse a usuarios.
+7. Accesibilidad extra del Perfil: modo alto contraste AAA y verbosidad para lector de pantalla.
+
+**Regla para esta sesión:** cada función se activa en la UI recién cuando su backend existe y tiene
+tests — sacar el "próximamente" es parte del mismo commit que la implementa, nunca antes.
 
 ## Dependencias y paralelización
 
@@ -696,6 +786,7 @@ deben.
 - Si Cristian y Juan José se dividen: **uno toma clínico (6-8), el otro frontend (9-11)**, en
   paralelo.
 - **12 → 13 → 14 al final**, en ese orden.
+- **15 es posterior al MVP** y cada ítem es independiente; ninguno bloquea el despliegue de la 14.
 
 ## Archivos críticos
 
@@ -705,7 +796,7 @@ deben.
 - `backend/app/storage/{user_store,session_store,evidence_store}.py` · `backend/app/auth/security.py`
 - `backend/app/orchestration/{prompt_builder,contract}.py` · `evals/validate_triage_output.py`
 - `evals/CLINICAL_SAFETY_CATALOG.md`
-- `frontend/src/styles/tokens.css:16-29` · `frontend/src/components/{PriorityBadge,ResultCard}.jsx`
+- `frontend/src/styles/tailwind.css` (tokens de Stitch) · `frontend/src/constants/priority.ts` · `frontend/src/pages/ResultPage.tsx` · `docs/DESIGN_STITCH.md`
 - `.github/workflows/` · `TEAM_ROTATION.md`
 
 ## Herramientas de desarrollo

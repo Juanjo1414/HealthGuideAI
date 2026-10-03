@@ -58,6 +58,11 @@ class Settings:
     # frontend) no queme la cuota de la API sin querer.
     rate_limit_max_requests: int = 20
     rate_limit_window_seconds: float = 60.0
+    # Login/registro (hallazgo de QA, Sesión 13): sin esto se podía probar
+    # contraseñas sin freno. Bucket aparte del de triage para que un intento
+    # fallido no consuma la cuota de consultas.
+    auth_rate_limit_max_requests: int = 10
+    auth_rate_limit_window_seconds: float = 60.0
     # Postgres (Sesion 4 — reemplaza el SQLite/JSONL de sesiones anteriores).
     # El default apunta a localhost:5433 (no 5432: ver el comentario en
     # compose.yml sobre el conflicto con un Postgres nativo instalado por
@@ -111,6 +116,8 @@ def get_settings() -> Settings:
         in {"1", "true", "yes"},
         rate_limit_max_requests=int(os.getenv("RATE_LIMIT_MAX_REQUESTS", "20")),
         rate_limit_window_seconds=float(os.getenv("RATE_LIMIT_WINDOW_SECONDS", "60")),
+        auth_rate_limit_max_requests=int(os.getenv("AUTH_RATE_LIMIT_MAX_REQUESTS", "10")),
+        auth_rate_limit_window_seconds=float(os.getenv("AUTH_RATE_LIMIT_WINDOW_SECONDS", "60")),
         database_url=os.getenv(
             "DATABASE_URL",
             "postgresql://healthguide:healthguide_dev_only@localhost:5433/healthguide",
