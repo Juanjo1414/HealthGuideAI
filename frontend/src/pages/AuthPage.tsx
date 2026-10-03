@@ -376,7 +376,7 @@ export default function AuthPage() {
                     <span aria-hidden="true" className="material-symbols-outlined text-secondary-fixed text-[24px]">verified_user</span>
                   </div>
                   <div>
-                    <h3 className="font-headline-sm text-headline-sm font-bold tracking-tight">Garantía Ética</h3>
+                    <h3 className="font-headline-sm text-headline-sm font-bold tracking-tight">Compromiso Ético</h3>
                     <p className="font-label-sm text-label-sm text-on-primary-container">Reglas que no se negocian</p>
                   </div>
                 </div>

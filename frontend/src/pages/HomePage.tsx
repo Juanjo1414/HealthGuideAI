@@ -347,7 +347,7 @@ export default function HomePage() {
           <div className="text-center max-w-2xl mx-auto mb-space-xl">
             <span className="font-label-sm text-label-sm uppercase tracking-wider text-secondary">Marco Clínico Riguroso</span>
             <h2 className="font-headline-lg text-headline-lg text-primary tracking-tight mt-space-xs">
-              Garantía de Orientación Médica Ética y Responsable
+              Compromiso de Orientación Médica Ética y Responsable
             </h2>
             <p className="font-body-md text-body-md text-on-surface-variant mt-space-xs">
               Diseñado para evitar el alarmismo infundado y proteger las decisiones oportunas de salud.
