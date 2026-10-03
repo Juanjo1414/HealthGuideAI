@@ -15,6 +15,7 @@ from ..schemas.auth import LoginRequest, SignupRequest, UserResponse
 from ..storage.session_store import SessionStore
 from ..storage.user_store import EmailAlreadyRegisteredError, User, UserStore
 from .dependencies import get_session_store, get_user_store, require_authenticated
+from .rate_limit import enforce_auth_rate_limit
 
 router = APIRouter()
 
@@ -40,8 +41,12 @@ def _set_session_cookie(response: Response, token: str) -> None:
     "/auth/signup",
     response_model=UserResponse,
     status_code=201,
+    dependencies=[Depends(enforce_auth_rate_limit)],
     summary="Crea una cuenta y deja la sesión iniciada",
-    responses={409: {"description": "Ya existe una cuenta con ese correo."}},
+    responses={
+        409: {"description": "Ya existe una cuenta con ese correo."},
+        429: {"description": "Demasiados intentos desde esta IP."},
+    },
 )
 def signup(
     payload: SignupRequest,
@@ -60,14 +65,18 @@ def signup(
 
     session = session_store.create(user.id)
     _set_session_cookie(response, session.token)
-    return UserResponse(id=user.id, email=user.email, role=user.role)
+    return UserResponse(id=user.id, email=user.email, role=user.role, created_at=user.created_at)
 
 
 @router.post(
     "/auth/login",
     response_model=UserResponse,
+    dependencies=[Depends(enforce_auth_rate_limit)],
     summary="Inicia sesión con email y contraseña",
-    responses={401: {"description": "Correo o contraseña incorrectos."}},
+    responses={
+        401: {"description": "Correo o contraseña incorrectos."},
+        429: {"description": "Demasiados intentos desde esta IP."},
+    },
 )
 def login(
     payload: LoginRequest,
@@ -81,7 +90,7 @@ def login(
 
     session = session_store.create(user.id)
     _set_session_cookie(response, session.token)
-    return UserResponse(id=user.id, email=user.email, role=user.role)
+    return UserResponse(id=user.id, email=user.email, role=user.role, created_at=user.created_at)
 
 
 @router.post("/auth/logout", status_code=204, summary="Cierra la sesión actual")
@@ -107,4 +116,9 @@ def logout(
     responses={401: {"description": "No hay sesión activa."}},
 )
 def me(current_user: User = Depends(require_authenticated)) -> UserResponse:
-    return UserResponse(id=current_user.id, email=current_user.email, role=current_user.role)
+    return UserResponse(
+        id=current_user.id,
+        email=current_user.email,
+        role=current_user.role,
+        created_at=current_user.created_at,
+    )

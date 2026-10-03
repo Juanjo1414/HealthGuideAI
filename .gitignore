@@ -23,3 +23,10 @@ graphify-out/*.sig
 graphify-out/[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]/
 graphify-out/.rebuild.lock
 graphify-out/.*.stale
+
+# Export de referencia de Stitch (Sesion 10/11, diseno visual) — solo local,
+# se elimina despues de portar las pantallas a frontend/src. Nunca a GitHub.
+/stitch_healthguide_ai_triage_web/
+
+# Material de presentación del equipo (pitch) — entregable local, no va a git.
+/pitch/

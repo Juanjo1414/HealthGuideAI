@@ -50,10 +50,16 @@ class LoginRequest(BaseModel):
 class UserResponse(BaseModel):
     model_config = ConfigDict(
         json_schema_extra={
-            "example": {"id": 1, "email": "paciente@example.com", "role": "user"}
+            "example": {
+                "id": 1,
+                "email": "paciente@example.com",
+                "role": "user",
+                "created_at": "2026-09-01T12:00:00+00:00",
+            }
         }
     )
 
     id: int
     email: str
     role: str
+    created_at: str

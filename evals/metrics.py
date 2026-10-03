@@ -24,9 +24,8 @@ Uso:
 from __future__ import annotations
 
 import csv
-from dataclasses import dataclass, field
-from pathlib import Path
-from typing import Callable
+from collections.abc import Callable
+from dataclasses import dataclass
 
 # Mismo set que ALLOWED_PRIORITIES en validate_triage_output.py — se repite acá
 # como constante propia (no se importa) porque esta es la única regla de este

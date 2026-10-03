@@ -53,6 +53,10 @@ services:
       # servicio ES el hostname.
       DATABASE_URL: "postgresql://healthguide:healthguide_dev_only@postgres:5432/healthguide"
       REDIS_URL: "redis://redis:6379/0"
+      # Freno anti fuerza bruta de login/registro (Sesión 13). 10/min por IP por
+      # defecto; e2e.yml lo sube porque Playwright registra decenas de cuentas
+      # desde la misma IP en pocos segundos.
+      AUTH_RATE_LIMIT_MAX_REQUESTS: "${AUTH_RATE_LIMIT_MAX_REQUESTS:-10}"
     depends_on:
       postgres:
         condition: service_healthy

@@ -1,5 +1,11 @@
-@import url("https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap");
-@import "./tokens.css";
+/*
+ * Reset minimo. Antes importaba tokens.css (paleta legada, retirada en
+ * Sesion 10/11 — ver docs/DESIGN_STITCH.md) y una fuente (DM Sans/Space
+ * Grotesk) que ni siquiera coincidia con la de index.html (Figtree/Noto
+ * Sans entonces, Plus Jakarta Sans ahora) — nunca se usaba, quedo de un
+ * scaffold inicial. El color/tipografia real del sistema vive en
+ * tailwind.css (@theme + :root), unica fuente de verdad.
+ */
 
 *,
 *::before,
@@ -13,35 +19,7 @@ html {
 
 body {
   margin: 0;
-  background: var(--color-bg);
-  color: var(--color-text);
-  font-family: var(--font-body);
-  font-size: 16px;
-  line-height: 1.6;
   -webkit-font-smoothing: antialiased;
-}
-
-body::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  background-image: linear-gradient(rgba(67, 201, 242, 0.035) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(67, 201, 242, 0.035) 1px, transparent 1px);
-  background-size: 48px 48px;
-  mask-image: linear-gradient(to bottom, black, transparent 78%);
-}
-
-h1,
-h2,
-h3 {
-  font-family: var(--font-heading);
-  line-height: 1.25;
-  margin: 0;
-}
-
-h2 {
-  font-size: clamp(22px, 3vw, 30px);
 }
 
 button,
@@ -57,7 +35,7 @@ button {
 
 :focus-visible {
   outline: none;
-  box-shadow: var(--focus-ring);
+  box-shadow: 0 0 0 3px rgba(15, 81, 68, 0.35);
   border-radius: 6px;
 }
 
@@ -68,5 +46,25 @@ button {
     animation-duration: 0.001ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.001ms !important;
+  }
+}
+
+/* Preferencia "Reducción de movimiento" del perfil (además de la del sistema operativo). */
+.reduce-motion *,
+.reduce-motion *::before,
+.reduce-motion *::after {
+  animation-duration: 0.001ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.001ms !important;
+}
+
+@media print {
+  header,
+  nav,
+  footer {
+    display: none !important;
+  }
+  main {
+    padding-top: 0 !important;
   }
 }

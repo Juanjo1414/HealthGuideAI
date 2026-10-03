@@ -94,12 +94,16 @@ def test_logout_invalidates_session(db):
     assert me_response.status_code == 401
 
 
-def test_triage_without_session_requires_login(db):
+def test_triage_is_anonymous_but_history_requires_login(db):
+    """Sesión 10/11: consultar no exige cuenta (decisión de producto); lo
+    que sí la exige es ver el historial, que es para lo que existe la cuenta."""
     client, _ = client_with_fresh_db(db)
 
-    response = client.post("/api/triage", json={"symptoms_text": "Tengo fiebre desde ayer."})
+    triage = client.post("/api/triage", json={"symptoms_text": "Tengo fiebre desde ayer."})
+    history = client.get("/api/triage/history")
 
-    assert response.status_code == 401
+    assert triage.status_code != 401
+    assert history.status_code == 401
 
 
 def test_signup_rejects_unexpected_field(db):

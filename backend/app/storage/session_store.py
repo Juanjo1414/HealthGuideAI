@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import secrets
 from dataclasses import dataclass
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 
 from .db import Database
 
@@ -28,7 +28,7 @@ class SessionStore:
 
     def create(self, user_id: int) -> Session:
         token = secrets.token_urlsafe(32)
-        expires_at_dt = datetime.now(timezone.utc) + timedelta(seconds=self._ttl_seconds)
+        expires_at_dt = datetime.now(UTC) + timedelta(seconds=self._ttl_seconds)
         # psycopg2 adapta datetime -> TIMESTAMPTZ directamente, sin pasar
         # por .isoformat() a mano como hacía la versión SQLite.
         self._db.execute(
@@ -46,8 +46,8 @@ class SessionStore:
             return None
         expires_at: datetime = row["expires_at"]
         if expires_at.tzinfo is None:
-            expires_at = expires_at.replace(tzinfo=timezone.utc)
-        if expires_at < datetime.now(timezone.utc):
+            expires_at = expires_at.replace(tzinfo=UTC)
+        if expires_at < datetime.now(UTC):
             self.delete(token)
             return None
         return Session(token=row["token"], user_id=row["user_id"], expires_at=expires_at.isoformat())

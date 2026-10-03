@@ -30,6 +30,7 @@ from collections import defaultdict, deque
 from functools import lru_cache
 from typing import Protocol
 
+import redis
 from fastapi import Depends, HTTPException, Request
 
 from ..config import get_settings
@@ -126,4 +127,28 @@ def enforce_rate_limit(
         raise HTTPException(
             status_code=429,
             detail="Demasiadas solicitudes. Espera un momento antes de volver a intentar.",
+        )
+
+
+@lru_cache
+def get_auth_rate_limiter() -> RateLimiter:
+    settings = get_settings()
+    return RedisRateLimiter(
+        get_redis_client(),
+        max_requests=settings.auth_rate_limit_max_requests,
+        window_seconds=settings.auth_rate_limit_window_seconds,
+    )
+
+
+def enforce_auth_rate_limit(
+    request: Request,
+    limiter: RateLimiter = Depends(get_auth_rate_limiter),
+) -> None:
+    """Freno contra fuerza bruta en login/registro, por IP. Misma mecánica que
+    enforce_rate_limit, otra clave (prefijo `auth:`) y otro límite."""
+    client_key = f"auth:{request.client.host if request.client else 'unknown'}"
+    if not limiter.check(client_key):
+        raise HTTPException(
+            status_code=429,
+            detail="Demasiados intentos. Espera un minuto antes de volver a intentar.",
         )
