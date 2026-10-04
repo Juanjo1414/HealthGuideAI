@@ -544,7 +544,8 @@ producto de farmacia.
 - Como el modelo igual se desliza a veces ("síndrome gripal o influenza"), el orquestador descarta
   en código toda causa que nombre una enfermedad (`orchestration/cause_filter.py`, CLAUDE.md §8).
 
-**Resultado en 4 casos reales** (mismo modelo, todos válidos):
+**Resultado en 4 casos reales** (mismo modelo, todos válidos). Se muestran 3: el cuarto, cefalea
+con fiebre, es donde el modelo escribió "influenza" y el filtro descartó esa causa.
 - dolor de cabeza de 15 días → "dolor de cabeza de tipo tensional", "sobrecarga o tensión muscular";
   consulta esta semana, registro del dolor, señales (rigidez de nuca, visión doble).
 - cólico con diarrea → "infección gastrointestinal viral o bacteriana", "irritación del tracto
