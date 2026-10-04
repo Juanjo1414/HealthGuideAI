@@ -162,8 +162,13 @@ Si la prueba 8 falla:
 El backend gratuito se duerme tras 15 min sin tráfico. La primera consulta después tarda ~1 min, y
 el frontend corta a los 35 s con "tardó demasiado". Para que no le pase a quien te da feedback:
 
-- Crea un monitor gratuito (por ejemplo en cron-job.org o UptimeRobot) que haga `GET` cada 10 min a
-  `https://<URL de tu servicio>/health`, la del paso 2.5.
+- Crea un monitor gratuito (UptimeRobot o cron-job.org) que consulte cada 5–10 min
+  `https://<tu-dominio>.vercel.app/health`: pasa por Vercel hasta el backend y lo mantiene despierto.
+  - UptimeRobot, en su plan gratuito, usa el método `HEAD`. `/health` lo acepta desde el 2026-10-04;
+    antes respondía 405 ("Method Not Allowed") y el monitor marcaba un incidente aunque el
+    servicio estuviera sano.
+  - Un 405 en cualquier monitor significa que el método no está permitido, no que el servicio esté
+    caído: revisa que el backend desplegado ya tenga este cambio (*Logs* → último despliegue).
 - Con un solo servicio encendido todo el mes se usan ~744 de las 750 h gratuitas. No despliegues un
   segundo servicio gratuito en la misma cuenta de Render.
 - `/health` no toca la base, así que Neon igual se suspende. No pasa nada: el backend se reconecta.
@@ -178,6 +183,7 @@ el frontend corta a los 35 s con "tardó demasiado". Para que no le pase a quien
 | Login, registro o consulta dan 403 "Origen no permitido" | `CORS_ALLOWED_ORIGINS` no coincide con el dominio de Vercel | Paso 4 |
 | La primera consulta del día dice "tardó demasiado" | El backend estaba dormido | Reintentar en 1 min, o el paso 6 |
 | `/ready` con `"nvidia_configured": false` | Falta la key | Paso 2 |
+| UptimeRobot marca *405 Method Not Allowed* | El backend desplegado es anterior a este arreglo (`/health` solo aceptaba GET) | Esperar a que Render termine de desplegar `main`, y reanudar el monitor |
 | Consultas con error de servidor | Cuota de NVIDIA agotada, o modelo dado de baja (ya pasó, ver `DECISION_LOG.md` decisión 6) | Logs de Render; avisar |
 
 ## Riesgos conocidos de este despliegue
