@@ -3,12 +3,12 @@
 # en su propio PR. openai 3.x se verificó contra un servidor que imita a NVIDIA:
 # misma petición (max_tokens, extra_body) y misma lectura de la respuesta.
 fastapi>=0.115,<1
-uvicorn[standard]>=0.34,<1
+uvicorn[standard]>=0.54.0,<1
 pydantic>=2.9,<3
-python-dotenv>=1.0,<2
+python-dotenv>=1.2.4,<2
 openai>=1.50,<4
 passlib>=1.7,<2
-bcrypt>=4.0,<4.1
+bcrypt>=4.0.1,<4.1
 email-validator>=2.2,<3
 # Sesion 4: escalabilidad horizontal. psycopg2 (no async) porque el resto del
 # backend ya es sincrono (rutas def, no async def) — introducir un driver
@@ -17,5 +17,5 @@ email-validator>=2.2,<3
 # el proyecto sigue sin usar un ORM (ver storage/db.py) — alembic aca es solo
 # el versionador de esquema, las queries siguen siendo SQL crudo.
 psycopg2-binary>=2.9,<3
-redis>=5.0,<6
+redis>=8.1.0,<9
 alembic>=1.13,<2
