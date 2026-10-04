@@ -6020,7 +6020,7 @@
       "file_type": "code",
       "norm_label": "drop_named_disease_causes()",
       "source_file": "backend/app/orchestration/cause_filter.py",
-      "source_location": "L48"
+      "source_location": "L53"
     },
     {
       "id": "backend_app_orchestration_cause_filter_names_specific_disease",
@@ -6032,7 +6032,7 @@
       "file_type": "code",
       "norm_label": "names_specific_disease()",
       "source_file": "backend/app/orchestration/cause_filter.py",
-      "source_location": "L44"
+      "source_location": "L49"
     },
     {
       "id": "backend_app_orchestration_cause_filter_normalize",
@@ -6044,7 +6044,7 @@
       "file_type": "code",
       "norm_label": "_normalize()",
       "source_file": "backend/app/orchestration/cause_filter.py",
-      "source_location": "L39"
+      "source_location": "L44"
     },
     {
       "id": "backend_app_orchestration_triage_orchestrator_triageorchestrator_run",
@@ -6068,7 +6068,7 @@
       "file_type": "code",
       "norm_label": "test_detects_named_diseases_with_or_without_accents()",
       "source_file": "backend/tests/test_cause_filter.py",
-      "source_location": "L20"
+      "source_location": "L26"
     },
     {
       "id": "backend_tests_test_cause_filter_test_drop_keeps_order_and_tolerates_non_lists",
@@ -6080,7 +6080,7 @@
       "file_type": "code",
       "norm_label": "test_drop_keeps_order_and_tolerates_non_lists()",
       "source_file": "backend/tests/test_cause_filter.py",
-      "source_location": "L39"
+      "source_location": "L45"
     },
     {
       "id": "backend_tests_test_cause_filter_test_keeps_general_categories",
@@ -6092,7 +6092,7 @@
       "file_type": "code",
       "norm_label": "test_keeps_general_categories()",
       "source_file": "backend/tests/test_cause_filter.py",
-      "source_location": "L34"
+      "source_location": "L40"
     },
     {
       "id": "frontend_src_api_healthapi_checkready",
@@ -11993,7 +11993,7 @@
       "source_location": "L1"
     },
     {
-      "id": "backend_app_orchestration_cause_filter_rationale_49",
+      "id": "backend_app_orchestration_cause_filter_rationale_54",
       "label": "Devuelve la lista sin las causas que nombran una enfermedad. Si no es una\u2026",
       "_origin": "ast",
       "community": 84,
@@ -12001,7 +12001,7 @@
       "file_type": "rationale",
       "norm_label": "devuelve la lista sin las causas que nombran una enfermedad. si no es una...",
       "source_file": "backend/app/orchestration/cause_filter.py",
-      "source_location": "L49"
+      "source_location": "L54"
     },
     {
       "id": "backend_tests_test_cause_filter_rationale_1",
@@ -12015,7 +12015,7 @@
       "source_location": "L1"
     },
     {
-      "id": "backend_tests_test_cause_filter_rationale_35",
+      "id": "backend_tests_test_cause_filter_rationale_41",
       "label": "gripal' no es 'gripe': se compara por palabra completa.",
       "_origin": "ast",
       "community": 84,
@@ -12023,7 +12023,7 @@
       "file_type": "rationale",
       "norm_label": "gripal' no es 'gripe': se compara por palabra completa.",
       "source_file": "backend/tests/test_cause_filter.py",
-      "source_location": "L35"
+      "source_location": "L41"
     },
     {
       "id": "frontend_src_api_healthapi",
@@ -15881,7 +15881,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "backend/app/orchestration/cause_filter.py",
-      "source_location": "L53",
+      "source_location": "L58",
       "weight": 1.0
     },
     {
@@ -15893,7 +15893,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "backend/app/orchestration/cause_filter.py",
-      "source_location": "L45",
+      "source_location": "L50",
       "weight": 1.0
     },
     {
@@ -16757,7 +16757,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "backend/tests/test_cause_filter.py",
-      "source_location": "L21",
+      "source_location": "L27",
       "weight": 1.0
     },
     {
@@ -16769,7 +16769,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "backend/tests/test_cause_filter.py",
-      "source_location": "L40",
+      "source_location": "L46",
       "weight": 1.0
     },
     {
@@ -16781,7 +16781,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "backend/tests/test_cause_filter.py",
-      "source_location": "L36",
+      "source_location": "L42",
       "weight": 1.0
     },
     {
@@ -21497,7 +21497,7 @@
       "confidence_score": 1.0,
       "context": "decorator",
       "source_file": "backend/tests/test_cause_filter.py",
-      "source_location": "L24",
+      "source_location": "L30",
       "weight": 1.0
     },
     {
@@ -33047,7 +33047,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "backend/app/orchestration/cause_filter.py",
-      "source_location": "L39",
+      "source_location": "L44",
       "weight": 1.0
     },
     {
@@ -33058,7 +33058,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "backend/app/orchestration/cause_filter.py",
-      "source_location": "L44",
+      "source_location": "L49",
       "weight": 1.0
     },
     {
@@ -33069,7 +33069,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "backend/app/orchestration/cause_filter.py",
-      "source_location": "L48",
+      "source_location": "L53",
       "weight": 1.0
     },
     {
@@ -33795,7 +33795,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "backend/tests/test_cause_filter.py",
-      "source_location": "L20",
+      "source_location": "L26",
       "weight": 1.0
     },
     {
@@ -33806,7 +33806,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "backend/tests/test_cause_filter.py",
-      "source_location": "L34",
+      "source_location": "L40",
       "weight": 1.0
     },
     {
@@ -33817,7 +33817,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "backend/tests/test_cause_filter.py",
-      "source_location": "L39",
+      "source_location": "L45",
       "weight": 1.0
     },
     {
@@ -40058,14 +40058,14 @@
       "weight": 1.0
     },
     {
-      "source": "backend_app_orchestration_cause_filter_rationale_49",
+      "source": "backend_app_orchestration_cause_filter_rationale_54",
       "target": "backend_app_orchestration_cause_filter_drop_named_disease_causes",
       "relation": "rationale_for",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "backend/app/orchestration/cause_filter.py",
-      "source_location": "L49",
+      "source_location": "L54",
       "weight": 1.0
     },
     {
@@ -40476,14 +40476,14 @@
       "weight": 1.0
     },
     {
-      "source": "backend_tests_test_cause_filter_rationale_35",
+      "source": "backend_tests_test_cause_filter_rationale_41",
       "target": "backend_tests_test_cause_filter_test_keeps_general_categories",
       "relation": "rationale_for",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "backend/tests/test_cause_filter.py",
-      "source_location": "L35",
+      "source_location": "L41",
       "weight": 1.0
     },
     {
@@ -45128,5 +45128,5 @@
       "source_file": "CLAUDE.md"
     }
   ],
-  "built_at_commit": "7b09d85fdbeadd7f053f05141c891d21f36e1c43"
+  "built_at_commit": "f865ec3d7a16307cca19573b0e53eb3968fcc5f7"
 }
