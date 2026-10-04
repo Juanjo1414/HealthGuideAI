@@ -68,3 +68,20 @@ def test_auth_limiter_reads_its_limit_from_settings(monkeypatch):
         assert [limiter.check(key) for _ in range(4)] == [True, True, True, False]
     finally:
             get_auth_rate_limiter.cache_clear()
+
+
+def test_behind_a_proxy_each_client_has_its_own_bucket(monkeypatch):
+    """Antes, detrás del gateway, 10 logins fallidos de cualquiera bloqueaban a
+    todos: el bucket era la IP del proxy."""
+    monkeypatch.setenv("TRUSTED_PROXY_HOPS", "1")
+    limiter = InMemoryRateLimiter(max_requests=1, window_seconds=60)
+    app.dependency_overrides[get_auth_rate_limiter] = lambda: limiter
+    client = TestClient(app)
+    login = {"email": "a@example.com", "password": "x"}
+
+    client.post("/api/v1/auth/login", json=login, headers={"X-Forwarded-For": "200.1.1.1"})
+    blocked = client.post("/api/v1/auth/login", json=login, headers={"X-Forwarded-For": "200.1.1.1"})
+    other = client.post("/api/v1/auth/login", json=login, headers={"X-Forwarded-For": "200.2.2.2"})
+
+    assert blocked.status_code == 429
+    assert other.status_code == 401
