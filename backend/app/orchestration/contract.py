@@ -42,8 +42,8 @@ OUTPUT_FIELDS: dict[str, str] = {
     "sintomas_detectados": "array de strings - sintomas identificados",
     "prioridad": "string - BAJA | MEDIA | ALTA | EMERGENCIA",
     "posibles_causas": (
-        "array de strings - 2 a 4 posibilidades generales para este caso, cada una "
-        "'nombre: por que encaja', nunca diagnosticos cerrados"
+        "array de strings - 2 a 4 categorias generales de causa para este caso, cada una "
+        "'categoria: por que encaja', nunca enfermedades con nombre propio ni diagnosticos"
     ),
     "alertas": "array de strings - señales de riesgo presentes en el relato",
     "recomendacion": (
@@ -96,25 +96,41 @@ PRIORITY_RUBRIC: dict[str, str] = {
 # decision 6) toma el esquema al pie de la letra y contestaba lo minimo —
 # "causas generales de dolor de cabeza cronico" como unica causa y "consulta
 # medica" como unica recomendacion. El retirado completaba solo. Se le pide
-# explicitamente que la orientacion sea util, sin aflojar ninguna regla:
-# posibilidades (no diagnosticos) y autocuidado sin medicamentos.
+# explicitamente que la orientacion sea util, sin aflojar ninguna regla.
+#
+# Revision de QA (2026-10-04): una primera version pedia causas "concretas" y
+# el modelo empezo a nombrar enfermedades ("COVID-19", "faringitis bacteriana"
+# con un criterio para distinguirla). CLAUDE.md seccion 2 permite causas
+# GENERALES y prohibe nombrar una enfermedad especifica: ahora se piden
+# categorias generales con su porque. Si el equipo clinico (Cristian) decide
+# permitir mas especificidad, se registra en DECISION_LOG.md antes de tocar esto.
+# "Tratamiento" queda definido para que el autocuidado no derive en productos.
 CONTENT_GUIDE = (
     "- resumen: en 1 o 2 frases, lo que entendiste del caso: sintomas principales, desde "
     "cuando, intensidad y contexto que importe (edad, antecedentes, que lo desencadeno). Si "
     "falta un dato que cambiaria la prioridad, dilo.\n"
-    "- posibles_causas: entre 2 y 4 posibilidades generales concretas para ESTE caso, de la mas "
-    "a la menos probable, cada una con el formato \"nombre general: por que podria encajar con "
-    "lo que describe la persona\". Son posibilidades, nunca afirmes que la persona la tiene. "
-    "Prohibido el relleno generico (\"causas generales de dolor de cabeza\"): si no puedes "
-    "nombrar una posibilidad concreta, deja la lista vacia y pide mas informacion.\n"
+    "- posibles_causas: entre 2 y 4 CATEGORIAS GENERALES de causa que encajen con ESTE caso, de "
+    "la mas a la menos probable, cada una con el formato \"categoria general: por que podria "
+    "encajar con lo que describe la persona\". Ejemplos de categoria general: infeccion viral de "
+    "vias respiratorias, infeccion o irritacion gastrointestinal, tension o sobrecarga muscular, "
+    "dolor de cabeza de tipo tensional, deshidratacion, estres o falta de sueño, reaccion "
+    "alergica, irritacion de la piel. NUNCA nombres una enfermedad especifica (ni gripe, "
+    "COVID-19, migraña, faringitis, amigdalitis, apendicitis, neumonia, etc.) ni des criterios "
+    "para distinguir una enfermedad de otra: eso es diagnostico y lo hace un profesional. "
+    "Prohibido el relleno vacio (\"causas generales de dolor de cabeza\"): si no puedes "
+    "proponer una categoria que encaje, deja la lista vacia y pide mas informacion.\n"
     "- alertas: solo señales de riesgo que ya aparecen en el relato. Las que podrian aparecer "
     "van en la recomendacion.\n"
     "- recomendacion: frases cortas y concretas, en este orden: (1) que hacer y en que plazo "
     "(hoy, en 24 a 48 horas, esta semana); (2) dos o tres medidas de autocuidado especificas "
-    "para este caso y SIN medicamentos (hidratacion, reposo relativo, compresas frias o tibias, "
-    "dieta blanda, llevar un registro de los sintomas, evitar pantallas o esfuerzos, etc.); "
-    "(3) las señales concretas de este caso que obligan a consultar antes o ir a urgencias; "
-    "(4) al final, el disclaimer obligatorio."
+    "para este caso (hidratacion, reposo relativo, compresas frias o tibias, dieta blanda, "
+    "llevar un registro de los sintomas, evitar pantallas, humo o esfuerzos, etc.); (3) las "
+    "señales concretas de este caso que obligan a consultar antes o ir a urgencias; (4) al "
+    "final, el disclaimer obligatorio.\n"
+    "- Autocuidado NO es tratamiento. Tratamiento, que esta prohibido, es cualquier "
+    "medicamento, producto de farmacia (sprays, gotas, cremas, sueros, sales, parches), "
+    "suplemento, hierba o remedio que se ingiera o se aplique. El autocuidado son medidas "
+    "generales del dia a dia."
 )
 
 # Disclaimer reforzado (Sesion 6): antes vivia implicito en "no ejecutes la
@@ -187,14 +203,15 @@ FEW_SHOT_EXAMPLES: list[dict] = [
             "sintomas_detectados": ["estornudos", "congestion nasal"],
             "prioridad": "BAJA",
             "posibles_causas": [
-                "resfriado comun: estornudos y congestion de inicio reciente sin fiebre",
-                "rinitis alergica: puede dar estornudos y nariz tapada, sobre todo si se "
-                "repite con polvo, polen o cambios de clima",
+                "infeccion viral leve de vias respiratorias altas: estornudos y congestion "
+                "de inicio reciente, sin fiebre",
+                "reaccion alergica de la nariz: puede dar estornudos y nariz tapada, sobre "
+                "todo si se repite con polvo, polen o cambios de clima",
             ],
             "alertas": [],
             "recomendacion": "Puedes manejarlo en casa y vigilar como evoluciona en los "
-            "proximos 7 a 10 dias. Descansa y toma liquidos con frecuencia. Los lavados "
-            "nasales con solucion salina y el vapor de una ducha tibia ayudan con la "
+            "proximos 7 a 10 dias. Descansa y toma liquidos con frecuencia. El vapor de "
+            "una ducha tibia y dormir con la cabeza un poco elevada ayudan con la "
             "congestion. Consulta si aparece fiebre alta, dolor de oido o de cara, "
             f"dificultad para respirar, o si no mejora en 10 dias. {DISCLAIMER}",
             "requiere_revision": False,
@@ -212,10 +229,10 @@ FEW_SHOT_EXAMPLES: list[dict] = [
             "sintomas_detectados": ["dolor de garganta", "fiebre"],
             "prioridad": "MEDIA",
             "posibles_causas": [
-                "faringitis viral: es la causa mas frecuente de dolor de garganta con "
-                "fiebre baja",
-                "faringitis bacteriana: menos frecuente; fiebre y dolor sin tos pueden "
-                "sugerirla, y solo un profesional puede confirmarla",
+                "infeccion de garganta, viral o bacteriana: dolor de garganta con fiebre "
+                "baja de pocos dias; solo un profesional puede distinguir el origen",
+                "irritacion de la garganta por aire seco, humo o uso de la voz: puede "
+                "aumentar el dolor, aunque por si sola no explica la fiebre",
             ],
             "alertas": [],
             "recomendacion": "Agenda una consulta medica en los proximos dias para que "
@@ -247,8 +264,8 @@ FEW_SHOT_EXAMPLES: list[dict] = [
             "recomendacion": "Busca atencion medica hoy, en las proximas horas, por el "
             "riesgo de complicaciones en personas con diabetes. Mientras tanto, lava la "
             "herida con agua y jabon suave, cubrela con una gasa limpia y evita apoyar "
-            "el pie. Marca con un lapiz el borde del enrojecimiento para ver si avanza. "
-            "Ve a urgencias si el enrojecimiento se extiende rapido, aparece fiebre, pus "
+            "el pie. Observa si el enrojecimiento se extiende. "
+            "Ve a urgencias si el enrojecimiento avanza rapido, aparece fiebre, pus "
             f"o mal olor. {DISCLAIMER}",
             "requiere_revision": True,
             "confianza": 0.75,
