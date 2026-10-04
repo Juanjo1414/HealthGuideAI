@@ -251,11 +251,11 @@ export default function HistoryPage() {
                           <div>
                             <span className="font-label-sm text-label-sm text-on-surface-variant uppercase">Posibles causas generales (no es diagnóstico)</span>
                             <ul className="font-body-sm text-body-sm text-on-surface list-disc pl-5">
-                              {entry.posibles_causas.map((cause) => {
+                              {entry.posibles_causas.map((cause, index) => {
                                 const { name, reason } = splitCause(cause);
                                 return (
-                                  <li key={cause}>
-                                    <span className="font-semibold first-letter:uppercase">{name}</span>
+                                  <li key={`${index}-${cause}`}>
+                                    <span className="font-semibold inline-block first-letter:uppercase">{name}</span>
                                     {reason && <span className="text-on-surface-variant">: {reason}</span>}
                                   </li>
                                 );

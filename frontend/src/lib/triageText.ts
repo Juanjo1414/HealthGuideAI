@@ -1,6 +1,6 @@
 /**
  * Cómo se presentan los textos libres del modelo. El prompt (backend
- * contract.CONTENT_GUIDE) pide las causas como "nombre: por qué encaja" y la
+ * contract.CONTENT_GUIDE) pide las causas como "categoría: por qué encaja" y la
  * recomendación en frases cortas que terminan con el disclaimer obligatorio.
  */
 
@@ -9,24 +9,38 @@ export interface CauseParts {
   reason: string | null;
 }
 
-/** "cefalea tensional: dolor persistente..." → { name, reason }. Tolera causas sin explicación (historial viejo). */
+/**
+ * "tension muscular: dolor que empeora con..." → { name, reason }.
+ * Corta solo en ": " (dos puntos + espacio), así una hora como "10:30" no parte
+ * la causa. Sin separador (historial anterior al cambio de prompt) o con el
+ * nombre vacío, la causa completa queda como nombre.
+ */
 export function splitCause(cause: string): CauseParts {
-  const index = cause.indexOf(":");
-  if (index <= 0) return { name: cause.trim(), reason: null };
-  const reason = cause.slice(index + 1).trim();
-  return { name: cause.slice(0, index).trim(), reason: reason || null };
+  const text = cause.trim();
+  const match = /:\s+/.exec(text);
+  if (!match) return { name: text, reason: null };
+  const name = text.slice(0, match.index).trim();
+  const reason = text.slice(match.index + match[0].length).trim();
+  if (!name) return { name: reason || text, reason: null };
+  return { name, reason: reason || null };
 }
 
 function normalize(text: string): string {
   return text
     .normalize("NFD")
     .replace(/[̀-ͯ]/g, "")
-    .toLowerCase();
+    .toLowerCase()
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
-// Frases del disclaimer del backend (contract.DISCLAIMER). Se muestran aparte,
-// como aviso, no como un paso más de autocuidado.
-const DISCLAIMER_STARTS = ["esta orientacion puede no ser exacta", "ante cualquier duda"];
+// Las oraciones EXACTAS de contract.DISCLAIMER (backend). Comparar por prefijo
+// no alcanza: "Ante cualquier duda sobre la herida, ve a urgencias hoy." es una
+// instrucción de escalamiento y tiene que quedar como paso, no como letra chica.
+const DISCLAIMER_SENTENCES = [
+  "esta orientacion puede no ser exacta y no reemplaza una evaluacion medica profesional.",
+  "ante cualquier duda, o si los sintomas empeoran, consulta a un profesional de la salud.",
+];
 
 export function splitRecommendation(text: string): { steps: string[]; disclaimer: string[] } {
   const sentences = text
@@ -36,8 +50,7 @@ export function splitRecommendation(text: string): { steps: string[]; disclaimer
   const steps: string[] = [];
   const disclaimer: string[] = [];
   for (const sentence of sentences) {
-    const isDisclaimer = DISCLAIMER_STARTS.some((start) => normalize(sentence).startsWith(start));
-    (isDisclaimer ? disclaimer : steps).push(sentence);
+    (DISCLAIMER_SENTENCES.includes(normalize(sentence)) ? disclaimer : steps).push(sentence);
   }
   return { steps, disclaimer };
 }

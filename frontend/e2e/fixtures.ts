@@ -9,8 +9,10 @@ export function triageBody(prioridad: Priority, overrides: Record<string, unknow
     resumen: emergency ? "Dolor opresivo en el pecho con falta de aire." : "Molestia descrita por el usuario.",
     sintomas_detectados: emergency ? ["dolor en el pecho", "falta de aire"] : ["tos"],
     prioridad,
-    posibles_causas: ["causa general"],
-    alertas: emergency ? ["dolor en el pecho"] : [],
+    // Causa con su porqué y una alerta también fuera de EMERGENCIA, para que
+    // axe recorra completa la sección "Lo que identificamos / Qué podría estar pasando".
+    posibles_causas: ["infeccion viral de vias respiratorias: sintomas de inicio reciente sin fiebre alta"],
+    alertas: emergency ? ["dolor en el pecho"] : ["tos que dura mas de una semana"],
     recomendacion: "Mantente hidratado. Consulta a un profesional de la salud si empeora.",
     requiere_revision: emergency || prioridad === "ALTA",
     confianza: 0.6,
