@@ -81,19 +81,17 @@ Ser honesto en vez de aparentar que esto ya está completo:
   **protección de rama de `main`** que convierte esos checks en obligatorios para mergear: necesita
   `gh` autenticado (`docs/branch-protection-main.json`). Hasta entonces, "bloquea" depende de
   respetar el proceso de PR, no de que GitHub lo impida.
-- **Detrás de un proxy, los frenos de tasa no son "por IP".** Login, registro y triage usan
-  `request.client.host`, y uvicorn no confía en `X-Forwarded-For`: entrando por el gateway o por el
-  proxy de un hosting, todos los clientes comparten un bucket (10 logins fallidos por minuto dejarían
-  a todos sin entrar). Directo al backend, como corre hoy, sí es por IP. Se arregla con
-  `--proxy-headers --forwarded-allow-ips=<subred del proxy>` y un test — **requisito de la Sesión 14
-  antes de desplegar**.
-- **Detrás del gateway, CSRF rechaza los POST del propio sitio (403 `forbidden_origin`).**
-  `backend/app/api/csrf.py` arma el origen propio con `request.url`, pero el gateway manda
-  `Host $host` (sin puerto) y uvicorn ignora `X-Forwarded-Proto`, así que no coincide con el `Origin`
-  del navegador (puerto o `https` distintos). Hoy solo se evita poniendo el origen público en
-  `CORS_ALLOWED_ORIGINS`. Arreglo, junto con el anterior (es el mismo flag de uvicorn): `Host
-  $http_host` en `gateway/nginx.conf`, `--proxy-headers` y un test en `test_csrf.py`. También es
-  **requisito de la Sesión 14**.
+- **Los frenos de tasa detrás de proxies confían en un número fijo de saltos**
+  (`TRUSTED_PROXY_HOPS`, `backend/app/api/client_ip.py`; 2 en Vercel → Render). Un cliente no puede
+  elegir su IP pasando por el camino normal, pero quien le hable **directo** a la URL de
+  `onrender.com` sí puede falsificar `X-Forwarded-For` y esquivar el límite, gastando cuota de NVIDIA.
+  Aceptado para el piloto gratuito. Cerrarlo exige que solo el proxy pueda llegar al backend (red
+  privada o secreto compartido), y eso no lo da el plan gratuito. El valor 2 se verifica en la prueba
+  de humo (`docs/DESPLIEGUE.md`, paso 5).
+- **CSRF detrás de proxies:** detrás del gateway local se arregló con `Host $http_host`. En el
+  despliegue, el origen público tiene que estar en `CORS_ALLOWED_ORIGINS`; si no, login y consultas
+  dan 403. Detrás de un TLS de hosting el backend no ve el `https` del navegador, porque no se confía
+  en `X-Forwarded-Proto`.
 - **Las señales de alarma por palabra clave no entienden negaciones.** "Fiebre de 38 °C, *sin*
   dificultad para respirar" sale EMERGENCIA, y el orquestador sube la prioridad sin ajustar
   `recomendacion` ni `alertas`: el usuario ve EMERGENCIA con "agenda una consulta" y sin alertas.

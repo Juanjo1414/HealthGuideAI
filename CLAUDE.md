@@ -173,6 +173,7 @@ docs/
   PANTALLAS.md                      -> criterio de aceptación por pantalla
 
 gateway/nginx.conf                -> gateway reverse proxy opcional (Sesión 3), aditivo, puerto 8888
+render.yaml, frontend/vercel.json -> despliegue gratuito: Render (backend + Redis), Vercel (frontend), Neon (Postgres)
 compose.yml                       -> orquesta backend + frontend + Postgres + Redis + gateway con Docker
 .github/workflows/                -> ci (lint+tests+cobertura+build), e2e (Playwright+axe), security (CodeQL,
                                      audits, gitleaks), evals (gate semanal contra NVIDIA), release (imágenes GHCR)
@@ -212,6 +213,11 @@ docker compose build --no-cache && docker compose up -d
 
 Alternativa sin Docker: correr backend y frontend por separado, ver `backend/README.md` y
 `frontend/README.md`.
+
+### Despliegue público (piloto gratuito)
+
+Paso a paso en [`docs/DESPLIEGUE.md`](docs/DESPLIEGUE.md): Neon → Render (Blueprint de `render.yaml`)
+→ Vercel (raíz `frontend/`) → prueba de humo. Se despliega desde `main`.
 
 ### Notebook (evidencia congelada, no el modo principal)
 

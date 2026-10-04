@@ -10,15 +10,8 @@ funciona", así que igual hay un test de integración contra Redis real (ver
 test_rate_limit.py) para no caer en el anti-patrón "el mock pasa aunque
 producción falle".
 
-Segunda limitación, agregada al montar el gateway de la Sesión 3
-(`gateway/nginx.conf`): `request.client.host` es la IP de quien le habla
-directo al backend. Si el tráfico entra por el gateway, esa IP es la del
-contenedor del gateway, no la del cliente real — todo el tráfico que pasa
-por el gateway queda bucketed junto. Arreglarlo bien (confiar en
-`X-Forwarded-For` solo cuando viene de un proxy conocido) es trabajo para
-cuando el gateway sea el camino de entrada real, no antes — confiar en ese
-header sin validar de dónde viene es abrir la puerta a que cualquiera
-falsifique su IP.
+Detrás de proxies (gateway, despliegue), la clave es la IP real del cliente
+según `TRUSTED_PROXY_HOPS` — ver client_ip.py.
 """
 
 from __future__ import annotations
@@ -34,6 +27,7 @@ import redis
 from fastapi import Depends, HTTPException, Request
 
 from ..config import get_settings
+from .client_ip import client_ip
 from .dependencies import get_redis_client
 
 
@@ -122,7 +116,7 @@ def enforce_rate_limit(
     — es lo que permite a los tests reemplazarlo con `app.dependency_overrides`
     sin tocar el estado global del proceso (get_rate_limiter usa @lru_cache).
     """
-    client_key = request.client.host if request.client else "unknown"
+    client_key = client_ip(request)
     if not limiter.check(client_key):
         raise HTTPException(
             status_code=429,
@@ -146,7 +140,7 @@ def enforce_auth_rate_limit(
 ) -> None:
     """Freno contra fuerza bruta en login/registro, por IP. Misma mecánica que
     enforce_rate_limit, otra clave (prefijo `auth:`) y otro límite."""
-    client_key = f"auth:{request.client.host if request.client else 'unknown'}"
+    client_key = f"auth:{client_ip(request)}"
     if not limiter.check(client_key):
         raise HTTPException(
             status_code=429,

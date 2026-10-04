@@ -21,6 +21,7 @@ prueba algo que un mock no prueba: que el SQL en sí es válido.
 
 from __future__ import annotations
 
+import time
 from contextlib import contextmanager
 
 import psycopg2
@@ -35,8 +36,12 @@ class Database:
         schema: str = "public",
         min_connections: int = 1,
         max_connections: int = 5,
+        stale_after_seconds: float = 30.0,
     ):
         self._schema = schema
+        self._max_connections = max_connections
+        self._stale_after_seconds = stale_after_seconds
+        self._last_used: dict[int, float] = {}
         # `options=-c search_path=...` fija el search_path en el momento en
         # que psycopg2 abre cada conexión física del pool — como las
         # conexiones son persistentes (se reciclan, no se recrean por
@@ -62,18 +67,54 @@ class Database:
         finally:
             conn.close()
 
+    def _checkout(self):
+        """Una conexión que de verdad responde. Neon (despliegue) suspende la
+        base tras unos minutos sin uso y cierra las conexiones del lado del
+        servidor; el pool no se entera hasta que la usa y el request falla.
+        Las que llevan un rato quietas se prueban con un SELECT 1 y, si
+        murieron, se descartan y se pide otra. Las recién usadas no se prueban:
+        sería un viaje de red extra en cada query."""
+        for _ in range(self._max_connections + 1):
+            conn = self._pool.getconn()
+            idle = time.monotonic() - self._last_used.get(id(conn), 0.0)
+            if not conn.closed and idle < self._stale_after_seconds:
+                return conn
+            try:
+                if conn.closed:
+                    raise psycopg2.InterfaceError("conexión cerrada")
+                with conn.cursor() as cur:
+                    cur.execute("SELECT 1")
+                conn.rollback()
+                return conn
+            except (psycopg2.OperationalError, psycopg2.InterfaceError):
+                self._last_used.pop(id(conn), None)
+                self._pool.putconn(conn, close=True)
+            except Exception:
+                # Cualquier otro error del ping: la conexión vuelve al pool
+                # igual, o 5 fallas así lo agotarían.
+                self._last_used.pop(id(conn), None)
+                self._pool.putconn(conn, close=True)
+                raise
+        raise psycopg2.OperationalError("No se pudo obtener una conexión válida a Postgres.")
+
     @contextmanager
     def _cursor(self):
-        conn = self._pool.getconn()
+        conn = self._checkout()
         try:
             with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
                 yield cur
             conn.commit()
         except Exception:
-            conn.rollback()
+            if not conn.closed:
+                conn.rollback()
             raise
         finally:
-            self._pool.putconn(conn)
+            self._last_used[id(conn)] = time.monotonic()
+            self._pool.putconn(conn, close=bool(conn.closed))
+            # El pool cierra las conexiones que sobran al devolverlas: sin
+            # esto el registro de uso crecería con conexiones que ya no existen.
+            if conn.closed:
+                self._last_used.pop(id(conn), None)
 
     def execute(self, query: str, params: tuple = ()) -> None:
         with self._cursor() as cur:

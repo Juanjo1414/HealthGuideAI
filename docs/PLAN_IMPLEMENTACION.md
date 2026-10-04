@@ -763,6 +763,19 @@ Pendiente: que Cristian valide el nivel de especificidad de las causas y los eje
 
 ## Sesión 14 — Despliegue público y merge a `main`
 
+**Estado (2026-10-04): preparado, falta ejecutarlo.** Se eligió una opción gratuita para el piloto de
+feedback: Vercel (frontend, que reenvía `/api`), Render (backend + Key Value) y Neon (Postgres; el
+gratuito de Render se borra a los 30 días). Ya están en el repo:
+
+- `render.yaml`, `frontend/vercel.json` y `frontend/.env.production`;
+- el contenedor toma el `PORT` de la plataforma;
+- la IP real detrás de proxies (`TRUSTED_PROXY_HOPS`, `api/client_ip.py`);
+- la reconexión del pool cuando Neon suspende la base (`storage/db.py`);
+- `Host $http_host` en el gateway.
+
+La guía para ejecutarlo, con la prueba de humo, está en [`DESPLIEGUE.md`](DESPLIEGUE.md). Quedan
+fuera de este piloto: la observabilidad (punto 4) y publicar la imagen del gateway (no se usa).
+
 **Bloqueante:** no desplegar sin las Sesiones 5 (seguridad de app), 8 (blindaje del modelo) y 12
 (tests) cerradas.
 
