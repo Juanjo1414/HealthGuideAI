@@ -38,13 +38,7 @@ def main() -> None:
             "necesita llamar al modelo real, no hay stub para esto."
         )
 
-    provider = NvidiaProvider(
-        api_key=settings.nvidia_api_key,
-        base_url=settings.nvidia_base_url,
-        model=settings.nvidia_model,
-        timeout_seconds=settings.nvidia_timeout_seconds,
-        max_retries=settings.nvidia_max_retries,
-    )
+    provider = NvidiaProvider.from_settings(settings)
     orchestrator = TriageOrchestrator(provider)
 
     csv_paths = [
