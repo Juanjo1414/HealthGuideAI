@@ -61,6 +61,19 @@ describe("HistoryPage", () => {
     expect(within(card).getByText("Hidrátate y consulta si persiste.")).toBeInTheDocument();
   });
 
+  it("lista las causas con su porqué y tolera las viejas sin explicación", async () => {
+    vi.mocked(getTriageHistory).mockResolvedValue([
+      entry({ posibles_causas: ["infeccion viral de vias respiratorias: fiebre de un dia sin otros sintomas", "cansancio"] }),
+    ]);
+    renderAt(<HistoryPage />);
+
+    const card = (await screen.findByText("Fiebre")).closest("article")!;
+    await userEvent.click(within(card).getByRole("button", { name: /ver hoja de resumen/i }));
+    expect(within(card).getByText("infeccion viral de vias respiratorias")).toBeInTheDocument();
+    expect(within(card).getByText(/fiebre de un dia sin otros sintomas/)).toBeInTheDocument();
+    expect(within(card).getByText("cansancio")).toBeInTheDocument();
+  });
+
   it("es honesto con consultas viejas sin contenido guardado", async () => {
     vi.mocked(getTriageHistory).mockResolvedValue([
       entry({ detalle_disponible: false, resumen: null, sintomas_texto: null, sintomas_detectados: null }),

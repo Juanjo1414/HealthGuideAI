@@ -59,6 +59,9 @@ Reglas:
 - La recomendacion siempre debe dejarle claro al usuario que la orientacion puede no ser exacta y que la decision final es de un profesional de la salud — ver el disclaimer obligatorio mas abajo.
 - No ejecutes la decision humana final: solo orienta.
 
+Guia de contenido — la orientacion tiene que ser util y concreta, sin romper ninguna regla anterior:
+{contract.CONTENT_GUIDE}
+
 Rubrica de prioridad (criterios observables por nivel):
 {_format_rubric()}
 

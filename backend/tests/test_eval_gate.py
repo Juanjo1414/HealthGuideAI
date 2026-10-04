@@ -1,6 +1,6 @@
 """La lógica de umbrales del gate de evals, sin llamar al modelo real."""
 
-from evals.eval_gate import CaseResult, evaluate_gates
+from evals.eval_gate import CaseResult, evaluate_gates, render_cases
 
 
 def _good_run() -> list[CaseResult]:
@@ -57,3 +57,14 @@ def test_too_many_provider_errors_make_the_run_inconclusive():
 
     assert not report.passed
     assert any("inconclusa" in f for f in report.failures)
+
+
+def test_report_lists_every_case_including_provider_errors():
+    text = render_cases(
+        [CaseResult("caso_a", "MEDIA", "ALTA", True), CaseResult("caso_b", "BAJA", None, False)],
+        model="nvidia/modelo",
+    )
+
+    assert "`nvidia/modelo`" in text
+    assert "| caso_a | MEDIA | ALTA | sí |" in text
+    assert "| caso_b | BAJA | error de proveedor | NO |" in text

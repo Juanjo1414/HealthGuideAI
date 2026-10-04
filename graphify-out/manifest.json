@@ -108,15 +108,15 @@
     "semantic_hash": "134d7dc932d7d626efe41f26f62dd6f6"
   },
   "backend/app/orchestration/contract.py": {
-    "mtime": 1790912130.4582627,
-    "seen": 1790912394.6118162,
-    "ast_hash": "6b7a8fe4d67d06caa44505cda66400d4",
+    "mtime": 1791091446.7760887,
+    "seen": 1791091518.335678,
+    "ast_hash": "4d5c347b1dfbb0e58e2b3fc874e5e05d",
     "semantic_hash": ""
   },
   "backend/app/orchestration/prompt_builder.py": {
-    "mtime": 1790912130.4582627,
-    "seen": 1790912394.6118171,
-    "ast_hash": "ee84102457b1dcaec53bf8c90b527b1c",
+    "mtime": 1791088077.7635245,
+    "seen": 1791088857.0015402,
+    "ast_hash": "baf5e0a3fb8dc1eb51be9bc2510dd71a",
     "semantic_hash": ""
   },
   "backend/app/orchestration/red_flags.py": {
@@ -126,9 +126,9 @@
     "semantic_hash": ""
   },
   "backend/app/orchestration/triage_orchestrator.py": {
-    "mtime": 1790912130.4635627,
-    "seen": 1790912394.6118197,
-    "ast_hash": "bd52b54f80c6586f1ce8dc551cbf9260",
+    "mtime": 1791090065.3283556,
+    "seen": 1791090854.345518,
+    "ast_hash": "1dc81035e7799ee9052a4b952d28fe30",
     "semantic_hash": ""
   },
   "backend/app/providers/__init__.py": {
@@ -282,9 +282,9 @@
     "semantic_hash": "9aa83a309079d39daa1cf03c28aad8e1"
   },
   "backend/tests/test_prompt_builder.py": {
-    "mtime": 1790912130.4635627,
-    "seen": 1790912394.6118553,
-    "ast_hash": "6e0f8f934e36b185a0325b579f72cf89",
+    "mtime": 1791089872.9008362,
+    "seen": 1791090854.3456123,
+    "ast_hash": "8e3a2e9386e53ff0073a4f44ea0a5427",
     "semantic_hash": ""
   },
   "backend/tests/test_rate_limit.py": {
@@ -312,9 +312,9 @@
     "semantic_hash": ""
   },
   "backend/tests/test_triage_orchestrator.py": {
-    "mtime": 1790912130.4635627,
-    "seen": 1790912394.6118624,
-    "ast_hash": "f008a6b415fed41fbc1a4ceae802c313",
+    "mtime": 1791090026.7892299,
+    "seen": 1791090854.3456502,
+    "ast_hash": "f62498d678b0d02645bb7f34cf4f9bbd",
     "semantic_hash": ""
   },
   "evals/metrics.py": {
@@ -360,9 +360,9 @@
     "semantic_hash": ""
   },
   ".github/workflows/ci.yml": {
-    "mtime": 1790999241.1049047,
-    "seen": 1791000536.2852511,
-    "ast_hash": "99a721179671699e267e160059f77c82",
+    "mtime": 1791089416.450664,
+    "seen": 1791090854.3458376,
+    "ast_hash": "c6ebd89b042026af467f4f2cb20be036",
     "semantic_hash": ""
   },
   ".kiro/skills/refactor-large-files/SKILL.md": {
@@ -378,9 +378,9 @@
     "semantic_hash": ""
   },
   "CONSTRAINTS.md": {
-    "mtime": 1791086982.6824725,
-    "seen": 1791087056.808166,
-    "ast_hash": "caa4258c37fae2365ffab9f4f2b84972",
+    "mtime": 1791090826.3176134,
+    "seen": 1791090854.345856,
+    "ast_hash": "50c32cc849c4c994e6154dc476d5a2dc",
     "semantic_hash": ""
   },
   "DECISION_LOG.md": {
@@ -450,9 +450,9 @@
     "semantic_hash": ""
   },
   "docs/PLAN_IMPLEMENTACION.md": {
-    "mtime": 1791086343.812781,
-    "seen": 1791086376.9221547,
-    "ast_hash": "c2e828c16d8681d394881f4ad6b56ee5",
+    "mtime": 1791090826.3211286,
+    "seen": 1791090854.3458946,
+    "ast_hash": "f9608e796230bb5cd49d715159e183be",
     "semantic_hash": ""
   },
   "docs/arquitectura.md": {
@@ -480,9 +480,9 @@
     "semantic_hash": ""
   },
   "evals/results.md": {
-    "mtime": 1791086982.647194,
-    "seen": 1791087056.8082268,
-    "ast_hash": "142dc62bc16da3e9bf8fe26ee553a810",
+    "mtime": 1791091448.3093896,
+    "seen": 1791091518.336054,
+    "ast_hash": "72cff905db02ecaea6314cc65b20bb5f",
     "semantic_hash": ""
   },
   "frontend/README.md": {
@@ -726,9 +726,9 @@
     "semantic_hash": ""
   },
   "frontend/src/pages/HistoryPage.tsx": {
-    "mtime": 1790996958.2710254,
-    "seen": 1790998287.298354,
-    "ast_hash": "38b4fa2afab57781ed9ad394b4c11738",
+    "mtime": 1791089752.7154193,
+    "seen": 1791090854.3457851,
+    "ast_hash": "88647115774f5c93a14930feaf9dc37d",
     "semantic_hash": ""
   },
   "frontend/src/pages/HomePage.tsx": {
@@ -756,9 +756,9 @@
     "semantic_hash": ""
   },
   "frontend/src/pages/ResultPage.tsx": {
-    "mtime": 1790976003.5833848,
-    "seen": 1790976935.0378165,
-    "ast_hash": "c9f399fe1ca1b2b727a99aef6298136d",
+    "mtime": 1791089752.7092352,
+    "seen": 1791090854.3458064,
+    "ast_hash": "fad2263c9636b0f7608dadab7b57d489",
     "semantic_hash": ""
   },
   "frontend/src/pages/ServerErrorPage.tsx": {
@@ -774,9 +774,9 @@
     "semantic_hash": ""
   },
   "docs/DESIGN_STITCH.md": {
-    "mtime": 1790973762.2002516,
-    "seen": 1790973889.015951,
-    "ast_hash": "226b3f4a68da49c9e2e6f92c6aaed5e4",
+    "mtime": 1791090826.3244624,
+    "seen": 1791090854.3458893,
+    "ast_hash": "c5803da44897a5f077fd1835c06e6575",
     "semantic_hash": ""
   },
   "frontend/public/stitch/acceso-medica.jpg": {
@@ -840,9 +840,9 @@
     "semantic_hash": ""
   },
   "backend/tests/test_eval_gate.py": {
-    "mtime": 1790975115.2221594,
-    "seen": 1790976935.0376923,
-    "ast_hash": "e0da20e39d1af768af67228e9ecf6caf",
+    "mtime": 1791089887.8743885,
+    "seen": 1791090854.3455904,
+    "ast_hash": "fdfc923c8bc8fdbea309d67eb699c36c",
     "semantic_hash": ""
   },
   "backend/tests/test_horizontal_scaling.py": {
@@ -858,9 +858,9 @@
     "semantic_hash": ""
   },
   "evals/eval_gate.py": {
-    "mtime": 1791044721.529318,
-    "seen": 1791086376.9219732,
-    "ast_hash": "f0a8e61660149200661a95a9adffc306",
+    "mtime": 1791089872.9028337,
+    "seen": 1791090854.3456566,
+    "ast_hash": "31d12b7ca7395f25b87ebba221575851",
     "semantic_hash": ""
   },
   "frontend/.oxlintrc.json": {
@@ -888,9 +888,9 @@
     "semantic_hash": ""
   },
   "frontend/e2e/fixtures.ts": {
-    "mtime": 1791041171.5483727,
-    "seen": 1791041283.9333403,
-    "ast_hash": "890b2c2ea8225e145083cc12f211b1dd",
+    "mtime": 1791089786.489751,
+    "seen": 1791090854.3456879,
+    "ast_hash": "4d895496e0ef73f25c36aef2f6b8e55a",
     "semantic_hash": ""
   },
   "frontend/e2e/triage.spec.ts": {
@@ -960,9 +960,9 @@
     "semantic_hash": ""
   },
   "frontend/src/pages/HistoryPage.test.tsx": {
-    "mtime": 1790975400.652201,
-    "seen": 1790976935.037802,
-    "ast_hash": "4075c866fa9716d4cd12fb53a92e010d",
+    "mtime": 1791089786.4887514,
+    "seen": 1791090854.3457823,
+    "ast_hash": "e2b4c54f0e0336905130dc9d976d0d04",
     "semantic_hash": ""
   },
   "frontend/src/pages/HomePage.test.tsx": {
@@ -978,9 +978,9 @@
     "semantic_hash": ""
   },
   "frontend/src/pages/ResultPage.test.tsx": {
-    "mtime": 1790975624.2517726,
-    "seen": 1790976935.0378149,
-    "ast_hash": "49c3fd48fed1c824d0c3615ffc558574",
+    "mtime": 1791088301.645485,
+    "seen": 1791088857.0018513,
+    "ast_hash": "4fa1b039b0b031f8b699cc4059249849",
     "semantic_hash": ""
   },
   "frontend/src/pages/StaticPages.test.tsx": {
@@ -1008,9 +1008,9 @@
     "semantic_hash": ""
   },
   "evals/gate_report.md": {
-    "mtime": 1791086266.3851888,
-    "seen": 1791086376.9221642,
-    "ast_hash": "250b7280f84a4207c9158ad63fb710f0",
+    "mtime": 1791090311.013812,
+    "seen": 1791090854.3459089,
+    "ast_hash": "092e0758d695bbc0d2c3082799a5dddc",
     "semantic_hash": ""
   },
   "docs/branch-protection-main.json": {
@@ -1020,33 +1020,33 @@
     "semantic_hash": ""
   },
   ".github/dependabot.yml": {
-    "mtime": 1791043610.9456093,
-    "seen": 1791086376.9221117,
-    "ast_hash": "e63292b99be95df8a08e2de8f26b39f6",
+    "mtime": 1791089475.205854,
+    "seen": 1791090854.3458343,
+    "ast_hash": "43724ced7560390e4e27274e0beb0192",
     "semantic_hash": ""
   },
   ".github/workflows/e2e.yml": {
-    "mtime": 1790999241.1362123,
-    "seen": 1791000536.2852535,
-    "ast_hash": "3d7b1031f6f2e55686bc5cdfdc5d2e52",
+    "mtime": 1791089416.4531903,
+    "seen": 1791090854.3458402,
+    "ast_hash": "5d5bd004604b12d4cd0ddcf789766b4e",
     "semantic_hash": ""
   },
   ".github/workflows/evals.yml": {
-    "mtime": 1790977010.033062,
-    "seen": 1790977266.559326,
-    "ast_hash": "dc79c4cce8cc876c457db3477dfbd056",
+    "mtime": 1791089416.457188,
+    "seen": 1791090854.3458424,
+    "ast_hash": "6c08c2f9e86d764eb12e3f29526780e4",
     "semantic_hash": ""
   },
   ".github/workflows/release.yml": {
-    "mtime": 1791044172.6825032,
-    "seen": 1791086376.9221199,
-    "ast_hash": "4a333e4ed91179f98cae8e7fac995888",
+    "mtime": 1791089416.459188,
+    "seen": 1791090854.3458447,
+    "ast_hash": "916f08758849c7b7381e3b35d479fcad",
     "semantic_hash": ""
   },
   ".github/workflows/security.yml": {
-    "mtime": 1790999241.1590862,
-    "seen": 1791000536.2852616,
-    "ast_hash": "802ad11b49b8c838f5380418ce781730",
+    "mtime": 1791089416.4625573,
+    "seen": 1791090854.345847,
+    "ast_hash": "a7b574e14319a1d198d3964c9296a2bd",
     "semantic_hash": ""
   },
   "backend/tests/test_auth_rate_limit.py": {
@@ -1059,6 +1059,30 @@
     "mtime": 1791087027.6576686,
     "seen": 1791087056.8078876,
     "ast_hash": "60425fb88c0697623227be522306c268",
+    "semantic_hash": ""
+  },
+  "frontend/src/lib/triageText.test.ts": {
+    "mtime": 1791089724.7800043,
+    "seen": 1791090854.3457608,
+    "ast_hash": "b92bf4fe366fa42a3683b0577b146063",
+    "semantic_hash": ""
+  },
+  "frontend/src/lib/triageText.ts": {
+    "mtime": 1791089723.6718884,
+    "seen": 1791090854.3457637,
+    "ast_hash": "e399220b33302435b457fed6c27b8db5",
+    "semantic_hash": ""
+  },
+  "backend/app/orchestration/cause_filter.py": {
+    "mtime": 1791091444.0605652,
+    "seen": 1791091518.335674,
+    "ast_hash": "da07f27925b1f4b18ac219e81f4ecdec",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_cause_filter.py": {
+    "mtime": 1791091445.419274,
+    "seen": 1791091518.3357427,
+    "ast_hash": "960625c10d05a449a9c85043437b7fe6",
     "semantic_hash": ""
   }
 }

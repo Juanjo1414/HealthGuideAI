@@ -7,6 +7,12 @@ version: 2
 # main e ignoran target-branch e ignore; la detección real de CVEs hoy es
 # pip-audit/npm audit en security.yml.
 #
+# Defensa en capas, porque el ignore de mayores solo NO alcanzó: el primer PR
+# agrupado de pip (#32, 2026-10-04) trajo bcrypt 5, redis 8 y pytest 9 igual.
+# Ahora los grupos aceptan solo minor/patch (una mayor nunca viaja escondida en
+# un grupo) y bcrypt queda fijado explícitamente. Si aun así llega una mayor,
+# llega sola, CI la frena si rompe algo, y se cierra con un comentario.
+#
 # Las versiones mayores se ignoran en código e imágenes: React 19, Vite 8 o
 # bcrypt 5 (passlib no lo soporta) rompen el build o el login, y migrarlos es
 # una sesión dedicada, no un PR automático. Los techos de backend/requirements.txt
@@ -21,9 +27,14 @@ updates:
     ignore:
       - dependency-name: "*"
         update-types: ["version-update:semver-major"]
+      # passlib (backend/app/auth/security.py) no soporta bcrypt >= 4.1: el PR
+      # #32 lo subió a 5.0 pese al ignore de arriba y rompió login y registro.
+      - dependency-name: "bcrypt"
+        versions: [">=4.1"]
     groups:
       backend:
         patterns: ["*"]
+        update-types: ["minor", "patch"]
 
   - package-ecosystem: npm
     directory: /frontend
@@ -37,8 +48,10 @@ updates:
     groups:
       testing:
         patterns: ["vitest", "@vitest/*", "@testing-library/*", "@playwright/test", "@axe-core/*", "jsdom"]
+        update-types: ["minor", "patch"]
       frontend:
         patterns: ["*"]
+        update-types: ["minor", "patch"]
 
   # Las mayores de Actions sí se aceptan: CI entero las ejerce en el mismo PR.
   - package-ecosystem: github-actions

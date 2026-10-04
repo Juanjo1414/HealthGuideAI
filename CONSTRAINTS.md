@@ -115,7 +115,14 @@ Ser honesto en vez de aparentar que esto ya está completo:
 - **Los 4 ejemplos few-shot del prompt (`contract.FEW_SHOT_EXAMPLES`, Sesión 6) no están
   validados clínicamente por Cristian todavía** — son un punto de partida razonable, escritos
   deliberadamente fuera del catálogo de evals para no contaminar el accuracy, pero no tienen el
-  mismo nivel de revisión que `evals/CLINICAL_SAFETY_CATALOG.md`. Pendiente, sin dueño asignado.
+  mismo nivel de revisión que `evals/CLINICAL_SAFETY_CATALOG.md`. Desde el 2026-10-04 son más
+  detallados (causas con su porqué, autocuidado, señales concretas), lo que hace más urgente esa
+  revisión. Pendiente, sin dueño asignado.
+- **El validador no detecta enfermedades nombradas como posibilidad** ("podría ser influenza"):
+  `DIAGNOSIS_ASSERTION_PATTERNS` solo atrapa afirmaciones cerradas ("tienes X"). Lo cubre una red en
+  el orquestador (`orchestration/cause_filter.py`) que descarta esas causas, pero solo dentro de
+  `posibles_causas` y con una lista no exhaustiva de nombres. El nivel de especificidad permitido
+  ("dolor de cabeza de tipo tensional") está pendiente de criterio clínico.
 - **`PEDIATRIC_FEVER_PATTERN` (Sesión 6) es un regex acotado a un solo caso evidenciado**
   (fiebre combinada con bebé/lactante), no detección clínica general de riesgo pediátrico —
   mismo límite honesto que ya declara `CLAUDE.md` sección 9 sobre el validador completo.

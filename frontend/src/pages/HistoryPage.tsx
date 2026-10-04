@@ -4,6 +4,7 @@ import PageShell from "../components/layout/PageShell";
 import { getTriageHistory, TriageApiError } from "../api/triageApi";
 import { getPriorityMeta } from "../constants/priority";
 import type { HistoryEntry, Priority } from "../api/types";
+import { splitCause } from "../lib/triageText";
 
 type Filter = "all" | "low" | "high" | "emergency";
 
@@ -249,7 +250,17 @@ export default function HistoryPage() {
                         {!!entry.posibles_causas?.length && (
                           <div>
                             <span className="font-label-sm text-label-sm text-on-surface-variant uppercase">Posibles causas generales (no es diagnóstico)</span>
-                            <p className="font-body-sm text-body-sm text-on-surface">{entry.posibles_causas.join(", ")}</p>
+                            <ul className="font-body-sm text-body-sm text-on-surface list-disc pl-5">
+                              {entry.posibles_causas.map((cause, index) => {
+                                const { name, reason } = splitCause(cause);
+                                return (
+                                  <li key={`${index}-${cause}`}>
+                                    <span className="font-semibold inline-block first-letter:uppercase">{name}</span>
+                                    {reason && <span className="text-on-surface-variant">: {reason}</span>}
+                                  </li>
+                                );
+                              })}
+                            </ul>
                           </div>
                         )}
                         {!!entry.alertas?.length && (
