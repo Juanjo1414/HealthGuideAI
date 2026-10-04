@@ -205,8 +205,8 @@ export default function ResultPage() {
         )}
 
         {!isEmergency && (
-          <section aria-labelledby="caso-titulo" className="grid grid-cols-1 lg:grid-cols-5 gap-space-lg">
-            <div className="lg:col-span-2 bg-surface-container-lowest rounded-2xl p-space-md md:p-space-lg shadow-md">
+          <div className="grid grid-cols-1 lg:grid-cols-5 gap-space-lg">
+            <section aria-labelledby="caso-titulo" className="lg:col-span-2 bg-surface-container-lowest rounded-2xl p-space-md md:p-space-lg shadow-md">
               <div className="flex items-center gap-space-sm">
                 <div className="w-12 h-12 rounded-xl bg-primary/10 text-primary flex items-center justify-center flex-shrink-0">
                   <span aria-hidden="true" className="material-symbols-outlined icon-filled text-headline-sm">psychology</span>
@@ -238,21 +238,21 @@ export default function ResultPage() {
                   </ul>
                 </div>
               )}
-            </div>
-            <div className="lg:col-span-3 bg-surface-container-lowest rounded-2xl p-space-md md:p-space-lg shadow-md">
+            </section>
+            <section aria-labelledby="causas-titulo" className="lg:col-span-3 bg-surface-container-lowest rounded-2xl p-space-md md:p-space-lg shadow-md">
               <div className="flex items-center gap-space-sm">
                 <div className="w-12 h-12 rounded-xl bg-tertiary/10 text-tertiary flex items-center justify-center flex-shrink-0">
                   <span aria-hidden="true" className="material-symbols-outlined icon-filled text-headline-sm">lightbulb</span>
                 </div>
                 <div>
                   <span className="font-label-sm text-label-sm text-tertiary uppercase tracking-wider font-bold">Posibilidades, no diagnóstico</span>
-                  <h2 className="font-headline-sm text-headline-sm text-on-surface">Qué podría estar pasando</h2>
+                  <h2 id="causas-titulo" className="font-headline-sm text-headline-sm text-on-surface">Qué podría estar pasando</h2>
                 </div>
               </div>
               {causes.length ? (
                 <ol className="mt-space-md space-y-space-sm">
-                  {causes.map(({ name, reason }) => (
-                    <li key={name} className="p-space-sm bg-surface-container-low rounded-xl">
+                  {causes.map(({ name, reason }, index) => (
+                    <li key={`${index}-${name}`} className="p-space-sm bg-surface-container-low rounded-xl">
                       <p className="font-label-md text-label-md text-on-surface first-letter:uppercase">{name}</p>
                       {reason && <p className="font-body-sm text-body-sm text-on-surface-variant mt-0.5 first-letter:uppercase">{reason}</p>}
                     </li>
@@ -266,8 +266,8 @@ export default function ResultPage() {
               <p className="mt-space-md font-body-sm text-body-sm text-on-surface-variant">
                 Son orientativas: solo un profesional de la salud puede confirmar qué está pasando.
               </p>
-            </div>
-          </section>
+            </section>
+          </div>
         )}
 
         {needsMoreInfo && <VagueInputPanel originalText={symptoms} onResubmit={reevaluate} isLoading={reevaluating} />}
