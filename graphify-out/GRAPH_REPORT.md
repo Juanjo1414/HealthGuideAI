@@ -1,7 +1,7 @@
 # Graph Report - HealthGuideAI  (2026-10-04)
 
 ## Corpus Check
-- 163 files · ~216,161 words
+- 163 files · ~216,195 words
 - Verdict: corpus is large enough that graph structure adds value.
 - Unclassified: 24 file(s) not represented in the graph (top: (none) 8, .csv 4, .example 2)
 
@@ -11,7 +11,7 @@
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `0271e829`
+- Built from commit: `fc0ecdf4`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -369,7 +369,7 @@ Cohesion: 0.29
 Nodes (6): buildCommand, framework, headers, outputDirectory, rewrites, $schema
 
 ## Knowledge Gaps
-- **195 isolated node(s):** `SECTIONS`, `RED_FLAGS`, `Cómo queda armado`, `Antes de empezar`, `Paso 1 — Neon: la base de datos` (+190 more)
+- **195 isolated node(s):** `Cómo queda armado`, `Antes de empezar`, `Paso 1 — Neon: la base de datos`, `Paso 2 — Render: backend y Redis`, `Paso 3 — Vercel: el frontend` (+190 more)
   These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 502 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
 - **13 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
@@ -377,16 +377,16 @@ Nodes (6): buildCommand, framework, headers, outputDirectory, rewrites, $schema
 _Questions this graph is uniquely positioned to answer:_
 
 - **Why does `Decisión 4: alcance honesto de requiere_revision` connect `backend/README.md` to `list_flagged_for_review.py`?**
-  _High betweenness centrality (0.359) - this node is a cross-community bridge._
+  _High betweenness centrality (0.376) - this node is a cross-community bridge._
 - **Why does `Diseño visual de Stitch — cómo se implementó y qué queda pendiente` connect `Diseño visual de Stitch — cómo se implementó y qué queda pendiente` to `backend/README.md`, `ResultPage.tsx`?**
-  _High betweenness centrality (0.294) - this node is a cross-community bridge._
+  _High betweenness centrality (0.310) - this node is a cross-community bridge._
 - **Why does `Mapeo pantalla de Stitch → ruta` connect `ResultPage.tsx` to `Diseño visual de Stitch — cómo se implementó y qué queda pendiente`?**
-  _High betweenness centrality (0.291) - this node is a cross-community bridge._
+  _High betweenness centrality (0.307) - this node is a cross-community bridge._
 - **Are the 11 inferred relationships involving `Database` (e.g. with `_ensure_admin_seeded()` and `get_db()`) actually correct?**
   _`Database` has 11 INFERRED edges - model-reasoned connections that need verification._
 - **Are the 5 inferred relationships involving `EvidenceStore` (e.g. with `get_evidence_store()` and `create_triage()`) actually correct?**
   _`EvidenceStore` has 5 INFERRED edges - model-reasoned connections that need verification._
 - **Are the 8 inferred relationships involving `TriageOrchestrator` (e.g. with `get_triage_orchestrator()` and `create_triage()`) actually correct?**
   _`TriageOrchestrator` has 8 INFERRED edges - model-reasoned connections that need verification._
-- **What connects `SECTIONS`, `RED_FLAGS`, `Cómo queda armado` to the rest of the system?**
+- **What connects `Cómo queda armado`, `Antes de empezar`, `Paso 1 — Neon: la base de datos` to the rest of the system?**
   _195 weakly-connected nodes found - possible documentation gaps or missing edges._

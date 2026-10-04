@@ -11933,7 +11933,7 @@
       "node_kind": "heading",
       "norm_label": "paso 6 \u2014 que no se duerma durante las pruebas (opcional)",
       "source_file": "docs/DESPLIEGUE.md",
-      "source_location": "L151"
+      "source_location": "L160"
     },
     {
       "id": "docs_despliegue_riesgos_conocidos_de_este_despliegue",
@@ -11945,7 +11945,7 @@
       "node_kind": "heading",
       "norm_label": "riesgos conocidos de este despliegue",
       "source_file": "docs/DESPLIEGUE.md",
-      "source_location": "L174"
+      "source_location": "L183"
     },
     {
       "id": "docs_despliegue_si_algo_falla",
@@ -11957,7 +11957,7 @@
       "node_kind": "heading",
       "norm_label": "si algo falla",
       "source_file": "docs/DESPLIEGUE.md",
-      "source_location": "L162"
+      "source_location": "L171"
     },
     {
       "id": "backend_tests_test_gateway",
@@ -36499,7 +36499,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "docs/DESPLIEGUE.md",
-      "source_location": "L151",
+      "source_location": "L160",
       "weight": 1.0
     },
     {
@@ -36510,7 +36510,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "docs/DESPLIEGUE.md",
-      "source_location": "L162",
+      "source_location": "L171",
       "weight": 1.0
     },
     {
@@ -36521,7 +36521,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "docs/DESPLIEGUE.md",
-      "source_location": "L174",
+      "source_location": "L183",
       "weight": 1.0
     },
     {
@@ -46924,5 +46924,5 @@
       "source_file": "CLAUDE.md"
     }
   ],
-  "built_at_commit": "0271e829e50af4e08a692fa90babbe0464d53859"
+  "built_at_commit": "fc0ecdf40e9a7db944a4061037431b3e9c319659"
 }
