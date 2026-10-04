@@ -29,7 +29,11 @@ logger = logging.getLogger("healthguide.health")
 router = APIRouter()
 
 
-@router.get("/health")
+# HEAD además de GET: los monitores externos (UptimeRobot, el plan gratuito
+# solo hace HEAD) piden con ese método, y un 405 los marcaba como caído aunque
+# el servicio estuviera sano. /ready se deja solo en GET: toca Postgres y Redis,
+# y un monitor consultándolo cada pocos minutos mantendría despierta la base.
+@router.api_route("/health", methods=["GET", "HEAD"])
 def liveness() -> dict:
     return {"status": "ok"}
 
