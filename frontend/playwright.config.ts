@@ -12,6 +12,10 @@ export default defineConfig({
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 1 : 0,
+  // En local, con un worker por núcleo (6 en el equipo de desarrollo) los tests
+  // de cuenta y axe vencían sus timeouts de forma intermitente; con 3 pasan
+  // estables y más rápido. CI conserva el valor por defecto de Playwright.
+  workers: process.env.CI ? undefined : 3,
   reporter: process.env.CI ? [["list"], ["html", { open: "never" }]] : "list",
   use: {
     baseURL: process.env.E2E_BASE_URL ?? "http://localhost:8080",

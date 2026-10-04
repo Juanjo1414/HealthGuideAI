@@ -16,4 +16,7 @@ cd /app/backend
 python -m alembic upgrade head
 cd /app
 
-exec python -m uvicorn app.main:app --host 0.0.0.0 --port 8000 --app-dir backend --workers 2
+# PORT lo define la plataforma de despliegue (Render usa 10000); en compose no
+# existe y queda el 8000 de siempre. WEB_CONCURRENCY: 2 workers por defecto, se
+# baja en planes con poca memoria.
+exec python -m uvicorn app.main:app --host 0.0.0.0 --port "${PORT:-8000}" --app-dir backend --workers "${WEB_CONCURRENCY:-2}"
