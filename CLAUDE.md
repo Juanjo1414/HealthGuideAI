@@ -254,6 +254,17 @@ prompt o se cambia de proveedor sin pensarlo dos veces:
   `frontend/Dockerfile`: reintentos de npm más generosos + una verificación explícita de que
   `node_modules/.bin/vite` exista después del install, para que la imagen falle ruidosamente en
   vez de construirse a medias otra vez.
+- **NVIDIA dio de baja el modelo sin aviso (oct-2026).** Desde el 2026-10-03 09:00 UTC,
+  `nemotron-3-super-120b-a12b` responde `410 Gone` y toda consulta terminaba en la pantalla de error
+  500. Los reemplazos no aceptan los mismos parámetros: `nemotron-3-ultra` rechaza
+  `reasoning_budget`, y `nemotron-3.5-lightning` con thinking gasta el presupuesto razonando y
+  devuelve el contenido vacío. Se arregló haciendo configurables el modelo y el thinking
+  (`NVIDIA_MODEL`, `NVIDIA_ENABLE_THINKING`, un solo constructor `NvidiaProvider.from_settings`
+  para backend y evals) y pidiendo **modo JSON** (`response_format`). Sin ese modo, ante intentos
+  de extraer el prompt el modelo contestaba en texto plano y la consulta caía en error en vez de
+  pasar por el validador. El reemplazo se eligió con el gate de evals (`DECISION_LOG.md`,
+  decisión 6). El notebook sigue apuntando al modelo viejo: es evidencia congelada y no se puede
+  re-ejecutar tal cual.
 - **Postgres del contenedor "no aceptaba" la contraseña correcta (sep-2026, Sesión 4).** Causa
   real: un Postgres nativo instalado por fuera de Docker en la máquina de desarrollo ya estaba
   escuchando en el puerto 5432 — Windows deja que dos procesos aparezcan "escuchando" el mismo
@@ -334,7 +345,8 @@ su estado. Resumen rápido de lo ya hecho vs. lo que falta:
       seguimiento 24/48 h, conversación multi-turno...) — Sesión 15, backlog en `docs/DESIGN_STITCH.md`.
 - [x] Suite de tests completa (pytest, Vitest, Playwright E2E con axe) y GitHub Actions (CI, E2E,
       seguridad, evals programados, release) — Sesiones 12-13. Pendiente: protección de rama de `main`.
-- [ ] Gate de accuracy clínico en 80% (hoy 60%, ver `evals/results.md`).
+- [x] Gate de evals en verde con `nemotron-3.5-lightning` (2026-10-03): accuracy 80%, justo en el
+      umbral y con variación entre corridas (87% en otra). Ver `evals/results.md`.
 - [ ] Despliegue público con link accesible.
 - [ ] `TEAM_ROTATION.md` con roles asignados (hoy en `TBD` pese a que el ownership real ya existe).
 

@@ -181,3 +181,27 @@ de Stitch, que lo pone en la portada ("Sin registro obligatorio").
 
 **Fuera de alcance (backlog en `docs/DESIGN_STITCH.md`):** asociar a la cuenta una consulta hecha
 antes de registrarse, login con Google / enlace mágico y recuperación de contraseña por correo.
+
+## Decisión 6 — Reemplazo de modelo: nemotron-3.5-lightning-30b-a3b, sin thinking y en modo JSON
+
+**Estado:** implementada (2026-10-03). Reemplaza el modelo de la Decisión 1 (el proveedor sigue
+siendo NVIDIA).
+
+**Por qué hubo que decidir:** NVIDIA dio de baja `nemotron-3-super-120b-a12b` el 2026-10-03 09:00 UTC
+(`410 Gone`). No había alternativa a cambiar de modelo.
+
+| Opción | A favor | En contra |
+| --- | --- | --- |
+| `nemotron-3-ultra-550b-a55b` | El más grande de la familia 3 | Rechaza `reasoning_budget`; `503 overloaded` en la mitad de las pruebas: una demo no puede depender de eso |
+| **`nemotron-3.5-lightning-30b-a3b`** (elegida) | Disponible, 5–7 s en pruebas puntuales (una consulta llegó a 32 s; falta medir en serie), **pasa el gate completo** con modo JSON (seguridad 100%, accuracy 80%) | Con thinking devuelve vacío, así que corre sin razonamiento extendido; accuracy justo en el umbral |
+| `nemotron-nano-3-30b-a3b` | — | 404, no habilitado para la cuenta |
+| Volver a Gemini | Ya hay integración vieja en el notebook | La cuota gratuita fue la razón de la Decisión 1, nada cambió |
+
+**Qué cambió en el código:** el modelo y el thinking son configuración (`NVIDIA_MODEL`,
+`NVIDIA_ENABLE_THINKING`), un único `NvidiaProvider.from_settings` lo usan el backend y los tres
+scripts de evals, y el proveedor pide `response_format={"type": "json_object"}`.
+
+**Lección:** el proveedor puede retirar un modelo de un día para otro. Por eso el modelo es
+configuración, y cualquier cambio de modelo pasa por el gate de evals antes de llegar a `main`.
+Resultados completos en `evals/results.md`.
+

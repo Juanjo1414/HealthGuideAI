@@ -1,27 +1,70 @@
 version: 2
+
+# Todo llega primero a dev/Juanjo y sube a main en el PR normal, después de la
+# revisión (CLAUDE.md sección 10). Ojo: dependabot.yml se lee desde la rama por
+# defecto, así que este cambio rige recién cuando esté mergeado en main. Los PRs
+# de seguridad de Dependabot (hoy desactivados en el repo) irían siempre contra
+# main e ignoran target-branch e ignore; la detección real de CVEs hoy es
+# pip-audit/npm audit en security.yml.
+#
+# Las versiones mayores se ignoran en código e imágenes: React 19, Vite 8 o
+# bcrypt 5 (passlib no lo soporta) rompen el build o el login, y migrarlos es
+# una sesión dedicada, no un PR automático. Los techos de backend/requirements.txt
+# hacen lo mismo para un build limpio.
 updates:
   - package-ecosystem: pip
     directory: /backend
+    target-branch: dev/Juanjo
     schedule:
       interval: weekly
     open-pull-requests-limit: 5
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
+    groups:
+      backend:
+        patterns: ["*"]
+
   - package-ecosystem: npm
     directory: /frontend
+    target-branch: dev/Juanjo
     schedule:
       interval: weekly
     open-pull-requests-limit: 5
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
     groups:
       testing:
         patterns: ["vitest", "@vitest/*", "@testing-library/*", "@playwright/test", "@axe-core/*", "jsdom"]
+      frontend:
+        patterns: ["*"]
+
+  # Las mayores de Actions sí se aceptan: CI entero las ejerce en el mismo PR.
   - package-ecosystem: github-actions
     directory: /
+    target-branch: dev/Juanjo
     schedule:
       interval: weekly
+    groups:
+      actions:
+        patterns: ["*"]
+
+  # Imágenes base sin saltos de mayor: Node 26 no coincide con el Node 22 de CI.
   - package-ecosystem: docker
     directory: /backend
+    target-branch: dev/Juanjo
     schedule:
       interval: weekly
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
+
   - package-ecosystem: docker
     directory: /frontend
+    target-branch: dev/Juanjo
     schedule:
       interval: weekly
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]

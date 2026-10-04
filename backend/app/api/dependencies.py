@@ -29,14 +29,7 @@ def get_triage_orchestrator() -> TriageOrchestrator:
             status_code=503,
             detail="El servicio de orientación no está configurado. Intenta más tarde.",
         )
-    provider = NvidiaProvider(
-        api_key=settings.nvidia_api_key,
-        base_url=settings.nvidia_base_url,
-        model=settings.nvidia_model,
-        timeout_seconds=settings.nvidia_timeout_seconds,
-        max_retries=settings.nvidia_max_retries,
-    )
-    return TriageOrchestrator(provider)
+    return TriageOrchestrator(NvidiaProvider.from_settings(settings))
 
 
 @lru_cache

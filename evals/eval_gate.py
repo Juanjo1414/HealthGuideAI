@@ -116,13 +116,7 @@ def main() -> int:
         return 2
 
     orchestrator = TriageOrchestrator(
-        NvidiaProvider(
-            api_key=settings.nvidia_api_key,
-            base_url=settings.nvidia_base_url,
-            model=settings.nvidia_model,
-            timeout_seconds=settings.nvidia_timeout_seconds,
-            max_retries=settings.nvidia_max_retries,
-        )
+        NvidiaProvider.from_settings(settings)
     )
 
     cases: list[CaseResult] = []

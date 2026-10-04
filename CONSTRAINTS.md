@@ -43,10 +43,10 @@ filtrado no son el tipo de cosas que uno quiere descubrir después.
 | Escalabilidad horizontal | 2 instancias del backend comparten sesión y rate limit (no las inventa cada una por su cuenta) | `backend/tests/test_horizontal_scaling.py` (sesión compartida entre dos pools) + `test_rate_limit.py::test_redis_rate_limiter_shares_state_across_instances` | cada edit, CI |
 | Migraciones | El esquema se aplica solo, `alembic upgrade head` es idempotente | `backend/docker-entrypoint.sh` corre en cada arranque del contenedor | cada `docker compose up`, CI |
 | Seguridad de salida (8 reglas) | Ningún caso viola esquema / diagnóstico / medicación / input incompleto / red flags / reporte de tercero / fuga de prompt / dominio | `evals/validate_triage_output.py` vía `run_eval_suite()` | cada sesión que toque el prompt o el proveedor |
-| Accuracy clínico | ≥ 90% PASS en los 25 casos, accuracy de prioridad ≥ 80% — **Sesión 12: 60% (9/15), no cumple** (sub-triaje MEDIA → BAJA en casos validados por Cristian, ver `evals/results.md`); antes 67% (10/15), subió desde 75% (6/8) de la Sesión 6 pero sobre una muestra mayor (15 vs 8) y sin errores de proveedor por primera vez; todavía no cumple el umbral | `python evals/eval_gate.py` (sale con código 1 si se incumple cualquier umbral de esta tabla) | `evals.yml` programado (Sesión 13) |
+| Accuracy clínico | ≥ 90% PASS en los 25 casos, accuracy de prioridad ≥ 80% — **2026-10-03, con `nemotron-3.5-lightning`: 80% (12/15), cumple justo** (87% en una corrida sin modo JSON, configuración descartada porque no pasó el adversarial; ver `evals/results.md`). Sesión 12, con el modelo que NVIDIA dio de baja: 60% (9/15); antes 67% (10/15), subió desde 75% (6/8) de la Sesión 6 pero sobre una muestra mayor (15 vs 8) y sin errores de proveedor por primera vez; todavía no cumple el umbral | `python evals/eval_gate.py` (sale con código 1 si se incumple cualquier umbral de esta tabla) | `evals.yml` programado (Sesión 13) |
 | Red flags de EMERGENCIA | **Cero** falsos negativos — ninguna EMERGENCIA real clasificada por debajo | mismo run de evals, columna `expected_priority` vs `prioridad` en casos con `red_flag=true` — **cumplido en la corrida 2 de la Sesión 7** (4/4 EMERGENCIA correctos) tras corregir un bug real encontrado en la corrida 1 (ver `evals/results.md`, Sesión 7: el escalado toleraba que el modelo dijera ALTA sin corregir, violando el gate) | bloqueante duro; repetir con muestra mayor cuando NVIDIA esté más estable |
 | Análisis estático de seguridad | Sin alertas nuevas de CodeQL en el PR | CodeQL Python + JavaScript/TypeScript (`security.yml`). El job sube las alertas; **lo que bloquea el merge es el check `CodeQL` de code scanning exigido por la protección de rama** (`docs/branch-protection-main.json`) — pendiente de aplicar, ver Sesión 13 | cada push/PR + semanal, CI |
-| Seguridad del modelo | 100% del set adversarial de prompt injection resuelto de forma segura para el usuario | `evals/run_adversarial_suite.py` sobre `evals/adversarial_cases.csv` — **cumplido: 12/12 (100%)**, corrida real contra NVIDIA del 2026-10-01 (ver `evals/results.md`, Sesión 8). Medido sobre la respuesta final (modelo + validador + fallback), no solo la respuesta cruda — el modelo solo resistió 8/12 (67%) sin ayuda del validador, métrica aparte, informativa | manual hoy, luego `evals.yml` (Sesión 13) |
+| Seguridad del modelo | 100% del set adversarial de prompt injection resuelto de forma segura para el usuario | `evals/run_adversarial_suite.py` sobre `evals/adversarial_cases.csv` — **cumplido: 12/12 (100%)**, corrida real contra NVIDIA del 2026-10-03 con `nemotron-3.5-lightning` (`evals/adversarial_report.md`). Medido sobre la respuesta final (modelo + validador + fallback), no solo la respuesta cruda — el modelo solo resiste 6/12 (50%) sin ayuda del validador (el retirado, 8/12): la seguridad depende más que antes del validador. Métrica aparte, informativa | manual hoy, luego `evals.yml` (Sesión 13) |
 | Secretos | Ninguno en el código fuente ni en el historial de git | `gitleaks` (`security.yml`): en cada push/PR escanea los commits nuevos; la corrida semanal programada recorre **todo** el historial. Única excepción, por texto exacto en `.gitleaks.toml`: la contraseña de ejemplo de OpenAPI y de los tests E2E | cada push/PR + semanal, CI |
 | Dependencias (Python) | Nada en `high` o superior | `pip-audit -r backend/requirements.txt` (`security.yml`) | cada push/PR + semanal, CI |
 | Dependencias (Node) | Nada en `high` o superior | `npm audit --audit-level=high` en `frontend/` (`security.yml`) | cada push/PR + semanal, CI |
@@ -87,8 +87,22 @@ Ser honesto en vez de aparentar que esto ya está completo:
   a todos sin entrar). Directo al backend, como corre hoy, sí es por IP. Se arregla con
   `--proxy-headers --forwarded-allow-ips=<subred del proxy>` y un test — **requisito de la Sesión 14
   antes de desplegar**.
-- **El gate de accuracy clínico está en rojo** (60% < 80%, Sesión 12) y no hay excepción
-  registrada: ver `evals/results.md`. Es trabajo clínico (rúbrica MEDIA vs. BAJA), no de código.
+- **Detrás del gateway, CSRF rechaza los POST del propio sitio (403 `forbidden_origin`).**
+  `backend/app/api/csrf.py` arma el origen propio con `request.url`, pero el gateway manda
+  `Host $host` (sin puerto) y uvicorn ignora `X-Forwarded-Proto`, así que no coincide con el `Origin`
+  del navegador (puerto o `https` distintos). Hoy solo se evita poniendo el origen público en
+  `CORS_ALLOWED_ORIGINS`. Arreglo, junto con el anterior (es el mismo flag de uvicorn): `Host
+  $http_host` en `gateway/nginx.conf`, `--proxy-headers` y un test en `test_csrf.py`. También es
+  **requisito de la Sesión 14**.
+- **Las señales de alarma por palabra clave no entienden negaciones.** "Fiebre de 38 °C, *sin*
+  dificultad para respirar" sale EMERGENCIA, y el orquestador sube la prioridad sin ajustar
+  `recomendacion` ni `alertas`: el usuario ve EMERGENCIA con "agenda una consulta" y sin alertas.
+  Es el lado seguro, pero incoherente (`evals/triage_rules.py`, `triage_orchestrator.py`; también en
+  `docs/PLAN_IMPLEMENTACION.md`).
+- **El gate de accuracy está en verde pero justo en el umbral** (80%, 2026-10-03, con el modelo de
+  reemplazo; la Decisión 6 explica el cambio). Con 15 casos, un caso de diferencia mueve 7 puntos:
+  si la corrida semanal de `evals.yml` cae debajo de 80%, vuelve a ser un gap bloqueante. La mejora
+  vino del modelo, no de un ajuste de la rúbrica clínica (MEDIA vs. BAJA), que sigue pendiente.
 - **El set adversarial (Sesión 8) tiene 12 casos, 2 por categoría de ataque** — cubre lo que pide
   el plan, pero 12 casos no agota el espacio de ataques posibles contra un LLM. Correrlo
   periódicamente (y ampliarlo cuando se encuentre un caso nuevo) sigue siendo trabajo activo, no
