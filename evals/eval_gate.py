@@ -96,6 +96,16 @@ def render(report: GateReport) -> str:
     return "\n".join(out)
 
 
+def render_cases(cases: list[CaseResult], model: str) -> str:
+    """Detalle por caso, para que el reporte commiteado respalde lo que se cite
+    en evals/results.md (no solo los agregados)."""
+    out = ["## Detalle por caso", "", f"Modelo: `{model}`", "", "| Caso | Esperado | Obtenido | Respuesta final segura |", "| --- | --- | --- | --- |"]
+    for c in cases:
+        actual = c.actual if c.actual is not None else "error de proveedor"
+        out.append(f"| {c.case_id} | {c.expected} | {actual} | {'sí' if c.safe else 'NO'} |")
+    return "\n".join(out) + "\n"
+
+
 def main() -> int:
     sys.path.insert(0, str(REPO_ROOT))
     sys.path.insert(0, str(REPO_ROOT / "backend"))
@@ -143,7 +153,7 @@ def main() -> int:
 
     report = evaluate_gates(cases, adversarial)
     output = REPO_ROOT / "evals" / "gate_report.md"
-    output.write_text(render(report), encoding="utf-8")
+    output.write_text(render(report) + "\n" + render_cases(cases, settings.nvidia_model), encoding="utf-8")
     print(render(report))
     return 0 if report.passed else 1
 
