@@ -23,6 +23,8 @@ graphify-out/*.sig
 graphify-out/[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]/
 graphify-out/.rebuild.lock
 graphify-out/.*.stale
+graphify-out/.pending_changes
+graphify-out/.gfy-*.tmp
 
 # Export de referencia de Stitch (Sesion 10/11, diseno visual) — solo local,
 # se elimina despues de portar las pantallas a frontend/src. Nunca a GitHub.

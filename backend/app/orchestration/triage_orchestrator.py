@@ -37,6 +37,7 @@ from ..knowledge.sanitization import sanitize_chunk_text
 from ..knowledge.sources import KNOWLEDGE_BASE
 from ..providers.base import ModelProvider, ModelProviderError
 from ..validation.safe_response import build_provider_error_fallback
+from .cause_filter import drop_named_disease_causes
 from .contract import HUMAN_DECISION, SYSTEM_VALIDATIONS
 from .prompt_builder import build_system_prompt
 from .red_flags import detect_red_flags
@@ -96,6 +97,10 @@ class TriageOrchestrator:
         # que use mayusculas, se corrige en codigo (.claude/CLAUDE.md seccion 8).
         if isinstance(output.get("prioridad"), str):
             output["prioridad"] = output["prioridad"].strip().upper()
+
+        # Causas generales, nunca enfermedades con nombre (cause_filter.py).
+        if "posibles_causas" in output:
+            output["posibles_causas"] = drop_named_disease_causes(output["posibles_causas"])
 
         if red_flags and output.get("prioridad") != "EMERGENCIA":
             # El LLM ya no puede bajar esta clasificacion — el input tiene

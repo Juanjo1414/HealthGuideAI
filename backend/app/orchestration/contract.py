@@ -38,12 +38,18 @@ HUMAN_DECISION = (
 
 # Mismas claves y significados que documenta .claude/CLAUDE.md seccion 4.
 OUTPUT_FIELDS: dict[str, str] = {
-    "resumen": "string - sintesis breve del caso",
+    "resumen": "string - lo que entendiste del caso en 1 o 2 frases",
     "sintomas_detectados": "array de strings - sintomas identificados",
     "prioridad": "string - BAJA | MEDIA | ALTA | EMERGENCIA",
-    "posibles_causas": "array de strings - causas generales, nunca diagnosticos cerrados",
-    "alertas": "array de strings - señales de riesgo detectadas",
-    "recomendacion": "string - siguiente paso sugerido",
+    "posibles_causas": (
+        "array de strings - 2 a 4 categorias generales de causa para este caso, cada una "
+        "'categoria: por que encaja', nunca enfermedades con nombre propio ni diagnosticos"
+    ),
+    "alertas": "array de strings - señales de riesgo presentes en el relato",
+    "recomendacion": (
+        "string - que hacer y en que plazo, autocuidado sin medicamentos, señales para "
+        "consultar antes, y el disclaimer"
+    ),
     "requiere_revision": "boolean - true si un humano debe revisar el caso",
     "confianza": "number entre 0 y 1",
 }
@@ -86,10 +92,54 @@ PRIORITY_RUBRIC: dict[str, str] = {
     ),
 }
 
+# Guia de contenido (2026-10-03): el modelo de reemplazo (DECISION_LOG.md,
+# decision 6) toma el esquema al pie de la letra y contestaba lo minimo —
+# "causas generales de dolor de cabeza cronico" como unica causa y "consulta
+# medica" como unica recomendacion. El retirado completaba solo. Se le pide
+# explicitamente que la orientacion sea util, sin aflojar ninguna regla.
+#
+# Revision de QA (2026-10-04): una primera version pedia causas "concretas" y
+# el modelo empezo a nombrar enfermedades ("COVID-19", "faringitis bacteriana"
+# con un criterio para distinguirla). CLAUDE.md seccion 2 permite causas
+# GENERALES y prohibe nombrar una enfermedad especifica: ahora se piden
+# categorias generales con su porque. Si el equipo clinico (Cristian) decide
+# permitir mas especificidad, se registra en DECISION_LOG.md antes de tocar esto.
+# "Tratamiento" queda definido para que el autocuidado no derive en productos.
+CONTENT_GUIDE = (
+    "- resumen: en 1 o 2 frases, lo que entendiste del caso: sintomas principales, desde "
+    "cuando, intensidad y contexto que importe (edad, antecedentes, que lo desencadeno). Si "
+    "falta un dato que cambiaria la prioridad, dilo.\n"
+    "- posibles_causas: entre 2 y 4 CATEGORIAS GENERALES de causa que encajen con ESTE caso, de "
+    "la mas a la menos probable, cada una con el formato \"categoria general: por que podria "
+    "encajar con lo que describe la persona\". Ejemplos de categoria general: infeccion viral de "
+    "vias respiratorias, infeccion o irritacion gastrointestinal, tension o sobrecarga muscular, "
+    "dolor de cabeza de tipo tensional, deshidratacion, estres o falta de sueño, reaccion "
+    "alergica, irritacion de la piel. NUNCA nombres una enfermedad especifica (ni gripe, "
+    "COVID-19, migraña, faringitis, amigdalitis, apendicitis, neumonia, etc.) ni des criterios "
+    "para distinguir una enfermedad de otra: eso es diagnostico y lo hace un profesional. "
+    "Prohibido el relleno vacio (\"causas generales de dolor de cabeza\"): si no puedes "
+    "proponer una categoria que encaje, deja la lista vacia y pide mas informacion.\n"
+    "- alertas: solo señales de riesgo que ya aparecen en el relato. Las que podrian aparecer "
+    "van en la recomendacion.\n"
+    "- recomendacion: frases cortas y concretas, en este orden: (1) que hacer y en que plazo "
+    "(hoy, en 24 a 48 horas, esta semana); (2) dos o tres medidas de autocuidado especificas "
+    "para este caso (hidratacion, reposo relativo, compresas frias o tibias, dieta blanda, "
+    "llevar un registro de los sintomas, evitar pantallas, humo o esfuerzos, etc.); (3) las "
+    "señales concretas de este caso que obligan a consultar antes o ir a urgencias; (4) al "
+    "final, el disclaimer obligatorio.\n"
+    "- Autocuidado NO es tratamiento. Tratamiento, que esta prohibido, es cualquier "
+    "medicamento, producto de farmacia (sprays, gotas, cremas, sueros, sales, parches), "
+    "suplemento, hierba o remedio que se ingiera o se aplique. El autocuidado son medidas "
+    "generales del dia a dia."
+)
+
 # Disclaimer reforzado (Sesion 6): antes vivia implicito en "no ejecutes la
 # decision humana final". Se lo hace explicito y se le pide que quede
 # reflejado en la propia recomendacion, no solo como una regla que el
 # modelo cumple sin decirlo — el usuario tiene que leerlo en la respuesta.
+# Si cambia este texto, actualizar DISCLAIMER_SENTENCES en
+# frontend/src/lib/triageText.ts: la UI separa el disclaimer de los pasos de
+# autocuidado comparando contra estas oraciones exactas.
 DISCLAIMER = (
     "Esta orientacion puede no ser exacta y no reemplaza una evaluacion medica "
     "profesional. Ante cualquier duda, o si los sintomas empeoran, consulta a un "
@@ -155,11 +205,18 @@ FEW_SHOT_EXAMPLES: list[dict] = [
             "congestion nasal, sin afectar las actividades diarias.",
             "sintomas_detectados": ["estornudos", "congestion nasal"],
             "prioridad": "BAJA",
-            "posibles_causas": ["infeccion viral leve de vias respiratorias altas"],
+            "posibles_causas": [
+                "infeccion viral leve de vias respiratorias altas: estornudos y congestion "
+                "de inicio reciente, sin fiebre",
+                "reaccion alergica de la nariz: puede dar estornudos y nariz tapada, sobre "
+                "todo si se repite con polvo, polen o cambios de clima",
+            ],
             "alertas": [],
-            "recomendacion": "Descansa, mantente hidratado y monitorea tus sintomas. "
-            "Si aparece fiebre alta, dificultad para respirar o los sintomas empeoran, "
-            f"busca atencion medica. {DISCLAIMER}",
+            "recomendacion": "Puedes manejarlo en casa y vigilar como evoluciona en los "
+            "proximos 7 a 10 dias. Descansa y toma liquidos con frecuencia. El vapor de "
+            "una ducha tibia y dormir con la cabeza un poco elevada ayudan con la "
+            "congestion. Consulta si aparece fiebre alta, dolor de oido o de cara, "
+            f"dificultad para respirar, o si no mejora en 10 dias. {DISCLAIMER}",
             "requiere_revision": False,
             "confianza": 0.8,
         },
@@ -174,11 +231,18 @@ FEW_SHOT_EXAMPLES: list[dict] = [
             "dificultad para tragar ni otros sintomas asociados.",
             "sintomas_detectados": ["dolor de garganta", "fiebre"],
             "prioridad": "MEDIA",
-            "posibles_causas": ["infeccion viral o bacteriana de garganta"],
+            "posibles_causas": [
+                "infeccion de garganta, viral o bacteriana: dolor de garganta con fiebre "
+                "baja de pocos dias; solo un profesional puede distinguir el origen",
+                "irritacion de la garganta por aire seco, humo o uso de la voz: puede "
+                "aumentar el dolor, aunque por si sola no explica la fiebre",
+            ],
             "alertas": [],
-            "recomendacion": "Agenda una consulta medica para evaluacion, "
-            "especialmente si el dolor de garganta persiste mas de una semana o la "
-            f"fiebre sube. Mientras tanto, descansa e hidratate. {DISCLAIMER}",
+            "recomendacion": "Agenda una consulta medica en los proximos dias para que "
+            "revisen tu garganta. Mientras tanto, descansa, toma liquidos tibios o frios "
+            "con frecuencia y haz gargaras con agua tibia con sal. Evita el humo y el "
+            "alcohol. Consulta antes si la fiebre pasa de 39 grados, te cuesta tragar o "
+            f"abrir la boca, o aparecen manchas blancas en la garganta. {DISCLAIMER}",
             "requiere_revision": False,
             "confianza": 0.7,
         },
@@ -193,10 +257,19 @@ FEW_SHOT_EXAMPLES: list[dict] = [
             "signos de enrojecimiento, calor e hinchazon de aparicion reciente.",
             "sintomas_detectados": ["herida en el pie", "enrojecimiento", "hinchazon", "calor local"],
             "prioridad": "ALTA",
-            "posibles_causas": ["posible infeccion de la herida, con mayor riesgo por la diabetes"],
+            "posibles_causas": [
+                "infeccion de la herida: enrojecimiento, calor e hinchazon son signos "
+                "tipicos, y la diabetes aumenta ese riesgo",
+                "inflamacion de la piel alrededor de la herida: en personas con diabetes "
+                "puede extenderse rapido",
+            ],
             "alertas": ["antecedente de diabetes combinado con signos de infeccion"],
-            "recomendacion": "Busca atencion medica en las proximas horas, dado el "
-            f"riesgo aumentado de complicaciones en personas con diabetes. {DISCLAIMER}",
+            "recomendacion": "Busca atencion medica hoy, en las proximas horas, por el "
+            "riesgo de complicaciones en personas con diabetes. Mientras tanto, lava la "
+            "herida con agua y jabon suave, cubrela con una gasa limpia y evita apoyar "
+            "el pie. Observa si el enrojecimiento se extiende. "
+            "Ve a urgencias si el enrojecimiento avanza rapido, aparece fiebre, pus "
+            f"o mal olor. {DISCLAIMER}",
             "requiere_revision": True,
             "confianza": 0.75,
         },

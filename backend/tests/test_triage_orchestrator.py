@@ -202,3 +202,18 @@ def test_red_flag_fallback_passes_the_real_output_validator():
     result = validate_triage_output(fallback, "Tengo dolor en el pecho y no puedo respirar bien.")
 
     assert result["pass"] is True
+
+
+def test_drops_causes_that_name_a_specific_disease():
+    """CLAUDE.md seccion 2: causas generales si, enfermedades con nombre no.
+    Visto en una corrida real: 'sindrome gripal o influenza: ...'."""
+    causes = [
+        "infeccion viral generalizada: fiebre y dolor corporal de pocos dias",
+        "sindrome gripal o influenza: fiebre, dolor de cabeza y dolor muscular",
+        "COVID-19: puede dar fiebre y dolor de cabeza",
+    ]
+    orchestrator = TriageOrchestrator(FakeProvider(response=base_output(posibles_causas=causes)))
+
+    result = orchestrator.run("Tengo fiebre de 38 y dolor de cabeza desde ayer, me duele el cuerpo.")
+
+    assert result["posibles_causas"] == ["infeccion viral generalizada: fiebre y dolor corporal de pocos dias"]
