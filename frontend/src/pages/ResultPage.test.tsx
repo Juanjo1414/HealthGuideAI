@@ -37,6 +37,47 @@ describe("ResultPage", () => {
     expect(screen.getByText(/no calibrada clínicamente/i)).toHaveTextContent(/puede equivocarse/i);
   });
 
+  it("muestra lo que entendió el modelo y las causas como posibilidades con su porqué", () => {
+    renderResult(
+      triageResponse({
+        prioridad: "MEDIA",
+        sintomas_detectados: ["dolor de cabeza"],
+        posibles_causas: ["cefalea tensional: dolor persistente sin fiebre", "falta de sueño"],
+        recomendacion:
+          "Agenda una consulta esta semana. Lleva un registro del dolor. Esta orientacion puede no ser exacta y no reemplaza una evaluacion medica profesional.",
+      })
+    );
+
+    const caso = screen.getByRole("region", { name: /lo que identificamos/i });
+    expect(caso).toHaveTextContent("dolor de cabeza");
+    expect(screen.getByRole("heading", { name: /qué podría estar pasando/i })).toBeInTheDocument();
+    expect(screen.getByText("cefalea tensional")).toBeInTheDocument();
+    expect(screen.getByText("dolor persistente sin fiebre")).toBeInTheDocument();
+    expect(screen.getByText(/solo un profesional de la salud puede confirmar/i)).toBeInTheDocument();
+    // Las preguntas para el médico usan solo el nombre, no la explicación entera.
+    expect(screen.getByText(/relacionado con cefalea tensional\?/i)).toBeInTheDocument();
+  });
+
+  it("el disclaimer no aparece como un paso de autocuidado, pero sigue visible", () => {
+    renderResult(
+      triageResponse({
+        prioridad: "BAJA",
+        recomendacion: "Descansa. Esta orientacion puede no ser exacta y no reemplaza una evaluacion medica profesional.",
+      })
+    );
+
+    const pasos = screen.getByRole("heading", { name: /qué hacer mientras tanto/i }).closest("div.flex.flex-col")!;
+    const items = Array.from(pasos.querySelectorAll("li")).map((li) => li.textContent);
+    expect(items).toEqual(["check_circleDescansa."]);
+    expect(screen.getByText(/puede no ser exacta y no reemplaza/i)).toBeInTheDocument();
+  });
+
+  it("sin causas concretas lo dice en vez de inventar", () => {
+    renderResult(triageResponse({ prioridad: "BAJA", posibles_causas: [] }));
+
+    expect(screen.getByText(/no es posible sugerir causas concretas/i)).toBeInTheDocument();
+  });
+
   it("EMERGENCIA cambia a la alerta roja con los teléfonos", () => {
     renderResult(triageResponse({ prioridad: "EMERGENCIA", alertas: ["dolor en el pecho"], requires_human_review: true }));
 
