@@ -15,6 +15,12 @@ from backend.app.orchestration.cause_filter import drop_named_disease_causes, na
         "faringitis bacteriana: sin tos",
         "COVID-19: fiebre",
         "gastroenteritis viral: diarrea",
+        "cefalea tensional: dolor persistente",
+        "faringoamigdalitis: dolor de garganta",
+        "infeccion por SARS-CoV-2: fiebre",
+        "infeccion bacteriana de garganta (estreptococica)",
+        "asma: falta de aire",
+        "reflujo gastroesofágico: ardor",
     ],
 )
 def test_detects_named_diseases_with_or_without_accents(cause):
