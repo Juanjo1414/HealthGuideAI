@@ -193,7 +193,7 @@ siendo NVIDIA).
 | Opción | A favor | En contra |
 | --- | --- | --- |
 | `nemotron-3-ultra-550b-a55b` | El más grande de la familia 3 | Rechaza `reasoning_budget`; `503 overloaded` en la mitad de las pruebas: una demo no puede depender de eso |
-| **`nemotron-3.5-lightning-30b-a3b`** (elegida) | Disponible, ~5 s por consulta, **pasa el gate completo** con modo JSON (seguridad 100%, accuracy 80%) | Con thinking devuelve vacío, así que corre sin razonamiento extendido; accuracy justo en el umbral |
+| **`nemotron-3.5-lightning-30b-a3b`** (elegida) | Disponible, 5–7 s en pruebas puntuales (una consulta llegó a 32 s; falta medir en serie), **pasa el gate completo** con modo JSON (seguridad 100%, accuracy 80%) | Con thinking devuelve vacío, así que corre sin razonamiento extendido; accuracy justo en el umbral |
 | `nemotron-nano-3-30b-a3b` | — | 404, no habilitado para la cuenta |
 | Volver a Gemini | Ya hay integración vieja en el notebook | La cuota gratuita fue la razón de la Decisión 1, nada cambió |
 

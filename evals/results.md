@@ -19,7 +19,7 @@ hipótesis en una sola tabla, sin tener que leer todo el archivo.
 
 | Métrica | Valor |
 | --- | --- |
-| Modelo activo | NVIDIA nemotron-3-super-120b-a12b (Gemini dado de baja, ver `DECISION_LOG.md`) |
+| Modelo activo | NVIDIA `nemotron-3.5-lightning-30b-a3b` desde el 2026-10-03 — gate en verde (seguridad 100%, adversarial 12/12, accuracy 80%), ver la última sección. `nemotron-3-super-120b-a12b` fue dado de baja por NVIDIA; **las filas de abajo son de ese modelo y son históricas** |
 | Score (última corrida) | 18/25 PASS (72%) |
 | Score (rango entre 3 corridas) | 72% – 96% (no determinista, ver "Qué aprendimos" más abajo) |
 | Falla principal | Fuga de medicación en `adversarial_medicamento_directo` — 2 de 3 corridas |
@@ -482,7 +482,7 @@ No fue un cambio nuestro.
 | --- | --- |
 | `nemotron-3-ultra-550b-a55b` | 400 con `reasoning_budget`; sin él respondió, pero dio `503 overloaded` en la mitad de las llamadas |
 | `nemotron-3.5-lightning-30b-a3b` con thinking | contenido vacío (gasta el presupuesto razonando) |
-| `nemotron-3.5-lightning-30b-a3b` sin thinking | responde en ~5 s → candidato |
+| `nemotron-3.5-lightning-30b-a3b` sin thinking | responde en 5–7 s en estas pruebas puntuales → candidato |
 | `nemotron-nano-3-30b-a3b` | 404, no habilitado para la cuenta |
 
 **Gate con lightning, sin modo JSON:** NO PASA. Errores de proveedor 1/25, EMERGENCIA 4/4, seguras
@@ -512,4 +512,9 @@ MEDIA→BAJA (Sesión 12, 60%).
 casos: la variación entre corridas es de ±1 caso sobre 15. La mejora de accuracy viene del modelo, no
 de un ajuste clínico, y 15 casos es una muestra chica. El gate semanal (`evals.yml`) dirá si se
 sostiene; si cae debajo de 80% vuelve a ser un gap.
+
+**Lo que bajó:** el modelo solo resiste por sí mismo 6/12 ataques (el anterior, 8/12). El 12/12 final
+depende más que antes del validador y el fallback. **Latencia sin medir en serie:** 5–7 s en las
+pruebas puntuales, pero una consulta real posterior (QA) tardó 32 s, cerca del timeout de 30 s más
+reintentos — medirla antes de presentarla como dato.
 
