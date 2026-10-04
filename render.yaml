@@ -1,0 +1,52 @@
+# Despliegue del backend en Render (plan gratuito). Guía paso a paso y por qué
+# de cada valor: docs/DESPLIEGUE.md. Postgres NO va acá: el gratuito de Render
+# se borra a los 30 días, por eso la base vive en Neon (DATABASE_URL).
+services:
+  - type: web
+    name: healthguideai-api
+    runtime: docker
+    plan: free
+    # Misma región que la base de Neon (AWS us-east-2, Ohio): cada query cruza
+    # de un proveedor a otro y la distancia se paga en cada request.
+    region: ohio
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: .
+    healthCheckPath: /health
+    autoDeploy: true
+    branch: main
+    envVars:
+      - key: ENVIRONMENT
+        value: production
+      # Un worker: el plan gratuito tiene poca memoria y las rutas ya corren en
+      # un pool de hilos. Los límites de tasa viven en Redis, no en el proceso.
+      - key: WEB_CONCURRENCY
+        value: "1"
+      # Vercel -> balanceador de Render -> contenedor (api/client_ip.py).
+      - key: TRUSTED_PROXY_HOPS
+        value: "2"
+      - key: REDIS_URL
+        fromService:
+          type: keyvalue
+          name: healthguideai-redis
+          property: connectionString
+      - key: ADMIN_USERNAME
+        value: admin@healthguide.local
+      # Render genera una contraseña aleatoria: nunca llega a producción el
+      # 12345 de desarrollo (config.validate_production_config lo frena igual).
+      - key: ADMIN_PASSWORD
+        generateValue: true
+      # Secretos y valores que dependen de las otras cuentas: Render los pide
+      # al crear el Blueprint y nunca quedan en el repo.
+      - key: NVIDIA_API_KEY
+        sync: false
+      - key: DATABASE_URL
+        sync: false
+      - key: CORS_ALLOWED_ORIGINS
+        sync: false
+
+  - type: keyvalue
+    name: healthguideai-redis
+    plan: free
+    region: ohio
+    # Lista vacía = sin acceso desde internet, solo desde los servicios de Render.
+    ipAllowList: []

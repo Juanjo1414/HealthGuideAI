@@ -262,6 +262,16 @@ export default function TermsPage() {
                 </div>
               ))}
             </div>
+            <div className="p-5 rounded-xl bg-surface-container-low flex items-center gap-3 mb-4">
+              <span aria-hidden="true" className="material-symbols-outlined text-secondary text-2xl">public</span>
+              <div>
+                <div className="font-label-md text-label-md text-on-surface font-bold">Quién procesa tus datos</div>
+                <div className="font-body-sm text-body-sm text-on-surface-variant">
+                  Para generar la orientación, el texto que escribes se envía al modelo de inteligencia artificial de NVIDIA.
+                  El servicio y las cuentas corren en Render (servidor) y Neon (base de datos), en Estados Unidos.
+                </div>
+              </div>
+            </div>
             <div className="p-5 rounded-xl bg-surface-container-low flex items-center gap-3">
               <span aria-hidden="true" className="material-symbols-outlined text-secondary text-2xl">security</span>
               <div>

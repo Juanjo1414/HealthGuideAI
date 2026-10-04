@@ -66,6 +66,9 @@ class Settings:
     # contraseñas sin freno. Bucket aparte del de triage para que un intento
     # fallido no consuma la cuota de consultas.
     auth_rate_limit_max_requests: int = 10
+    # Proxies delante del backend en los que se confia para X-Forwarded-For
+    # (api/client_ip.py): 0 directo, 1 detras del gateway, 2 en Vercel -> Render.
+    trusted_proxy_hops: int = 0
     auth_rate_limit_window_seconds: float = 60.0
     # Postgres (Sesion 4 — reemplaza el SQLite/JSONL de sesiones anteriores).
     # El default apunta a localhost:5433 (no 5432: ver el comentario en
@@ -112,6 +115,7 @@ def get_settings() -> Settings:
     return Settings(
         **settings_kwargs,
         nvidia_api_key=os.getenv("NVIDIA_API_KEY") or None,
+        trusted_proxy_hops=int(os.getenv("TRUSTED_PROXY_HOPS", "0")),
         nvidia_model=(os.getenv("NVIDIA_MODEL") or "").strip() or Settings.nvidia_model,
         nvidia_enable_thinking=os.getenv("NVIDIA_ENABLE_THINKING", "false").lower()
         in {"1", "true", "yes"},
