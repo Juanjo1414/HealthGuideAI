@@ -108,15 +108,15 @@
     "semantic_hash": "134d7dc932d7d626efe41f26f62dd6f6"
   },
   "backend/app/orchestration/contract.py": {
-    "mtime": 1790912130.4582627,
-    "seen": 1790912394.6118162,
-    "ast_hash": "6b7a8fe4d67d06caa44505cda66400d4",
+    "mtime": 1791088077.7635245,
+    "seen": 1791088857.0015357,
+    "ast_hash": "d2adc8935359a76c64e6002b6113b363",
     "semantic_hash": ""
   },
   "backend/app/orchestration/prompt_builder.py": {
-    "mtime": 1790912130.4582627,
-    "seen": 1790912394.6118171,
-    "ast_hash": "ee84102457b1dcaec53bf8c90b527b1c",
+    "mtime": 1791088077.7635245,
+    "seen": 1791088857.0015402,
+    "ast_hash": "baf5e0a3fb8dc1eb51be9bc2510dd71a",
     "semantic_hash": ""
   },
   "backend/app/orchestration/red_flags.py": {
@@ -282,9 +282,9 @@
     "semantic_hash": "9aa83a309079d39daa1cf03c28aad8e1"
   },
   "backend/tests/test_prompt_builder.py": {
-    "mtime": 1790912130.4635627,
-    "seen": 1790912394.6118553,
-    "ast_hash": "6e0f8f934e36b185a0325b579f72cf89",
+    "mtime": 1791088333.6478915,
+    "seen": 1791088857.0016477,
+    "ast_hash": "9308bd72d433acb16ffe189108d7895f",
     "semantic_hash": ""
   },
   "backend/tests/test_rate_limit.py": {
@@ -450,9 +450,9 @@
     "semantic_hash": ""
   },
   "docs/PLAN_IMPLEMENTACION.md": {
-    "mtime": 1791086343.812781,
-    "seen": 1791086376.9221547,
-    "ast_hash": "c2e828c16d8681d394881f4ad6b56ee5",
+    "mtime": 1791088835.957011,
+    "seen": 1791088857.0019479,
+    "ast_hash": "dcfc044c02efc4537123d00d00cc2eca",
     "semantic_hash": ""
   },
   "docs/arquitectura.md": {
@@ -480,9 +480,9 @@
     "semantic_hash": ""
   },
   "evals/results.md": {
-    "mtime": 1791086982.647194,
-    "seen": 1791087056.8082268,
-    "ast_hash": "142dc62bc16da3e9bf8fe26ee553a810",
+    "mtime": 1791088835.9549973,
+    "seen": 1791088857.0019677,
+    "ast_hash": "1f79cb554d6854f2f2e935cbdbe5a588",
     "semantic_hash": ""
   },
   "frontend/README.md": {
@@ -726,9 +726,9 @@
     "semantic_hash": ""
   },
   "frontend/src/pages/HistoryPage.tsx": {
-    "mtime": 1790996958.2710254,
-    "seen": 1790998287.298354,
-    "ast_hash": "38b4fa2afab57781ed9ad394b4c11738",
+    "mtime": 1791088287.8870268,
+    "seen": 1791088857.0018096,
+    "ast_hash": "58fc9ef3aa2d04e94bae6aebab1aa91e",
     "semantic_hash": ""
   },
   "frontend/src/pages/HomePage.tsx": {
@@ -756,9 +756,9 @@
     "semantic_hash": ""
   },
   "frontend/src/pages/ResultPage.tsx": {
-    "mtime": 1790976003.5833848,
-    "seen": 1790976935.0378165,
-    "ast_hash": "c9f399fe1ca1b2b727a99aef6298136d",
+    "mtime": 1791088189.6485815,
+    "seen": 1791088857.0018535,
+    "ast_hash": "158ef8150d198b36385b7e05f10189ec",
     "semantic_hash": ""
   },
   "frontend/src/pages/ServerErrorPage.tsx": {
@@ -774,9 +774,9 @@
     "semantic_hash": ""
   },
   "docs/DESIGN_STITCH.md": {
-    "mtime": 1790973762.2002516,
-    "seen": 1790973889.015951,
-    "ast_hash": "226b3f4a68da49c9e2e6f92c6aaed5e4",
+    "mtime": 1791088835.9529862,
+    "seen": 1791088857.0019429,
+    "ast_hash": "6f06a00660ee121767a35a4d973577be",
     "semantic_hash": ""
   },
   "frontend/public/stitch/acceso-medica.jpg": {
@@ -978,9 +978,9 @@
     "semantic_hash": ""
   },
   "frontend/src/pages/ResultPage.test.tsx": {
-    "mtime": 1790975624.2517726,
-    "seen": 1790976935.0378149,
-    "ast_hash": "49c3fd48fed1c824d0c3615ffc558574",
+    "mtime": 1791088301.645485,
+    "seen": 1791088857.0018513,
+    "ast_hash": "4fa1b039b0b031f8b699cc4059249849",
     "semantic_hash": ""
   },
   "frontend/src/pages/StaticPages.test.tsx": {
@@ -1008,8 +1008,8 @@
     "semantic_hash": ""
   },
   "evals/gate_report.md": {
-    "mtime": 1791086266.3851888,
-    "seen": 1791086376.9221642,
+    "mtime": 1791088522.2804735,
+    "seen": 1791088857.001962,
     "ast_hash": "250b7280f84a4207c9158ad63fb710f0",
     "semantic_hash": ""
   },
@@ -1059,6 +1059,18 @@
     "mtime": 1791087027.6576686,
     "seen": 1791087056.8078876,
     "ast_hash": "60425fb88c0697623227be522306c268",
+    "semantic_hash": ""
+  },
+  "frontend/src/lib/triageText.test.ts": {
+    "mtime": 1791088161.3018565,
+    "seen": 1791088857.001784,
+    "ast_hash": "334cbf2703f0112e23814e8c9c3015be",
+    "semantic_hash": ""
+  },
+  "frontend/src/lib/triageText.ts": {
+    "mtime": 1791088160.0133514,
+    "seen": 1791088857.0017872,
+    "ast_hash": "18f819a32beb59530eb2098f9e885fcc",
     "semantic_hash": ""
   }
 }
