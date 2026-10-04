@@ -137,6 +137,9 @@ CONTENT_GUIDE = (
 # decision humana final". Se lo hace explicito y se le pide que quede
 # reflejado en la propia recomendacion, no solo como una regla que el
 # modelo cumple sin decirlo — el usuario tiene que leerlo en la respuesta.
+# Si cambia este texto, actualizar DISCLAIMER_SENTENCES en
+# frontend/src/lib/triageText.ts: la UI separa el disclaimer de los pasos de
+# autocuidado comparando contra estas oraciones exactas.
 DISCLAIMER = (
     "Esta orientacion puede no ser exacta y no reemplaza una evaluacion medica "
     "profesional. Ante cualquier duda, o si los sintomas empeoran, consulta a un "

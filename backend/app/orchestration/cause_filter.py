@@ -31,9 +31,14 @@ NAMED_DISEASES = (
     "pancreatitis", "cistitis", "pielonefritis", "celulitis", "dengue", "zika",
     "chikungunya", "malaria", "sarampion", "varicela", "hernia discal", "ciatica",
     "infarto", "ictus", "angina de pecho", "trombosis", "embolia",
+    # Ampliacion tras la QA del 2026-10-04: nombres que se escapaban.
+    "cefalea tensional", "cefalea en racimos", "faringoamigdalitis", "sars-cov-2",
+    "asma", "reflujo gastroesofagico", "tendinitis", "hemorroides", "anemia",
+    "hipotiroidismo", "hipertiroidismo", "hipertension arterial",
 )
 
-_PATTERN = re.compile(r"\b(" + "|".join(re.escape(d) for d in NAMED_DISEASES) + r")\b")
+# "estreptococ..." cubre estreptococo, estreptococica, estreptococcica.
+_PATTERN = re.compile(r"\b(" + "|".join(re.escape(d) for d in NAMED_DISEASES) + r"|estreptococ\w*)\b")
 
 
 def _normalize(text: str) -> str:
