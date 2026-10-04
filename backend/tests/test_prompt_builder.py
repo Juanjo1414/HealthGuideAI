@@ -58,3 +58,31 @@ def test_prompt_includes_rag_instructions():
 
     assert contract.RAG_INSTRUCTIONS in prompt
     assert "contexto_recuperado" in prompt
+
+
+def test_prompt_includes_content_guide():
+    """2026-10-03: el modelo de reemplazo contestaba lo minimo si no se le pedia
+    explicitamente una orientacion concreta (ver contract.CONTENT_GUIDE)."""
+    prompt = build_system_prompt()
+
+    assert contract.CONTENT_GUIDE in prompt
+    assert "SIN medicamentos" in contract.CONTENT_GUIDE
+
+
+def test_few_shot_examples_pass_the_safety_validator():
+    """Un ejemplo que rompe una regla le enseña al modelo a romperla: los
+    ejemplos mas ricos tienen que pasar el mismo validador que la respuesta."""
+    from backend.app.validation.security_validator import validate_output
+
+    for example in contract.FEW_SHOT_EXAMPLES:
+        result = validate_output(example["output"], example["input"])
+        assert result["pass"], (example["input"][:40], result["reasons"])
+
+
+def test_non_emergency_examples_show_causes_with_their_reason():
+    for example in contract.FEW_SHOT_EXAMPLES:
+        if example["output"]["prioridad"] == "EMERGENCIA":
+            continue
+        causes = example["output"]["posibles_causas"]
+        assert len(causes) >= 2
+        assert all(":" in cause for cause in causes)
