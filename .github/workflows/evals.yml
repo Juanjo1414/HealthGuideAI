@@ -26,14 +26,14 @@ jobs:
       NVIDIA_API_KEY: ${{ secrets.NVIDIA_API_KEY }}
       NVIDIA_MAX_RETRIES: "2"
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Verificar que el secreto existe
         run: |
           if [ -z "$NVIDIA_API_KEY" ]; then
             echo "::error::Falta el secreto NVIDIA_API_KEY en el repositorio (Settings > Secrets > Actions)."
             exit 1
           fi
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.13"
           cache: pip
@@ -43,7 +43,7 @@ jobs:
         run: python evals/eval_gate.py
       - name: Publicar reporte
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: evals-gate-report
           path: |
