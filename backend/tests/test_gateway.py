@@ -106,3 +106,17 @@ def test_error_envelope_has_detail_and_stable_code():
     assert body["detail"] == "Inicia sesión para continuar."
     assert body["error"]["code"] == "unauthorized"
     assert body["error"]["request_id"] == response.headers["X-Request-ID"]
+
+
+def test_health_answers_head_requests_for_external_monitors():
+    """UptimeRobot (plan gratuito) pide con HEAD: antes recibía 405 y marcaba el
+    servicio como caído aunque estuviera sano."""
+    client = TestClient(app)
+
+    head = client.head("/health")
+    get = client.get("/health")
+
+    assert head.status_code == 200
+    assert get.status_code == 200
+    assert head.content == b""
+    assert get.json() == {"status": "ok"}
