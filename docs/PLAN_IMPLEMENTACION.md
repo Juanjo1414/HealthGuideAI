@@ -738,6 +738,13 @@ que no estaba disponible en esta sesión. Comando listo para cuando lo esté:
 **Deuda aceptada (igual que en la Sesión 5):** las actions están pineadas por tag mayor (`@v4`), no
 por SHA. Dependabot las mantiene al día.
 
+## Incidente 2026-10-03 — NVIDIA da de baja el modelo ✅
+
+`nemotron-3-super-120b-a12b` empezó a responder `410 Gone` y la app quedó sin poder orientar a nadie.
+Se reemplazó por `nemotron-3.5-lightning-30b-a3b` (sin thinking, en modo JSON), elegido con el gate
+de evals: seguridad 100%, adversarial 12/12, accuracy 80% justo en el umbral. El modelo pasó a ser
+configuración (`NVIDIA_MODEL`). Detalle en `DECISION_LOG.md` (decisión 6) y `evals/results.md`.
+
 ## Sesión 14 — Despliegue público y merge a `main`
 
 **Bloqueante:** no desplegar sin las Sesiones 5 (seguridad de app), 8 (blindaje del modelo) y 12
@@ -748,9 +755,11 @@ por SHA. Dependabot las mantiene al día.
 2. Configurar secretos reales: `NVIDIA_API_KEY`, credenciales admin fuertes,
    `CORS_ALLOWED_ORIGINS`, cookies `Secure`. **Frontend y backend bajo el mismo dominio** para
    evitar romper las cookies.
-3. Rate limiting detrás del proxy de la plataforma: uvicorn con `--proxy-headers
-   --forwarded-allow-ips` limitado a la red del proxy, más un test, para que los frenos de login y
-   triage sigan siendo por IP real (gap de `CONSTRAINTS.md`, hallazgo de QA de la Sesión 13).
+3. Rate limiting y CSRF detrás del proxy de la plataforma: uvicorn con `--proxy-headers
+   --forwarded-allow-ips` limitado a la red del proxy y `Host $http_host` en el gateway, más tests,
+   para que los frenos de login y triage sigan siendo por IP real y el CSRF no rechace los POST del
+   propio dominio (gaps de `CONSTRAINTS.md`, hallazgos de QA de la Sesión 13 y del PR #30). Publicar
+   también la imagen del gateway en `release.yml`: el frontend solo, con `/api`, no sirve.
 4. Observabilidad mínima: logs estructurados, endpoint de métricas, alerta si el proveedor falla
    o si se dispara un patrón de abuso.
 5. Smoke test end-to-end desde una red externa, confirmando que `admin/12345` **no** funciona y

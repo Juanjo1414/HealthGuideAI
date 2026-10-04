@@ -40,7 +40,7 @@ validaciones, almacenamiento, salida y usuario. Acá, con nombres reales del rep
 | --- | --- |
 | **Entradas** | Texto libre describiendo síntomas (`real_input` en `run_prototype`). En los evals viene de la columna `input` de `evals/triage_eval_cases.csv` y `triage_eval_cases_extended.csv` — 25 casos que cubren happy path, input incompleto, ambiguo, adversarial, red flags, contradicciones y fuera de alcance. No hay formulario estructurado; el sistema tiene que extraer la información del lenguaje natural. |
 | **Procesamiento** | `contract` (Parte 4 del notebook) define el esquema de salida y las reglas del dominio; con eso se arma dinámicamente `SYSTEM_PROTOTYPE`, el prompt que efectivamente se envía. `run_prototype()` es la función que orquesta esto: arma el prompt, llama al modelo y normaliza la respuesta (por ejemplo, `.strip().upper()` sobre `prioridad` antes de que cualquier validación la toque). |
-| **Modelo** | NVIDIA `nemotron-3-super-120b-a12b`, vía `ask_nvidia_json()`, con `temperature=0` y reasoning habilitado. Decide el contenido semántico de cada campo del JSON — resumen, causas posibles, redacción de la recomendación — pero no ejecuta ninguna acción ni decide por el usuario. |
+| **Modelo** | NVIDIA `nemotron-3-super-120b-a12b` en el notebook (evidencia congelada; NVIDIA lo dio de baja el 2026-10-03 — el backend usa `nemotron-3.5-lightning-30b-a3b`, ver `DECISION_LOG.md` decisión 6), vía `ask_nvidia_json()`, con `temperature=0` y reasoning habilitado. Decide el contenido semántico de cada campo del JSON — resumen, causas posibles, redacción de la recomendación — pero no ejecuta ninguna acción ni decide por el usuario. |
 | **Validaciones** | `validate_triage_output()` en `evals/validate_triage_output.py`, sin llamar a ningún LLM: esquema válido, no diagnostica, no medica, maneja input incompleto pidiendo más información, y escala red flags a prioridad ALTA/EMERGENCIA + `requiere_revision=true`. Es una lista de reglas fijas en Python, documentada como "no robusta de verdad" porque es keyword-based y se puede colar una paráfrasis. |
 | **Almacenamiento** | Hoy es archivo, no base de datos: `run_eval_suite()` escribe `pass_fail` y `notes` de vuelta en los CSV de `evals/`, y el resumen humano de esas corridas queda en `evals/results.md`. Las decisiones de ingeniería (qué modelo, qué canal) quedan en `DECISION_LOG.md`. |
 | **Salida** | El JSON del contrato (`resumen`, `sintomas_detectados`, `prioridad`, `posibles_causas`, `alertas`, `recomendacion`, `requiere_revision`, `confianza`), ya pasado por el validador. Si el validador lo marca inseguro, la salida real hacia el usuario no debería ser el JSON del modelo tal cual, sino la indicación de que el caso pasa a revisión humana. |
@@ -107,7 +107,8 @@ flowchart TD
     end
 
     subgraph MODELO["CAPA DE MODELO (intercambiable)"]
-        NVIDIA["NVIDIA nemotron-3-super-120b-a12b\n(activo)"]
+        NVIDIA["NVIDIA nemotron-3.5-lightning-30b-a3b\n(activo en el backend desde 2026-10-03;
+super-120b dado de baja por NVIDIA)"]
         Gemini["Gemini\n(dado de baja, ver DECISION_LOG.md)"]
     end
 
