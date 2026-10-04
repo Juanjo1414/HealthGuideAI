@@ -112,7 +112,7 @@ def get_settings() -> Settings:
     return Settings(
         **settings_kwargs,
         nvidia_api_key=os.getenv("NVIDIA_API_KEY") or None,
-        nvidia_model=os.getenv("NVIDIA_MODEL") or Settings.nvidia_model,
+        nvidia_model=(os.getenv("NVIDIA_MODEL") or "").strip() or Settings.nvidia_model,
         nvidia_enable_thinking=os.getenv("NVIDIA_ENABLE_THINKING", "false").lower()
         in {"1", "true", "yes"},
         nvidia_timeout_seconds=float(os.getenv("NVIDIA_TIMEOUT_SECONDS", "30")),
