@@ -66,7 +66,7 @@ def test_prompt_includes_content_guide():
     prompt = build_system_prompt()
 
     assert contract.CONTENT_GUIDE in prompt
-    assert "SIN medicamentos" in contract.CONTENT_GUIDE
+    assert "Autocuidado NO es tratamiento" in contract.CONTENT_GUIDE
 
 
 def test_few_shot_examples_pass_the_safety_validator():
@@ -77,6 +77,32 @@ def test_few_shot_examples_pass_the_safety_validator():
     for example in contract.FEW_SHOT_EXAMPLES:
         result = validate_output(example["output"], example["input"])
         assert result["pass"], (example["input"][:40], result["reasons"])
+
+
+# Nombres de enfermedad que los ejemplos no pueden usar como causa: CLAUDE.md
+# seccion 2 permite causas generales, nunca una enfermedad especifica.
+_SPECIFIC_DISEASES = (
+    "gripe", "influenza", "covid", "resfriado comun", "rinitis", "faringitis", "amigdalitis",
+    "migraña", "migrana", "gastroenteritis", "celulitis", "apendicitis", "neumonia",
+)
+
+
+def test_examples_use_general_categories_not_named_diseases():
+    for example in contract.FEW_SHOT_EXAMPLES:
+        for cause in example["output"]["posibles_causas"]:
+            assert not any(d in cause.lower() for d in _SPECIFIC_DISEASES), cause
+
+
+def test_examples_do_not_suggest_pharmacy_products():
+    """'Lavados con solucion salina' le enseñaba al modelo a nombrar productos."""
+    for example in contract.FEW_SHOT_EXAMPLES:
+        text = example["output"]["recomendacion"].lower()
+        assert not any(p in text for p in ("salina", "suero", "spray", "crema", "pomada")), text
+
+
+def test_content_guide_defines_treatment_and_forbids_named_diseases():
+    assert "Tratamiento, que esta prohibido" in contract.CONTENT_GUIDE
+    assert "NUNCA nombres una enfermedad especifica" in contract.CONTENT_GUIDE
 
 
 def test_non_emergency_examples_show_causes_with_their_reason():
