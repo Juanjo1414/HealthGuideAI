@@ -64,6 +64,22 @@ simular una conversación que no existe sería engañoso. Está en el backlog.
   lea como la más grave (mismo principio que el bug corregido en la Sesión 9). Metadatos y textos en
   `constants/priority.ts`, alineados con `contract.PRIORITY_RUBRIC` del backend.
 
+## Desvío deliberado del diseño: "Lo que identificamos" y "Qué podría estar pasando" (2026-10-04)
+
+El resultado de Stitch no tiene un bloque para las causas posibles: solo aparecían convertidas en
+preguntas dentro de "Preguntas para tu médico", y los síntomas detectados quedaban al fondo de la
+página, en la ficha para el médico. El frontend anterior a Stitch sí los mostraba, y sin ellos la
+orientación se sentía vacía. Se agregó una fila de dos tarjetas entre el hero y los pasos, con las
+mismas clases de tarjeta, iconos y tipografía del diseño:
+
+- **Lo que identificamos:** síntomas detectados como chips y las señales de riesgo del relato.
+- **Qué podría estar pasando:** las causas en formato "nombre + por qué encaja", rotuladas como
+  "Posibilidades, no diagnóstico".
+
+Además, el disclaimer de la recomendación ya no aparece como un paso más de la checklist de "Qué hacer
+mientras tanto": se muestra debajo, como aviso. El parseo vive en `src/lib/triageText.ts`. No aplica
+en EMERGENCIA, donde la pantalla prioriza el panel de urgencias.
+
 ## Copy que se reescribió (y por qué)
 
 La regla fue: **la visual se adopta tal cual; el texto no puede afirmar cosas que el producto no

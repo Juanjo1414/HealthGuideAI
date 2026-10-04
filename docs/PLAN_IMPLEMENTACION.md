@@ -745,6 +745,15 @@ Se reemplazó por `nemotron-3.5-lightning-30b-a3b` (sin thinking, en modo JSON),
 de evals: seguridad 100%, adversarial 12/12, accuracy 80% justo en el umbral. El modelo pasó a ser
 configuración (`NVIDIA_MODEL`). Detalle en `DECISION_LOG.md` (decisión 6) y `evals/results.md`.
 
+## Ajuste 2026-10-04 — Orientación concreta en el resultado ✅
+
+Con el modelo de reemplazo, la orientación quedó vaga. Ahora el prompt trae una guía de contenido
+(`contract.CONTENT_GUIDE`) y ejemplos más ricos: causas con su porqué, plazo, autocuidado sin
+medicamentos y señales concretas. El resultado suma las tarjetas "Lo que identificamos" y "Qué podría
+estar pasando" (`docs/DESIGN_STITCH.md`). El gate sigue en verde y los errores de prioridad quedaron
+todos del lado seguro. Pendiente: que Cristian valide qué tan específicas pueden ser las causas
+posibles.
+
 ## Sesión 14 — Despliegue público y merge a `main`
 
 **Bloqueante:** no desplegar sin las Sesiones 5 (seguridad de app), 8 (blindaje del modelo) y 12
