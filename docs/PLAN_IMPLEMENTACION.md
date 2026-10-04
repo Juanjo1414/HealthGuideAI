@@ -748,11 +748,18 @@ configuración (`NVIDIA_MODEL`). Detalle en `DECISION_LOG.md` (decisión 6) y `e
 ## Ajuste 2026-10-04 — Orientación concreta en el resultado ✅
 
 Con el modelo de reemplazo, la orientación quedó vaga. Ahora el prompt trae una guía de contenido
-(`contract.CONTENT_GUIDE`) y ejemplos más ricos: causas con su porqué, plazo, autocuidado sin
-medicamentos y señales concretas. El resultado suma las tarjetas "Lo que identificamos" y "Qué podría
-estar pasando" (`docs/DESIGN_STITCH.md`). El gate sigue en verde y los errores de prioridad quedaron
-todos del lado seguro. Pendiente: que Cristian valide qué tan específicas pueden ser las causas
-posibles.
+(`contract.CONTENT_GUIDE`) y ejemplos más ricos:
+- causas como **categorías generales** con su porqué, nunca enfermedades con nombre;
+- plazo para consultar;
+- autocuidado, con "tratamiento" definido para que no derive en productos de farmacia;
+- señales concretas para consultar antes.
+
+Además, una red en código descarta las causas que nombran una enfermedad
+(`orchestration/cause_filter.py`). El resultado suma las tarjetas "Lo que identificamos" y "Qué
+podría estar pasando" (`docs/DESIGN_STITCH.md`). El gate sigue en verde (80%) y su reporte ahora
+guarda el detalle por caso.
+
+Pendiente: que Cristian valide el nivel de especificidad de las causas y los ejemplos few-shot.
 
 ## Sesión 14 — Despliegue público y merge a `main`
 

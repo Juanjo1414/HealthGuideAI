@@ -73,8 +73,9 @@ orientación se sentía vacía. Se agregó una fila de dos tarjetas entre el her
 mismas clases de tarjeta, iconos y tipografía del diseño:
 
 - **Lo que identificamos:** síntomas detectados como chips y las señales de riesgo del relato.
-- **Qué podría estar pasando:** las causas en formato "nombre + por qué encaja", rotuladas como
-  "Posibilidades, no diagnóstico".
+- **Qué podría estar pasando:** las causas en formato "categoría general + por qué encaja",
+  rotuladas como "Posibilidades, no diagnóstico". Nunca enfermedades con nombre: lo pide el prompt y
+  lo asegura `backend/app/orchestration/cause_filter.py`.
 
 Además, el disclaimer de la recomendación ya no aparece como un paso más de la checklist de "Qué hacer
 mientras tanto": se muestra debajo, como aviso. El parseo vive en `src/lib/triageText.ts`. No aplica
