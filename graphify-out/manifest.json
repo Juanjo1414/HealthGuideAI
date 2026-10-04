@@ -300,9 +300,9 @@
     "semantic_hash": ""
   },
   "backend/tests/test_security_headers.py": {
-    "mtime": 1790608670.7436452,
-    "seen": 1790898527.1483028,
-    "ast_hash": "cd722f979fa08c0cb5d6b72e7fbfac75",
+    "mtime": 1791087276.9085763,
+    "seen": 1791087384.5575032,
+    "ast_hash": "cebfe35ee1ac4ddefe0f9d1c95dca871",
     "semantic_hash": ""
   },
   "backend/tests/test_security_validator.py": {
