@@ -3,7 +3,7 @@
 # en su propio PR. openai 3.x se verificó contra un servidor que imita a NVIDIA:
 # misma petición (max_tokens, extra_body) y misma lectura de la respuesta.
 fastapi>=0.115,<1
-uvicorn[standard]>=0.34,<1
+uvicorn[standard]>=0.54.0,<1
 pydantic>=2.9,<3
 python-dotenv>=1.0,<2
 openai>=1.50,<4
