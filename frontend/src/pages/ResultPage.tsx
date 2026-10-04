@@ -9,6 +9,7 @@ import { getPriorityMeta } from "../constants/priority";
 import { useAuth } from "../context/AuthContext";
 import type { TriageResponse } from "../api/types";
 import GoogleIcon from "../components/GoogleIcon";
+import { splitCause, splitRecommendation } from "../lib/triageText";
 
 export interface ResultState {
   result: TriageResponse;
@@ -25,13 +26,6 @@ const GENERIC_RED_FLAGS: [string, string][] = [
   ["Dificultad súbita para respirar", "falta de aire en reposo o incapacidad para decir frases completas."],
   ["Signos neurológicos", "pérdida de fuerza en un lado del cuerpo, cara caída, dificultad para hablar o pérdida de conciencia."],
 ];
-
-function splitSentences(text: string): string[] {
-  return text
-    .split(/(?<=[.!?])\s+/)
-    .map((s) => s.trim())
-    .filter(Boolean);
-}
 
 function copy(text: string, ok = "Copiado.") {
   navigator.clipboard
@@ -68,9 +62,10 @@ export default function ResultPage() {
   const folio = result.request_id.replace(/-/g, "").slice(0, 8).toUpperCase();
   const time = new Intl.DateTimeFormat("es-ES", { hour: "2-digit", minute: "2-digit" }).format(state.submittedAt);
 
-  const selfCare = splitSentences(result.recomendacion);
+  const { steps: selfCare, disclaimer } = splitRecommendation(result.recomendacion);
+  const causes = result.posibles_causas.map(splitCause);
   const doctorQuestions = [
-    ...result.posibles_causas.slice(0, 2).map((cause) => `¿Podría lo que siento estar relacionado con ${cause.toLowerCase()}?`),
+    ...causes.slice(0, 2).map(({ name }) => `¿Podría lo que siento estar relacionado con ${name.toLowerCase()}?`),
     "¿Qué signos de evolución desfavorable deberían motivar una reevaluación o ir a urgencias?",
     "¿Necesito algún estudio o control adicional según cómo evolucionen mis síntomas?",
   ];
@@ -209,6 +204,72 @@ export default function ResultPage() {
           </div>
         )}
 
+        {!isEmergency && (
+          <section aria-labelledby="caso-titulo" className="grid grid-cols-1 lg:grid-cols-5 gap-space-lg">
+            <div className="lg:col-span-2 bg-surface-container-lowest rounded-2xl p-space-md md:p-space-lg shadow-md">
+              <div className="flex items-center gap-space-sm">
+                <div className="w-12 h-12 rounded-xl bg-primary/10 text-primary flex items-center justify-center flex-shrink-0">
+                  <span aria-hidden="true" className="material-symbols-outlined icon-filled text-headline-sm">psychology</span>
+                </div>
+                <div>
+                  <span className="font-label-sm text-label-sm text-primary uppercase tracking-wider font-bold">Tu caso</span>
+                  <h2 id="caso-titulo" className="font-headline-sm text-headline-sm text-on-surface">Lo que identificamos</h2>
+                </div>
+              </div>
+              <p className="mt-space-md font-body-sm text-body-sm text-on-surface-variant">Síntomas que reconocimos en tu descripción:</p>
+              {result.sintomas_detectados.length ? (
+                <ul aria-label="Síntomas detectados" className="mt-space-sm flex flex-wrap gap-space-xs">
+                  {result.sintomas_detectados.map((sintoma) => (
+                    <li key={sintoma} className="px-space-sm py-1 bg-surface-container text-on-surface rounded-full font-label-md text-label-md">
+                      {sintoma}
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="mt-space-sm font-body-sm text-body-sm text-on-surface">No identificamos síntomas específicos.</p>
+              )}
+              {result.alertas.length > 0 && (
+                <div className="mt-space-md p-space-sm bg-error-container/30 rounded-xl">
+                  <span className="font-label-sm text-label-sm text-error uppercase font-bold">Señales a tener en cuenta</span>
+                  <ul className="mt-1 space-y-1">
+                    {result.alertas.map((alerta) => (
+                      <li key={alerta} className="font-body-sm text-body-sm text-on-surface">{alerta}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+            <div className="lg:col-span-3 bg-surface-container-lowest rounded-2xl p-space-md md:p-space-lg shadow-md">
+              <div className="flex items-center gap-space-sm">
+                <div className="w-12 h-12 rounded-xl bg-tertiary/10 text-tertiary flex items-center justify-center flex-shrink-0">
+                  <span aria-hidden="true" className="material-symbols-outlined icon-filled text-headline-sm">lightbulb</span>
+                </div>
+                <div>
+                  <span className="font-label-sm text-label-sm text-tertiary uppercase tracking-wider font-bold">Posibilidades, no diagnóstico</span>
+                  <h2 className="font-headline-sm text-headline-sm text-on-surface">Qué podría estar pasando</h2>
+                </div>
+              </div>
+              {causes.length ? (
+                <ol className="mt-space-md space-y-space-sm">
+                  {causes.map(({ name, reason }) => (
+                    <li key={name} className="p-space-sm bg-surface-container-low rounded-xl">
+                      <p className="font-label-md text-label-md text-on-surface first-letter:uppercase">{name}</p>
+                      {reason && <p className="font-body-sm text-body-sm text-on-surface-variant mt-0.5 first-letter:uppercase">{reason}</p>}
+                    </li>
+                  ))}
+                </ol>
+              ) : (
+                <p className="mt-space-md font-body-sm text-body-sm text-on-surface">
+                  Con lo que describiste no es posible sugerir causas concretas. Agregar más detalle ayuda a orientarte mejor.
+                </p>
+              )}
+              <p className="mt-space-md font-body-sm text-body-sm text-on-surface-variant">
+                Son orientativas: solo un profesional de la salud puede confirmar qué está pasando.
+              </p>
+            </div>
+          </section>
+        )}
+
         {needsMoreInfo && <VagueInputPanel originalText={symptoms} onResubmit={reevaluate} isLoading={reevaluating} />}
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-space-lg">
@@ -237,6 +298,9 @@ export default function ResultPage() {
               <span aria-hidden="true" className="material-symbols-outlined text-tertiary text-[18px]">info</span>
               <span>Aviso: no te automediques. Ningún medicamento debe tomarse sin indicación médica.</span>
             </div>
+            {disclaimer.length > 0 && (
+              <p className="mt-space-sm font-body-sm text-body-sm text-on-surface-variant italic">{disclaimer.join(" ")}</p>
+            )}
           </div>
 
           <div className="flex flex-col justify-between bg-surface-container-lowest rounded-2xl p-space-md md:p-space-lg shadow-md hover:shadow-xl transition-shadow">
