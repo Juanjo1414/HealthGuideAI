@@ -1,7 +1,7 @@
 # Graph Report - HealthGuideAI  (2026-10-04)
 
 ## Corpus Check
-- 158 files · ~212,671 words
+- 158 files · ~212,775 words
 - Verdict: corpus is large enough that graph structure adds value.
 - Unclassified: 24 file(s) not represented in the graph (top: (none) 8, .csv 4, .example 2)
 
@@ -11,7 +11,7 @@
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `7b09d85f`
+- Built from commit: `f865ec3d`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -105,8 +105,8 @@
 4. `ProfilePage()` - 26 edges
 5. `EvidenceStore` - 25 edges
 6. `useAuth()` - 25 edges
-7. `UserStore` - 22 edges
-8. `KnowledgeRetriever` - 22 edges
+7. `KnowledgeRetriever` - 22 edges
+8. `UserStore` - 22 edges
 9. `Settings` - 21 edges
 10. `Diagrama de Arquitectura — HealthGuideAI` - 20 edges
 
@@ -380,7 +380,7 @@ Cohesion: 0.23
 Nodes (11): drop_named_disease_causes(), names_specific_disease(), _normalize(), Red determinista para `posibles_causas` (2026-10-04). CLAUDE.md seccion 2…, Devuelve la lista sin las causas que nombran una enfermedad. Si no es una…, Red determinista de posibles_causas: categorias generales si, enfermedades con…, gripal' no es 'gripe': se compara por palabra completa., test_detects_named_diseases_with_or_without_accents() (+3 more)
 
 ## Knowledge Gaps
-- **179 isolated node(s):** `Detalle por caso`, `Dónde consultar el diseño original`, `Cómo se portó (para quien toque el frontend después)`, `Desvío deliberado del diseño: "Lo que identificamos" y "Qué podría estar pasando" (2026-10-04)`, `Copy que se reescribió (y por qué)` (+174 more)
+- **179 isolated node(s):** `AuthStatus`, `AuthRequestOptions`, `Tab`, `ValidationSummary`, `PriorityMeta` (+174 more)
   These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 487 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
 - **24 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
@@ -388,16 +388,16 @@ Nodes (11): drop_named_disease_causes(), names_specific_disease(), _normalize(),
 _Questions this graph is uniquely positioned to answer:_
 
 - **Why does `Decisión 4: alcance honesto de requiere_revision` connect `backend/README.md` to `Database`?**
-  _High betweenness centrality (0.396) - this node is a cross-community bridge._
+  _High betweenness centrality (0.393) - this node is a cross-community bridge._
 - **Why does `Diseño visual de Stitch — cómo se implementó y qué queda pendiente` connect `Diseño visual de Stitch — cómo se implementó y qué queda pendiente` to `backend/README.md`, `ProtocolPage.tsx`?**
-  _High betweenness centrality (0.324) - this node is a cross-community bridge._
+  _High betweenness centrality (0.331) - this node is a cross-community bridge._
 - **Why does `Mapeo pantalla de Stitch → ruta` connect `ProtocolPage.tsx` to `Diseño visual de Stitch — cómo se implementó y qué queda pendiente`?**
-  _High betweenness centrality (0.320) - this node is a cross-community bridge._
+  _High betweenness centrality (0.328) - this node is a cross-community bridge._
 - **Are the 6 inferred relationships involving `Database` (e.g. with `_check_postgres()` and `readiness()`) actually correct?**
   _`Database` has 6 INFERRED edges - model-reasoned connections that need verification._
 - **Are the 3 inferred relationships involving `EvidenceStore` (e.g. with `create_triage()` and `delete_triage_history()`) actually correct?**
   _`EvidenceStore` has 3 INFERRED edges - model-reasoned connections that need verification._
-- **What connects `Detalle por caso`, `Dónde consultar el diseño original`, `Cómo se portó (para quien toque el frontend después)` to the rest of the system?**
+- **What connects `AuthStatus`, `AuthRequestOptions`, `Tab` to the rest of the system?**
   _179 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `test_api.py` be split into smaller, more focused modules?**
   _Cohesion score 0.10984848484848485 - nodes in this community are weakly interconnected._
