@@ -16,7 +16,9 @@ dividido en sesiones de trabajo, en [`docs/PLAN_IMPLEMENTACION.md`](docs/PLAN_IM
 
 **Web app funcional**: backend (FastAPI) + frontend (React) — ver "Como correr la web app"
 más abajo. El backend expone `POST /api/triage`, reutiliza el mismo validador de seguridad y
-el mismo modelo (NVIDIA nemotron-3-super-120b-a12b) que ya se había probado en el notebook.
+el modelo de NVIDIA `nemotron-3.5-lightning-30b-a3b`. El notebook usaba `nemotron-3-super-120b-a12b`,
+que NVIDIA dio de baja el 2026-10-03; el reemplazo pasó el gate de evals (ver `DECISION_LOG.md`,
+decisión 6).
 
 El notebook original, `HealthGuideAI_Nvidia.ipynb`, se conserva intacto como evidencia de las
 corridas de evals ya documentadas — no se reescribe ni se re-ejecuta al mismo tiempo que se

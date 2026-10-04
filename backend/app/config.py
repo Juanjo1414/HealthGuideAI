@@ -22,7 +22,11 @@ load_dotenv(REPO_ROOT / ".env")
 class Settings:
     nvidia_api_key: str | None = None
     nvidia_base_url: str = "https://integrate.api.nvidia.com/v1"
-    nvidia_model: str = "nvidia/nemotron-3-super-120b-a12b"
+    # nemotron-3-super-120b-a12b fue dado de baja por NVIDIA el 2026-10-03
+    # (410 Gone). El reemplazo se eligio con el gate de evals, ver
+    # evals/results.md y DECISION_LOG.md (decision 6).
+    nvidia_model: str = "nvidia/nemotron-3.5-lightning-30b-a3b"
+    nvidia_enable_thinking: bool = False
     nvidia_timeout_seconds: float = 30.0
     # Sesion 7: estaba en 0 a proposito en sesiones anteriores, pero las
     # corridas reales de evals (Sesion 6, evals/results.md) mostraron 503
@@ -108,6 +112,9 @@ def get_settings() -> Settings:
     return Settings(
         **settings_kwargs,
         nvidia_api_key=os.getenv("NVIDIA_API_KEY") or None,
+        nvidia_model=(os.getenv("NVIDIA_MODEL") or "").strip() or Settings.nvidia_model,
+        nvidia_enable_thinking=os.getenv("NVIDIA_ENABLE_THINKING", "false").lower()
+        in {"1", "true", "yes"},
         nvidia_timeout_seconds=float(os.getenv("NVIDIA_TIMEOUT_SECONDS", "30")),
         nvidia_max_retries=int(os.getenv("NVIDIA_MAX_RETRIES", "2")),
         evidence_include_sensitive_payloads=os.getenv(

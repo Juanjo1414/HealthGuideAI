@@ -1,0 +1,103 @@
+"""El modelo y el modo de razonamiento salen de la config (NVIDIA dio de baja
+nemotron-3-super el 2026-10-03 y cambiar de modelo no debe requerir tocar código)."""
+
+from dataclasses import replace
+from types import SimpleNamespace
+
+import pytest
+from fastapi import HTTPException
+
+from backend.app.api.dependencies import get_triage_orchestrator
+from backend.app.config import Settings, get_settings
+from backend.app.providers.base import ModelProviderError
+from backend.app.providers.nvidia_provider import NvidiaProvider
+
+
+def _capture_request(provider: NvidiaProvider, content: str | None = '{"prioridad": "BAJA"}') -> dict:
+    sent: dict = {}
+    completion = SimpleNamespace(
+        usage=None,
+        choices=[SimpleNamespace(message=SimpleNamespace(content=content))],
+    )
+
+    def create(**kwargs):
+        sent.update(kwargs)
+        return completion
+
+    provider._client = SimpleNamespace(chat=SimpleNamespace(completions=SimpleNamespace(create=create)))
+    provider.generate_json("sys", {}, max_tokens=100)
+    return sent
+
+
+def test_from_settings_uses_configured_model_and_thinking_mode():
+    settings = replace(Settings(), nvidia_api_key="k", nvidia_model="nvidia/otro", nvidia_enable_thinking=True)
+
+    sent = _capture_request(NvidiaProvider.from_settings(settings))
+
+    assert sent["model"] == "nvidia/otro"
+    assert sent["extra_body"] == {"chat_template_kwargs": {"enable_thinking": True}}
+
+
+def test_reasoning_budget_is_never_sent():
+    """nemotron-3-ultra responde 400 si llega `reasoning_budget`."""
+    sent = _capture_request(NvidiaProvider.from_settings(replace(Settings(), nvidia_api_key="k")))
+
+    assert "reasoning_budget" not in sent["extra_body"]
+    assert sent["extra_body"]["chat_template_kwargs"]["enable_thinking"] is False
+
+
+def test_from_settings_without_api_key_fails_loudly():
+    with pytest.raises(ValueError):
+        NvidiaProvider.from_settings(Settings())
+
+
+def test_model_and_thinking_come_from_env(monkeypatch):
+    monkeypatch.setenv("NVIDIA_MODEL", "nvidia/desde-env")
+    monkeypatch.setenv("NVIDIA_ENABLE_THINKING", "true")
+
+    settings = get_settings()
+
+    assert settings.nvidia_model == "nvidia/desde-env"
+    assert settings.nvidia_enable_thinking is True
+
+
+def test_default_model_is_not_the_retired_one(monkeypatch):
+    monkeypatch.delenv("NVIDIA_MODEL", raising=False)
+
+    assert get_settings().nvidia_model != "nvidia/nemotron-3-super-120b-a12b"
+
+
+def test_requests_json_mode():
+    """El contrato de salida es JSON: se le pide al endpoint en modo JSON en vez
+    de confiar en que el modelo no conteste en texto plano."""
+    sent = _capture_request(NvidiaProvider.from_settings(replace(Settings(), nvidia_api_key="k")))
+
+    assert sent["response_format"] == {"type": "json_object"}
+
+
+@pytest.mark.parametrize("content", [None, "", "No puedo cumplir con esta solicitud."])
+def test_empty_or_plain_text_answer_is_a_provider_error(content):
+    """Lightning con thinking devolvía contenido vacío, y sin modo JSON a veces
+    texto plano: tiene que ser ModelProviderError (502 controlado), no un
+    JSONDecodeError suelto."""
+    provider = NvidiaProvider.from_settings(replace(Settings(), nvidia_api_key="k"))
+
+    with pytest.raises(ModelProviderError):
+        _capture_request(provider, content=content)
+
+
+def test_blank_model_env_falls_back_to_default(monkeypatch):
+    monkeypatch.setenv("NVIDIA_MODEL", "   ")
+
+    assert get_settings().nvidia_model == Settings.nvidia_model
+
+
+def test_triage_without_api_key_is_503(monkeypatch):
+    monkeypatch.delenv("NVIDIA_API_KEY", raising=False)
+    get_triage_orchestrator.cache_clear()
+    try:
+        with pytest.raises(HTTPException) as exc:
+            get_triage_orchestrator()
+        assert exc.value.status_code == 503
+    finally:
+        get_triage_orchestrator.cache_clear()
