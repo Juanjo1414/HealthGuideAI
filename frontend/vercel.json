@@ -7,7 +7,7 @@
     { "source": "/api/:path*", "destination": "https://healthguideai-api.onrender.com/api/:path*" },
     { "source": "/health", "destination": "https://healthguideai-api.onrender.com/health" },
     { "source": "/ready", "destination": "https://healthguideai-api.onrender.com/ready" },
-    { "source": "/(.*)", "destination": "/index.html" }
+    { "source": "/((?!assets/).*)", "destination": "/index.html" }
   ],
   "headers": [
     {

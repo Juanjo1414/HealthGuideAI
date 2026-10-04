@@ -77,3 +77,22 @@ def test_redis_rate_limiter_shares_state_across_instances():
     assert limiter_en_instancia_b.check(key) is False
 
     client.delete(f"ratelimit:{key}")
+
+
+def test_triage_limit_is_per_client_behind_a_proxy(db, monkeypatch):
+    """Mismo arreglo que login: detrás de un proxy, cada cliente su propio bucket."""
+    monkeypatch.setenv("TRUSTED_PROXY_HOPS", "1")
+    store = EvidenceStore(db)
+    app.dependency_overrides[get_triage_orchestrator] = lambda: StubOrchestrator(model_output())
+    app.dependency_overrides[get_evidence_store] = lambda: store
+    limiter = InMemoryRateLimiter(max_requests=1, window_seconds=60)
+    app.dependency_overrides[get_rate_limiter] = lambda: limiter
+    client = TestClient(app)
+    payload = {"symptoms_text": "Tengo un sintoma cualquiera desde ayer."}
+
+    client.post("/api/triage", json=payload, headers={"X-Forwarded-For": "200.1.1.1"})
+    blocked = client.post("/api/triage", json=payload, headers={"X-Forwarded-For": "200.1.1.1"})
+    other = client.post("/api/triage", json=payload, headers={"X-Forwarded-For": "200.2.2.2"})
+
+    assert blocked.status_code == 429
+    assert other.status_code == 200

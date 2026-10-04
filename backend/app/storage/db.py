@@ -89,6 +89,12 @@ class Database:
             except (psycopg2.OperationalError, psycopg2.InterfaceError):
                 self._last_used.pop(id(conn), None)
                 self._pool.putconn(conn, close=True)
+            except Exception:
+                # Cualquier otro error del ping: la conexión vuelve al pool
+                # igual, o 5 fallas así lo agotarían.
+                self._last_used.pop(id(conn), None)
+                self._pool.putconn(conn, close=True)
+                raise
         raise psycopg2.OperationalError("No se pudo obtener una conexión válida a Postgres.")
 
     @contextmanager
@@ -105,6 +111,10 @@ class Database:
         finally:
             self._last_used[id(conn)] = time.monotonic()
             self._pool.putconn(conn, close=bool(conn.closed))
+            # El pool cierra las conexiones que sobran al devolverlas: sin
+            # esto el registro de uso crecería con conexiones que ya no existen.
+            if conn.closed:
+                self._last_used.pop(id(conn), None)
 
     def execute(self, query: str, params: tuple = ()) -> None:
         with self._cursor() as cur:

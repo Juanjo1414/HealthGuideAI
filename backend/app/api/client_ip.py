@@ -14,12 +14,15 @@ se tomara la primera entrada, cualquiera podría inventarse una IP nueva por
 request y saltarse el límite.
 
 - Directo al backend (desarrollo, tests): 0 saltos, se usa la IP del socket.
-- Detrás de `gateway/nginx.conf`: 1 salto.
+- Detrás de `gateway/nginx.conf`: 1 salto. compose no lo fija a propósito: el
+  puerto 8000 del backend también está publicado y ahí el header es libre.
 - Vercel → Render: 2 saltos (Vercel y el balanceador de Render). Se verifica
   en la prueba de humo del despliegue, ver docs/DESPLIEGUE.md.
 """
 
 from __future__ import annotations
+
+import ipaddress
 
 from fastapi import Request
 
@@ -36,4 +39,10 @@ def client_ip(request: Request) -> str:
         # Llegó por menos proxies de los esperados (alguien le habla directo
         # al backend): no hay de dónde sacar una IP confiable más que el socket.
         return socket_ip
-    return chain[-hops]
+    candidate = chain[-hops]
+    # Solo una IP válida: sin esto, quien le hable directo al backend puede
+    # mandar strings de varios KB que terminan como claves de Redis y lo llenan.
+    try:
+        return str(ipaddress.ip_address(candidate))
+    except ValueError:
+        return socket_ip
