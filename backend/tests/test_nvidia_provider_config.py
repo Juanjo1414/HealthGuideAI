@@ -5,16 +5,19 @@ from dataclasses import replace
 from types import SimpleNamespace
 
 import pytest
+from fastapi import HTTPException
 
+from backend.app.api.dependencies import get_triage_orchestrator
 from backend.app.config import Settings, get_settings
+from backend.app.providers.base import ModelProviderError
 from backend.app.providers.nvidia_provider import NvidiaProvider
 
 
-def _capture_request(provider: NvidiaProvider) -> dict:
+def _capture_request(provider: NvidiaProvider, content: str | None = '{"prioridad": "BAJA"}') -> dict:
     sent: dict = {}
     completion = SimpleNamespace(
         usage=None,
-        choices=[SimpleNamespace(message=SimpleNamespace(content='{"prioridad": "BAJA"}'))],
+        choices=[SimpleNamespace(message=SimpleNamespace(content=content))],
     )
 
     def create(**kwargs):
@@ -70,3 +73,31 @@ def test_requests_json_mode():
     sent = _capture_request(NvidiaProvider.from_settings(replace(Settings(), nvidia_api_key="k")))
 
     assert sent["response_format"] == {"type": "json_object"}
+
+
+@pytest.mark.parametrize("content", [None, "", "No puedo cumplir con esta solicitud."])
+def test_empty_or_plain_text_answer_is_a_provider_error(content):
+    """Lightning con thinking devolvía contenido vacío, y sin modo JSON a veces
+    texto plano: tiene que ser ModelProviderError (502 controlado), no un
+    JSONDecodeError suelto."""
+    provider = NvidiaProvider.from_settings(replace(Settings(), nvidia_api_key="k"))
+
+    with pytest.raises(ModelProviderError):
+        _capture_request(provider, content=content)
+
+
+def test_blank_model_env_falls_back_to_default(monkeypatch):
+    monkeypatch.setenv("NVIDIA_MODEL", "   ")
+
+    assert get_settings().nvidia_model == Settings.nvidia_model
+
+
+def test_triage_without_api_key_is_503(monkeypatch):
+    monkeypatch.delenv("NVIDIA_API_KEY", raising=False)
+    get_triage_orchestrator.cache_clear()
+    try:
+        with pytest.raises(HTTPException) as exc:
+            get_triage_orchestrator()
+        assert exc.value.status_code == 503
+    finally:
+        get_triage_orchestrator.cache_clear()
