@@ -5,7 +5,7 @@
 # relativa a la raiz del repo — si el contexto fuera solo backend/, evals/
 # nunca llegaria a la imagen y el import fallaria al arrancar.
 
-FROM python:3.13-slim
+FROM python:3.14-slim
 
 WORKDIR /app
 
