@@ -1,12 +1,26 @@
-import { useRef, useState, type FormEvent } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useEffect, useRef, useState, type FormEvent } from "react";
+import { Link, useLocation, useSearchParams } from "react-router-dom";
 import PageShell from "../components/layout/PageShell";
 import OfflinePanel from "../components/triage/OfflinePanel";
-import { requestTriage, TriageApiError } from "../api/triageApi";
+import TriageResultCard from "../components/triage/TriageResultCard";
+import ChatComposer from "../components/triage/ChatComposer";
+import { ChatApiError, createConversation, getConversation, sendAnonymousMessage, sendMessage } from "../api/chatApi";
 import { useAuth } from "../context/AuthContext";
 import { useSpeechDictation } from "../lib/useSpeechDictation";
+import { EMERGENCY_NUMBER } from "../constants/emergency";
+import type { AnonymousChatMessageResponse, ChatMessageOut, AnonymousChatTurn, ChatMessageResponse } from "../api/types";
 
 const MAX_LENGTH = 600;
+
+/** Clave de localStorage para la conversación anónima en curso (ver diseño triage-conversational-chat). */
+const ANONYMOUS_CHAT_STORAGE_KEY = "healthguide_anonymous_chat";
+
+/** Un turno de la conversación mostrada en pantalla, con o sin resultado estructurado. */
+interface TurnRecord {
+  role: "user" | "assistant";
+  content: string;
+  result?: AnonymousChatMessageResponse | ChatMessageResponse;
+}
 
 const DURATIONS = ["Hoy", "1 a 3 días", "+1 semana"] as const;
 type Duration = (typeof DURATIONS)[number];
@@ -79,10 +93,9 @@ const STEPS = [
 ];
 
 export default function HomePage() {
-  const navigate = useNavigate();
   const location = useLocation();
-  const { isAuthenticated } = useAuth();
-  // "Reevaluar" desde el resultado o el historial llega con el texto ya cargado.
+  const { isAuthenticated, status: authStatus } = useAuth();
+  // "Reevaluar" desde el historial llega con el texto ya cargado.
   const [text, setText] = useState(() =>
     ((location.state as { prefill?: string } | null)?.prefill ?? "").slice(0, MAX_LENGTH)
   );
@@ -94,26 +107,156 @@ export default function HomePage() {
     setText((prev) => `${prev}${prev && !prev.endsWith(" ") ? " " : ""}${transcript}`.slice(0, MAX_LENGTH))
   );
 
-  async function submit(symptoms: string) {
-    const trimmed = symptoms.trim();
-    if (!trimmed || status === "loading") return;
-    const payload = duration ? `${trimmed}. Duración: ${duration.toLowerCase()}.` : trimmed;
+  // Turnos de la conversación ya mostrados en pantalla. Vacío = todavía no
+  // se envió nada, se muestra el formulario de una sola pregunta de
+  // siempre; con contenido, se oculta el formulario y queda la tarjeta de
+  // resultado + el hilo de chat debajo (ver diseño triage-conversational-chat).
+  const [turns, setTurns] = useState<TurnRecord[]>([]);
+  // Solo aplica al flujo autenticado: se crea en el primer envío y se
+  // reutiliza para los turnos siguientes de la misma conversación.
+  const [conversationId, setConversationId] = useState<string | null>(null);
+  const [alreadyEmergency, setAlreadyEmergency] = useState(false);
+  const [isSending, setIsSending] = useState(false);
+  // Guarda el último texto enviado para poder reintentar tras un error de red
+  // sin que el usuario pierda lo que ya escribió.
+  const [lastAttempt, setLastAttempt] = useState<string | null>(null);
+
+  const [searchParams] = useSearchParams();
+  const [isLoadingExistingConversation, setIsLoadingExistingConversation] = useState(false);
+
+  // Si llega con `?conversationId=xxx` (desde "Mi Historial") y hay sesión,
+  // carga esa conversación completa y la muestra en el mismo formato de
+  // turnos + composer, permitiendo seguir escribiendo sin perder contexto.
+  useEffect(() => {
+    const existingId = searchParams.get("conversationId");
+    if (!existingId || authStatus === "loading" || !isAuthenticated) return;
+    let cancelled = false;
+    setIsLoadingExistingConversation(true);
+    getConversation(existingId)
+      .then((conversation) => {
+        if (cancelled) return;
+        setConversationId(conversation.id);
+        setAlreadyEmergency(conversation.locked_emergency);
+        setTurns(
+          conversation.messages.map((message: ChatMessageOut) => ({
+            role: message.role,
+            content: message.content,
+          }))
+        );
+      })
+      .catch(() => {
+        // Si falla la carga (conversación borrada, 404, etc.) simplemente
+        // se queda en el formulario normal, sin bloquear la pantalla.
+      })
+      .finally(() => {
+        if (!cancelled) setIsLoadingExistingConversation(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [authStatus, isAuthenticated]);
+
+  // Restaura la conversación anónima en curso al montar. Se espera a que
+  // AuthContext termine de resolver la sesión (status !== "loading") antes
+  // de decidir: si el usuario ya tiene sesión, se ignora cualquier resto
+  // anónimo viejo y se arranca en blanco.
+  useEffect(() => {
+    if (authStatus === "loading" || isAuthenticated) return;
+    try {
+      const raw = localStorage.getItem(ANONYMOUS_CHAT_STORAGE_KEY);
+      if (!raw) return;
+      const parsed = JSON.parse(raw) as { turns?: TurnRecord[]; alreadyEmergency?: boolean };
+      if (Array.isArray(parsed.turns) && parsed.turns.length > 0) {
+        setTurns(parsed.turns);
+        setAlreadyEmergency(Boolean(parsed.alreadyEmergency));
+      }
+    } catch {
+      // Clave corrupta: se ignora silenciosamente, el usuario simplemente
+      // arranca de cero.
+    }
+    // Solo se ejecuta cuando authStatus deja de ser "loading" (una vez).
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [authStatus]);
+
+  // Persiste la conversación anónima en curso. Si hay sesión, nunca se
+  // escribe a localStorage (no tiene sentido duplicar lo que ya guarda el
+  // backend, y evita mezclar datos de dos cuentas distintas en el navegador).
+  useEffect(() => {
+    if (authStatus === "loading" || isAuthenticated) return;
+    if (turns.length === 0) {
+      localStorage.removeItem(ANONYMOUS_CHAT_STORAGE_KEY);
+      return;
+    }
+    localStorage.setItem(ANONYMOUS_CHAT_STORAGE_KEY, JSON.stringify({ turns, alreadyEmergency }));
+  }, [turns, alreadyEmergency, authStatus, isAuthenticated]);
+
+  async function submit(symptomsText: string) {
+    const trimmed = symptomsText.trim();
+    if (!trimmed || isSending) return;
+    // La duración solo tiene sentido en el primer mensaje: ahí es donde
+    // existe el selector de "¿Desde cuándo?". En turnos siguientes el
+    // texto va tal cual lo escribió el usuario en el composer de chat.
+    const payload = turns.length === 0 && duration ? `${trimmed}. Duración: ${duration.toLowerCase()}.` : trimmed;
+
+    setIsSending(true);
     setStatus("loading");
     setErrorMessage("");
+    setLastAttempt(payload);
+    const userTurn: TurnRecord = { role: "user", content: payload };
+
     try {
-      const result = await requestTriage(payload);
-      navigate("/resultado", { state: { result, symptoms: payload, duration, submittedAt: Date.now() } });
+      if (isAuthenticated) {
+        let activeConversationId = conversationId;
+        if (!activeConversationId) {
+          const created = await createConversation();
+          activeConversationId = created.id;
+          setConversationId(activeConversationId);
+        }
+        const response = await sendMessage(activeConversationId, payload);
+        setTurns((prev) => [
+          ...prev,
+          userTurn,
+          { role: "assistant", content: `${response.resumen}\n\n${response.recomendacion}`, result: response },
+        ]);
+        if (response.prioridad === "EMERGENCIA") setAlreadyEmergency(true);
+      } else {
+        const historyForRequest: AnonymousChatTurn[] = turns.map(({ role, content }) => ({ role, content }));
+        const response = await sendAnonymousMessage(payload, historyForRequest, alreadyEmergency);
+        setTurns((prev) => [
+          ...prev,
+          userTurn,
+          { role: "assistant", content: `${response.resumen}\n\n${response.recomendacion}`, result: response },
+        ]);
+        if (response.prioridad === "EMERGENCIA") setAlreadyEmergency(true);
+      }
+      setStatus("idle");
+      setText("");
     } catch (error) {
-      if (error instanceof TriageApiError && error.status === 0) {
+      if (error instanceof ChatApiError && error.status === 0) {
         setStatus("offline");
         return;
       }
-      if (error instanceof TriageApiError && error.status >= 500) {
-        navigate("/500");
+      if (error instanceof ChatApiError && error.status === 409) {
+        setErrorMessage("Esta conversación llegó a su límite de mensajes. Para seguir, inicia una nueva evaluación.");
+        setStatus("error");
         return;
       }
-      setErrorMessage(error instanceof TriageApiError ? error.message : "Ocurrió un error inesperado. Intenta de nuevo.");
+      if (error instanceof ChatApiError && error.status === 429) {
+        setErrorMessage(error.message || "Demasiadas solicitudes, espera un momento.");
+        setStatus("error");
+        return;
+      }
+      // A diferencia del formulario de una sola pregunta de antes, acá NO
+      // se navega a /500 ante un error 5xx cuando ya hay turnos previos
+      // visibles: hacerlo perdería toda la conversación en curso. Se
+      // prefiere mostrar el error en línea y dejar que el usuario reintente.
+      setErrorMessage(
+        error instanceof ChatApiError ? error.message : "Ocurrió un error inesperado. Intenta de nuevo."
+      );
       setStatus("error");
+    } finally {
+      setIsSending(false);
     }
   }
 
@@ -122,12 +265,19 @@ export default function HomePage() {
     submit(text);
   }
 
+  function retryLastAttempt() {
+    if (lastAttempt) submit(lastAttempt);
+  }
+
   function focusForm() {
     textareaRef.current?.focus();
     textareaRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
   }
 
   const isLoading = status === "loading";
+  const firstUserTurn = turns[0];
+  const firstAssistantTurn = turns[1];
+  const followUpTurns = turns.slice(2);
 
   return (
     <PageShell>
@@ -159,157 +309,247 @@ export default function HomePage() {
               </p>
             </div>
 
-            <div className="w-full bg-surface-container-lowest rounded-3xl p-space-md md:p-space-lg lg:p-space-xl shadow-[0_12px_36px_-6px_rgba(15,81,68,0.08)] relative">
-              <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-secondary-fixed via-primary-container to-secondary rounded-t-3xl" />
-              <form className="flex flex-col gap-space-md" onSubmit={handleSubmit}>
-                <div className="flex items-center justify-between flex-wrap gap-space-xs">
-                  <label className="font-label-lg text-label-lg text-primary flex items-center gap-space-xs" htmlFor="symptom-input">
-                    <span aria-hidden="true" className="material-symbols-outlined text-secondary">edit_note</span>
-                    Describe tus síntomas en tus propias palabras
-                  </label>
-                  <span className="font-label-sm text-label-sm text-on-surface-variant" id="char-counter" aria-live="polite">
-                    {text.length} / {MAX_LENGTH} caracteres
-                  </span>
-                </div>
+            {isLoadingExistingConversation ? (
+              <div className="flex items-center justify-center py-space-xl" role="status" aria-live="polite">
+                <span aria-hidden="true" className="material-symbols-outlined animate-spin text-primary text-headline-md">
+                  progress_activity
+                </span>
+                <span className="ml-space-sm font-body-md text-body-md text-on-surface-variant">
+                  Cargando conversación…
+                </span>
+              </div>
+            ) : turns.length === 0 ? (
+              <div className="w-full bg-surface-container-lowest rounded-3xl p-space-md md:p-space-lg lg:p-space-xl shadow-[0_12px_36px_-6px_rgba(15,81,68,0.08)] relative">
+                <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-secondary-fixed via-primary-container to-secondary rounded-t-3xl" />
+                <form className="flex flex-col gap-space-md" onSubmit={handleSubmit}>
+                  <div className="flex items-center justify-between flex-wrap gap-space-xs">
+                    <label className="font-label-lg text-label-lg text-primary flex items-center gap-space-xs" htmlFor="symptom-input">
+                      <span aria-hidden="true" className="material-symbols-outlined text-secondary">edit_note</span>
+                      Describe tus síntomas en tus propias palabras
+                    </label>
+                    <span className="font-label-sm text-label-sm text-on-surface-variant" id="char-counter" aria-live="polite">
+                      {text.length} / {MAX_LENGTH} caracteres
+                    </span>
+                  </div>
 
-                <div className="relative w-full rounded-2xl bg-surface-container-low transition-all duration-200 focus-within:bg-surface-container-lowest focus-within:shadow-[0_0_0_3px_rgba(15,81,68,0.18)]">
-                  <textarea
-                    ref={textareaRef}
-                    aria-describedby="char-counter symptom-hint"
-                    className="w-full bg-transparent p-space-md md:p-space-lg font-body-lg text-body-lg text-on-surface placeholder:text-on-surface-variant/50 focus:outline-none resize-none leading-relaxed"
-                    id="symptom-input"
-                    maxLength={MAX_LENGTH}
-                    placeholder="Ejemplo: Llevo 2 días con dolor de cabeza punzante en el lado derecho, ligero mareo al levantarme y sin fiebre..."
-                    rows={4}
-                    value={text}
-                    onChange={(event) => setText(event.target.value)}
-                    disabled={isLoading}
-                  />
-                  <div className="flex items-center justify-between px-space-md pb-space-sm pt-space-xs text-on-surface-variant">
-                    <div className="flex items-center gap-space-xs text-on-surface-variant" id="symptom-hint">
-                      <span aria-hidden="true" className="material-symbols-outlined text-sm text-secondary">lock</span>
-                      <span className="font-label-sm text-label-sm">
-                        {isAuthenticated ? "Se guardará en tu historial privado" : "Sin cuenta, no guardamos tu texto"}
-                      </span>
-                    </div>
-                    {dictation.supported && (
-                      <button
-                        className={`inline-flex items-center gap-space-xs px-space-md py-1.5 rounded-full font-label-md text-label-md transition-colors ${
-                          dictation.listening
-                            ? "bg-error-container text-on-error-container"
-                            : "bg-surface-container text-on-surface hover:bg-surface-variant"
-                        }`}
-                        title="Dictar síntomas por voz"
-                        type="button"
-                        onClick={dictation.toggle}
-                        disabled={isLoading}
-                        aria-pressed={dictation.listening}
-                      >
-                        <span aria-hidden="true" className="material-symbols-outlined text-base text-primary">
-                          {dictation.listening ? "stop_circle" : "mic"}
+                  <div className="relative w-full rounded-2xl bg-surface-container-low transition-all duration-200 focus-within:bg-surface-container-lowest focus-within:shadow-[0_0_0_3px_rgba(15,81,68,0.18)]">
+                    <textarea
+                      ref={textareaRef}
+                      aria-describedby="char-counter symptom-hint"
+                      className="w-full bg-transparent p-space-md md:p-space-lg font-body-lg text-body-lg text-on-surface placeholder:text-on-surface-variant/50 focus:outline-none resize-none leading-relaxed"
+                      id="symptom-input"
+                      maxLength={MAX_LENGTH}
+                      placeholder="Ejemplo: Llevo 2 días con dolor de cabeza punzante en el lado derecho, ligero mareo al levantarme y sin fiebre..."
+                      rows={4}
+                      value={text}
+                      onChange={(event) => setText(event.target.value)}
+                      disabled={isLoading}
+                    />
+                    <div className="flex items-center justify-between px-space-md pb-space-sm pt-space-xs text-on-surface-variant">
+                      <div className="flex items-center gap-space-xs text-on-surface-variant" id="symptom-hint">
+                        <span aria-hidden="true" className="material-symbols-outlined text-sm text-secondary">lock</span>
+                        <span className="font-label-sm text-label-sm">
+                          {isAuthenticated ? "Se guardará en tu historial privado" : "Sin cuenta, no guardamos tu texto"}
                         </span>
-                        <span>{dictation.listening ? "Detener" : "Hablar"}</span>
-                      </button>
-                    )}
-                  </div>
-                </div>
-
-                <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-space-md pt-space-xs">
-                  <div className="flex flex-col sm:flex-row sm:items-center gap-space-xs sm:gap-space-sm">
-                    <span className="font-label-md text-label-md text-on-surface-variant flex items-center gap-1" id="duration-label">
-                      <span aria-hidden="true" className="material-symbols-outlined text-base">schedule</span>
-                      ¿Desde cuándo?
-                    </span>
-                    <div className="inline-flex p-1 bg-surface-container-low rounded-full gap-1" role="radiogroup" aria-labelledby="duration-label">
-                      {DURATIONS.map((option) => {
-                        const selected = duration === option;
-                        return (
-                          <button
-                            key={option}
-                            role="radio"
-                            aria-checked={selected}
-                            type="button"
-                            onClick={() => setDuration(selected ? null : option)}
-                            className={`px-space-md py-1.5 rounded-full font-label-md text-label-md transition-all ${
-                              selected
-                                ? "bg-surface-container-lowest text-primary shadow-sm"
-                                : "text-on-surface-variant hover:text-on-surface"
-                            }`}
-                          >
-                            {option}
-                          </button>
-                        );
-                      })}
+                      </div>
+                      {dictation.supported && (
+                        <button
+                          className={`inline-flex items-center gap-space-xs px-space-md py-1.5 rounded-full font-label-md text-label-md transition-colors ${
+                            dictation.listening
+                              ? "bg-error-container text-on-error-container"
+                              : "bg-surface-container text-on-surface hover:bg-surface-variant"
+                          }`}
+                          title="Dictar síntomas por voz"
+                          type="button"
+                          onClick={dictation.toggle}
+                          disabled={isLoading}
+                          aria-pressed={dictation.listening}
+                        >
+                          <span aria-hidden="true" className="material-symbols-outlined text-base text-primary">
+                            {dictation.listening ? "stop_circle" : "mic"}
+                          </span>
+                          <span>{dictation.listening ? "Detener" : "Hablar"}</span>
+                        </button>
+                      )}
                     </div>
                   </div>
-                  <button
-                    className="inline-flex items-center justify-center gap-space-sm px-space-xl py-3.5 rounded-full bg-primary-container text-on-primary font-headline-sm text-headline-sm hover:opacity-95 active:scale-[0.99] transition-all shadow-[0_8px_20px_rgba(15,81,68,0.22)] flex-shrink-0 disabled:opacity-50 disabled:pointer-events-none"
-                    type="submit"
-                    disabled={isLoading || !text.trim()}
+
+                  <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-space-md pt-space-xs">
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-space-xs sm:gap-space-sm">
+                      <span className="font-label-md text-label-md text-on-surface-variant flex items-center gap-1" id="duration-label">
+                        <span aria-hidden="true" className="material-symbols-outlined text-base">schedule</span>
+                        ¿Desde cuándo?
+                      </span>
+                      <div className="inline-flex p-1 bg-surface-container-low rounded-full gap-1" role="radiogroup" aria-labelledby="duration-label">
+                        {DURATIONS.map((option) => {
+                          const selected = duration === option;
+                          return (
+                            <button
+                              key={option}
+                              role="radio"
+                              aria-checked={selected}
+                              type="button"
+                              onClick={() => setDuration(selected ? null : option)}
+                              className={`px-space-md py-1.5 rounded-full font-label-md text-label-md transition-all ${
+                                selected
+                                  ? "bg-surface-container-lowest text-primary shadow-sm"
+                                  : "text-on-surface-variant hover:text-on-surface"
+                              }`}
+                            >
+                              {option}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                    <button
+                      className="inline-flex items-center justify-center gap-space-sm px-space-xl py-3.5 rounded-full bg-primary-container text-on-primary font-headline-sm text-headline-sm hover:opacity-95 active:scale-[0.99] transition-all shadow-[0_8px_20px_rgba(15,81,68,0.22)] flex-shrink-0 disabled:opacity-50 disabled:pointer-events-none"
+                      type="submit"
+                      disabled={isLoading || !text.trim()}
+                    >
+                      <span>{isLoading ? "Analizando…" : "Iniciar Evaluación de Síntomas"}</span>
+                      <span aria-hidden="true" className={`material-symbols-outlined text-headline-sm ${isLoading ? "animate-spin" : ""}`}>
+                        {isLoading ? "progress_activity" : "arrow_forward"}
+                      </span>
+                    </button>
+                  </div>
+
+                  <div className="pt-space-sm">
+                    <p className="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider mb-space-xs">
+                      O selecciona un motivo frecuente para autocompletar:
+                    </p>
+                    <div className="flex flex-wrap gap-space-xs">
+                      {QUICK_FILLS.map((chip) => (
+                        <button
+                          key={chip.label}
+                          type="button"
+                          disabled={isLoading}
+                          onClick={() => {
+                            setText(chip.text);
+                            textareaRef.current?.focus();
+                          }}
+                          className={
+                            chip.urgent
+                              ? "px-space-md py-space-xs bg-error-container text-on-error-container hover:bg-error hover:text-on-error rounded-full font-label-md text-label-md transition-colors flex items-center gap-1.5"
+                              : "px-space-md py-space-xs bg-surface-container-low hover:bg-secondary-fixed/20 text-on-surface hover:text-primary rounded-full font-label-md text-label-md transition-colors flex items-center gap-1.5"
+                          }
+                        >
+                          <span className={`w-1.5 h-1.5 rounded-full ${chip.urgent ? "bg-error animate-pulse motion-reduce:animate-none" : "bg-secondary"}`} />
+                          {chip.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </form>
+
+                {isLoading && (
+                  <div className="mt-space-md p-space-md bg-secondary-fixed/15 rounded-2xl" role="status" aria-live="polite">
+                    <div className="flex items-start gap-space-md">
+                      <div className="w-10 h-10 rounded-full bg-secondary-container text-on-secondary-container flex items-center justify-center flex-shrink-0">
+                        <span aria-hidden="true" className="material-symbols-outlined animate-spin">sync</span>
+                      </div>
+                      <div className="flex-1">
+                        <span className="font-label-lg text-label-lg text-primary">Analizando tus síntomas…</span>
+                        <p className="font-body-sm text-body-sm text-on-surface-variant mt-1">
+                          Revisando señales de alarma y clasificando la prioridad. Puede tardar hasta 35 segundos. Si tus
+                          síntomas son graves, no esperes: llama al {EMERGENCY_NUMBER}.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {status === "error" && (
+                  <div role="alert" className="mt-space-md p-space-md bg-error-container text-on-error-container rounded-2xl flex items-start gap-space-sm">
+                    <span aria-hidden="true" className="material-symbols-outlined">error</span>
+                    <p className="font-body-md text-body-md">{errorMessage}</p>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="w-full flex flex-col gap-space-lg">
+                {firstAssistantTurn && firstUserTurn && (
+                  firstAssistantTurn.result ? (
+                    <TriageResultCard result={firstAssistantTurn.result} symptoms={firstUserTurn.content} />
+                  ) : (
+                    // Conversación restaurada desde "Mi Historial": el backend solo
+                    // devuelve el texto del mensaje (ChatMessageOut), no los campos
+                    // estructurados que necesita TriageResultCard — se muestra como
+                    // un mensaje de chat más en vez de perder el primer turno.
+                    <div className="flex flex-col gap-space-sm bg-surface-container-lowest rounded-3xl p-space-md md:p-space-lg shadow-sm">
+                      <div className="max-w-[85%] self-end rounded-2xl px-space-md py-space-sm whitespace-pre-wrap font-body-md text-body-md bg-primary-container text-on-primary">
+                        {firstUserTurn.content}
+                      </div>
+                      <div className="max-w-[85%] self-start rounded-2xl px-space-md py-space-sm whitespace-pre-wrap font-body-md text-body-md bg-surface-container-low text-on-surface">
+                        {firstAssistantTurn.content}
+                      </div>
+                    </div>
+                  )
+                )}
+
+                {followUpTurns.length > 0 && (
+                  <div className="flex flex-col gap-space-sm bg-surface-container-lowest rounded-3xl p-space-md md:p-space-lg shadow-sm">
+                    {followUpTurns.map((turn, index) => {
+                      const isUser = turn.role === "user";
+                      return (
+                        <div
+                          key={index}
+                          className={`max-w-[85%] rounded-2xl px-space-md py-space-sm whitespace-pre-wrap font-body-md text-body-md ${
+                            isUser
+                              ? "self-end bg-primary-container text-on-primary"
+                              : "self-start bg-surface-container-low text-on-surface"
+                          }`}
+                        >
+                          {turn.content}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+
+                {alreadyEmergency && (
+                  <div
+                    role="alert"
+                    className="p-space-md bg-error-container text-on-error-container rounded-2xl flex items-center justify-between gap-space-md flex-wrap"
                   >
-                    <span>{isLoading ? "Analizando…" : "Iniciar Evaluación de Síntomas"}</span>
-                    <span aria-hidden="true" className={`material-symbols-outlined text-headline-sm ${isLoading ? "animate-spin" : ""}`}>
-                      {isLoading ? "progress_activity" : "arrow_forward"}
-                    </span>
-                  </button>
-                </div>
-
-                <div className="pt-space-sm">
-                  <p className="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider mb-space-xs">
-                    O selecciona un motivo frecuente para autocompletar:
-                  </p>
-                  <div className="flex flex-wrap gap-space-xs">
-                    {QUICK_FILLS.map((chip) => (
-                      <button
-                        key={chip.label}
-                        type="button"
-                        disabled={isLoading}
-                        onClick={() => {
-                          setText(chip.text);
-                          textareaRef.current?.focus();
-                        }}
-                        className={
-                          chip.urgent
-                            ? "px-space-md py-space-xs bg-error-container text-on-error-container hover:bg-error hover:text-on-error rounded-full font-label-md text-label-md transition-colors flex items-center gap-1.5"
-                            : "px-space-md py-space-xs bg-surface-container-low hover:bg-secondary-fixed/20 text-on-surface hover:text-primary rounded-full font-label-md text-label-md transition-colors flex items-center gap-1.5"
-                        }
-                      >
-                        <span className={`w-1.5 h-1.5 rounded-full ${chip.urgent ? "bg-error animate-pulse motion-reduce:animate-none" : "bg-secondary"}`} />
-                        {chip.label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              </form>
-
-              {isLoading && (
-                <div className="mt-space-md p-space-md bg-secondary-fixed/15 rounded-2xl" role="status" aria-live="polite">
-                  <div className="flex items-start gap-space-md">
-                    <div className="w-10 h-10 rounded-full bg-secondary-container text-on-secondary-container flex items-center justify-center flex-shrink-0">
-                      <span aria-hidden="true" className="material-symbols-outlined animate-spin">sync</span>
-                    </div>
-                    <div className="flex-1">
-                      <span className="font-label-lg text-label-lg text-primary">Analizando tus síntomas…</span>
-                      <p className="font-body-sm text-body-sm text-on-surface-variant mt-1">
-                        Revisando señales de alarma y clasificando la prioridad. Puede tardar hasta 35 segundos. Si tus
-                        síntomas son graves, no esperes: llama al 112 / 911.
+                    <div className="flex items-start gap-space-sm">
+                      <span aria-hidden="true" className="material-symbols-outlined">crisis_alert</span>
+                      <p className="font-body-md text-body-md">
+                        Esta conversación fue marcada como emergencia. Si tus síntomas son graves, no esperes: busca
+                        atención inmediata.
                       </p>
                     </div>
+                    <a
+                      className="inline-flex items-center justify-center gap-1.5 px-space-md py-2 rounded-full bg-error text-on-error font-label-md text-label-md shadow-sm hover:opacity-90 active:scale-95 transition-all flex-shrink-0"
+                      href={`tel:${EMERGENCY_NUMBER}`}
+                    >
+                      <span aria-hidden="true" className="material-symbols-outlined text-base">call</span>
+                      Llamar al {EMERGENCY_NUMBER}
+                    </a>
                   </div>
-                </div>
-              )}
+                )}
 
-              {status === "error" && (
-                <div role="alert" className="mt-space-md p-space-md bg-error-container text-on-error-container rounded-2xl flex items-start gap-space-sm">
-                  <span aria-hidden="true" className="material-symbols-outlined">error</span>
-                  <p className="font-body-md text-body-md">{errorMessage}</p>
-                </div>
-              )}
-            </div>
+                {status === "error" && (
+                  <div role="alert" className="p-space-md bg-error-container text-on-error-container rounded-2xl flex items-start gap-space-sm">
+                    <span aria-hidden="true" className="material-symbols-outlined">error</span>
+                    <p className="font-body-md text-body-md">{errorMessage}</p>
+                  </div>
+                )}
+
+                {status !== "offline" && (
+                  <ChatComposer
+                    onSend={submit}
+                    disabled={isLoading}
+                    isSending={isSending}
+                    placeholder="Sigue contándome cómo te sientes…"
+                  />
+                )}
+              </div>
+            )}
 
             {status === "offline" && (
               <div className="mt-space-lg">
-                <OfflinePanel onRetry={() => submit(text)} isRetrying={false} />
+                <OfflinePanel onRetry={turns.length === 0 ? () => submit(text) : retryLastAttempt} isRetrying={false} />
               </div>
             )}
 
@@ -330,13 +570,9 @@ export default function HomePage() {
                 </div>
               </div>
               <div className="flex items-center gap-space-xs flex-shrink-0 w-full md:w-auto">
-                <a className="flex-1 md:flex-none inline-flex items-center justify-center gap-1.5 px-space-md py-2.5 rounded-full bg-error text-on-error font-label-md text-label-md shadow-sm hover:opacity-90 active:scale-95 transition-all" href="tel:112">
+                <a className="flex-1 md:flex-none inline-flex items-center justify-center gap-1.5 px-space-md py-2.5 rounded-full bg-error text-on-error font-label-md text-label-md shadow-sm hover:opacity-90 active:scale-95 transition-all" href={`tel:${EMERGENCY_NUMBER}`}>
                   <span aria-hidden="true" className="material-symbols-outlined text-base">call</span>
-                  Llamar al 112 (EU)
-                </a>
-                <a className="flex-1 md:flex-none inline-flex items-center justify-center gap-1.5 px-space-md py-2.5 rounded-full bg-error-container text-on-error-container font-label-md text-label-md hover:bg-error hover:text-on-error active:scale-95 transition-all" href="tel:911">
-                  <span aria-hidden="true" className="material-symbols-outlined text-base">call</span>
-                  Llamar al 911 (América)
+                  Llamar al {EMERGENCY_NUMBER}
                 </a>
               </div>
             </div>

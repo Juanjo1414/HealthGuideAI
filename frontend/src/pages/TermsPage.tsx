@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import PageShell from "../components/layout/PageShell";
+import { EMERGENCY_NUMBER } from "../constants/emergency";
 
 const SECTIONS = [
   ["seccion-1", "1. Naturaleza no diagnóstica"],
@@ -124,9 +125,9 @@ export default function TermsPage() {
               <span>¿Tienes una urgencia?</span>
             </div>
             <p className="font-body-sm text-body-sm mb-4 leading-relaxed">No leas términos si presentas síntomas incapacitantes.</p>
-            <a className="w-full py-2.5 px-4 bg-error text-on-error rounded-full font-label-md text-label-md flex items-center justify-center gap-2 shadow-sm hover:opacity-90 transition-opacity" href="tel:112">
+            <a className="w-full py-2.5 px-4 bg-error text-on-error rounded-full font-label-md text-label-md flex items-center justify-center gap-2 shadow-sm hover:opacity-90 transition-opacity" href={`tel:${EMERGENCY_NUMBER}`}>
               <span aria-hidden="true" className="material-symbols-outlined text-sm">call</span>
-              <span>Llamada directa 112 / 911</span>
+              <span>Llamada directa {EMERGENCY_NUMBER}</span>
             </a>
           </div>
         </aside>
@@ -175,7 +176,7 @@ export default function TermsPage() {
                   <li>• Diagnóstico médico de una enfermedad específica.</li>
                   <li>• Cambios a tratamientos que ya tengas.</li>
                   <li>• Recetas, certificados o incapacidades.</li>
-                  <li>• Atención de emergencias: para eso, llama al 112 / 911 / 123.</li>
+                  <li>• Atención de emergencias: para eso, llama al {EMERGENCY_NUMBER}.</li>
                 </ul>
               </div>
             </div>
@@ -238,8 +239,7 @@ export default function TermsPage() {
                 <p className="font-label-md text-label-md">Si sospechas alguna de estas condiciones, deja de navegar y llama.</p>
               </div>
               <div className="flex gap-2 w-full sm:w-auto">
-                <a className="flex-1 sm:flex-none px-6 py-2.5 bg-error text-on-error rounded-full font-label-md text-label-md text-center shadow-md hover:opacity-90" href="tel:112">Llamar al 112</a>
-                <a className="flex-1 sm:flex-none px-6 py-2.5 bg-on-error-container text-on-primary rounded-full font-label-md text-label-md text-center shadow-md hover:opacity-90" href="tel:911">Llamar al 911</a>
+                <a className="flex-1 sm:flex-none px-6 py-2.5 bg-error text-on-error rounded-full font-label-md text-label-md text-center shadow-md hover:opacity-90" href={`tel:${EMERGENCY_NUMBER}`}>Llamar al {EMERGENCY_NUMBER}</a>
               </div>
             </div>
           </Article>

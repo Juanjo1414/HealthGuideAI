@@ -1,3 +1,5 @@
+import { EMERGENCY_NUMBER } from "../../constants/emergency";
+
 interface OfflinePanelProps {
   onRetry?: () => void;
   isRetrying?: boolean;
@@ -43,25 +45,15 @@ export default function OfflinePanel({ onRetry, isRetrying }: OfflinePanelProps)
           </p>
         </div>
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-space-md">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-space-md">
         <div className="p-space-md rounded-xl bg-surface-container flex flex-col justify-between gap-space-md">
           <div className="flex flex-col gap-space-xs">
             <span className="font-label-sm text-label-sm text-error uppercase font-bold">Riesgo vital inmediato</span>
-            <h4 className="font-headline-sm text-headline-sm text-on-surface">Emergencias sanitarias</h4>
+            <h4 className="font-headline-sm text-headline-sm text-on-surface">Línea única de emergencias</h4>
             <p className="font-body-sm text-body-sm text-on-surface-variant">Dolor en el pecho, dificultad para respirar, desmayo o accidentes graves.</p>
           </div>
-          <a className="w-full py-space-sm rounded-xl bg-error text-on-error font-label-md text-label-md text-center hover:opacity-90 transition-opacity" href="tel:112">
-            Llamar 112 / 911
-          </a>
-        </div>
-        <div className="p-space-md rounded-xl bg-surface-container flex flex-col justify-between gap-space-md">
-          <div className="flex flex-col gap-space-xs">
-            <span className="font-label-sm text-label-sm text-secondary uppercase font-bold">Colombia</span>
-            <h4 className="font-headline-sm text-headline-sm text-on-surface">Línea única de emergencias</h4>
-            <p className="font-body-sm text-body-sm text-on-surface-variant">Número único nacional de seguridad y emergencias.</p>
-          </div>
-          <a className="w-full py-space-sm rounded-xl bg-primary text-on-primary font-label-md text-label-md text-center hover:bg-primary-container transition-colors" href="tel:123">
-            Llamar 123
+          <a className="w-full py-space-sm rounded-xl bg-error text-on-error font-label-md text-label-md text-center hover:opacity-90 transition-opacity" href={`tel:${EMERGENCY_NUMBER}`}>
+            Llamar {EMERGENCY_NUMBER}
           </a>
         </div>
         <div className="p-space-md rounded-xl bg-surface-container flex flex-col justify-between gap-space-md">

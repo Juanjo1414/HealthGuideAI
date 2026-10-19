@@ -146,3 +146,28 @@ def enforce_auth_rate_limit(
             status_code=429,
             detail="Demasiados intentos. Espera un minuto antes de volver a intentar.",
         )
+
+
+@lru_cache
+def get_chat_rate_limiter() -> RateLimiter:
+    settings = get_settings()
+    return RedisRateLimiter(
+        get_redis_client(),
+        max_requests=settings.chat_rate_limit_max_requests,
+        window_seconds=settings.chat_rate_limit_window_seconds,
+    )
+
+
+def enforce_chat_rate_limit(
+    request: Request,
+    limiter: RateLimiter = Depends(get_chat_rate_limiter),
+) -> None:
+    """Freno de cuota para el chat conversacional, por IP. Misma mecánica que
+    enforce_rate_limit/enforce_auth_rate_limit, con su propio prefijo de
+    clave (`chat:`) para que no comparta cuota con triage ni con auth."""
+    client_key = f"chat:{client_ip(request)}"
+    if not limiter.check(client_key):
+        raise HTTPException(
+            status_code=429,
+            detail="Demasiados mensajes. Espera un momento antes de volver a intentar.",
+        )

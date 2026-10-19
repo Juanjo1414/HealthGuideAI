@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { EMERGENCY_NUMBER } from "../../constants/emergency";
 
 /** Footer de Stitch: aviso médico legal permanente + llamadas reales (CLAUDE.md sección 2). */
 export default function SiteFooter() {
@@ -14,21 +15,15 @@ export default function SiteFooter() {
             <p className="font-body-sm text-body-sm text-on-surface-variant leading-relaxed">
               HealthGuide AI orienta y clasifica la prioridad de atención médica. Puede equivocarse y nunca
               reemplaza el diagnóstico o criterio de un profesional de la salud. En caso de riesgo vital,
-              contacta a urgencias de inmediato marcando al 112 o 911.
+              contacta a urgencias de inmediato marcando al {EMERGENCY_NUMBER}.
             </p>
           </div>
           <div className="flex-shrink-0 flex items-center gap-space-sm">
             <a
               className="inline-flex items-center justify-center px-space-md py-space-xs bg-error text-on-error font-label-md text-label-md rounded-full shadow-[0_2px_8px_rgba(186,26,26,0.2)] hover:opacity-90 transition-opacity"
-              href="tel:911"
+              href={`tel:${EMERGENCY_NUMBER}`}
             >
-              Llamar 911
-            </a>
-            <a
-              className="inline-flex items-center justify-center px-space-md py-space-xs bg-error-container text-on-error-container font-label-md text-label-md rounded-full hover:bg-error hover:text-on-error transition-colors"
-              href="tel:112"
-            >
-              Llamar 112
+              Llamar {EMERGENCY_NUMBER}
             </a>
           </div>
         </div>

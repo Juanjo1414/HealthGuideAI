@@ -13,8 +13,10 @@ from fastapi import Cookie, Depends, HTTPException
 
 from ..auth.security import hash_password
 from ..config import get_settings
+from ..orchestration.chat_orchestrator import ChatOrchestrator
 from ..orchestration.triage_orchestrator import TriageOrchestrator
 from ..providers.nvidia_provider import NvidiaProvider
+from ..storage.conversation_store import ConversationStore
 from ..storage.db import Database
 from ..storage.evidence_store import EvidenceStore
 from ..storage.session_store import SessionStore
@@ -30,6 +32,22 @@ def get_triage_orchestrator() -> TriageOrchestrator:
             detail="El servicio de orientación no está configurado. Intenta más tarde.",
         )
     return TriageOrchestrator(NvidiaProvider.from_settings(settings))
+
+
+@lru_cache
+def get_chat_orchestrator() -> ChatOrchestrator:
+    settings = get_settings()
+    if not settings.nvidia_api_key:
+        raise HTTPException(
+            status_code=503,
+            detail="El servicio de orientación no está configurado. Intenta más tarde.",
+        )
+    return ChatOrchestrator(NvidiaProvider.from_settings(settings))
+
+
+@lru_cache
+def get_conversation_store() -> ConversationStore:
+    return ConversationStore(get_db())
 
 
 @lru_cache
