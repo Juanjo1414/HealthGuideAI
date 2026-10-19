@@ -1,5 +1,6 @@
 import { Link, NavLink } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
+import { EMERGENCY_NUMBER } from "../../constants/emergency";
 
 const navClass = ({ isActive }: { isActive: boolean }) =>
   `text-sm font-medium transition-colors whitespace-nowrap ${
@@ -44,20 +45,20 @@ export default function SiteHeader() {
           </NavLink>
           <a
             className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-error-container text-error hover:bg-error hover:text-on-error font-label-sm text-xs font-semibold transition-all shadow-sm"
-            href="tel:112"
+            href={`tel:${EMERGENCY_NUMBER}`}
             title="Llamar a Urgencias"
           >
             <span className="inline-block w-2 h-2 rounded-full bg-error animate-pulse motion-reduce:animate-none" />
-            <span className="tracking-tight font-bold">Urgencias 24/7: 112 / 911</span>
+            <span className="tracking-tight font-bold">Urgencias 24/7: {EMERGENCY_NUMBER}</span>
           </a>
         </nav>
         <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
           <a
             className="md:hidden inline-flex items-center gap-1 px-3 py-1 rounded-full bg-error-container text-error font-label-sm text-xs font-bold"
-            href="tel:112"
+            href={`tel:${EMERGENCY_NUMBER}`}
           >
             <span className="inline-block w-2 h-2 rounded-full bg-error" />
-            112 / 911
+            {EMERGENCY_NUMBER}
           </a>
           <div className="h-5 w-px bg-outline-variant/40 hidden md:block" />
           <div className="flex items-center gap-2">

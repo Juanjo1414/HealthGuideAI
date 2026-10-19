@@ -46,4 +46,27 @@ CREATE_STATEMENTS: list[str] = [
     """,
     "CREATE INDEX idx_evidence_user_id ON evidence(user_id)",
     'CREATE INDEX idx_evidence_timestamp ON evidence("timestamp")',
+    """
+    CREATE TABLE conversations (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        last_activity_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        message_count INTEGER NOT NULL DEFAULT 0,
+        locked_emergency BOOLEAN NOT NULL DEFAULT FALSE
+    )
+    """,
+    "CREATE INDEX idx_conversations_user_id ON conversations(user_id)",
+    "CREATE INDEX idx_conversations_last_activity ON conversations(user_id, last_activity_at DESC)",
+    """
+    CREATE TABLE chat_messages (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        conversation_id UUID NOT NULL REFERENCES conversations(id) ON DELETE CASCADE,
+        role TEXT NOT NULL CHECK (role IN ('user', 'assistant')),
+        content TEXT NOT NULL,
+        model_output JSONB,
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    )
+    """,
+    "CREATE INDEX idx_chat_messages_conversation_id ON chat_messages(conversation_id, created_at)",
 ]

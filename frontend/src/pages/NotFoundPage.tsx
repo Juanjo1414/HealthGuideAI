@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import PageShell from "../components/layout/PageShell";
+import { EMERGENCY_NUMBER } from "../constants/emergency";
 
 export default function NotFoundPage() {
   return (
@@ -144,13 +145,9 @@ function EmergencyStrip() {
           </div>
         </div>
         <div className="flex items-center gap-space-sm flex-shrink-0 w-full md:w-auto">
-          <a className="flex-1 md:flex-initial inline-flex items-center justify-center gap-space-xs px-space-lg py-space-sm rounded-full bg-error text-on-error font-label-lg text-label-lg shadow-sm hover:opacity-90 active:scale-95 transition-all" href="tel:112">
+          <a className="flex-1 md:flex-initial inline-flex items-center justify-center gap-space-xs px-space-lg py-space-sm rounded-full bg-error text-on-error font-label-lg text-label-lg shadow-sm hover:opacity-90 active:scale-95 transition-all" href={`tel:${EMERGENCY_NUMBER}`}>
             <span aria-hidden="true" className="material-symbols-outlined text-body-lg">call</span>
-            <span>Llamar al 112</span>
-          </a>
-          <a className="flex-1 md:flex-initial inline-flex items-center justify-center gap-space-xs px-space-lg py-space-sm rounded-full bg-on-error-container text-surface font-label-lg text-label-lg shadow-sm hover:opacity-90 active:scale-95 transition-all" href="tel:911">
-            <span aria-hidden="true" className="material-symbols-outlined text-body-lg">call</span>
-            <span>Llamar al 911</span>
+            <span>Llamar al {EMERGENCY_NUMBER}</span>
           </a>
         </div>
       </div>

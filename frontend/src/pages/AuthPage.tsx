@@ -6,6 +6,7 @@ import GoogleIcon from "../components/GoogleIcon";
 import { AuthApiError } from "../api/authApi";
 import { useAuth } from "../context/AuthContext";
 import { saveAlias } from "../lib/preferences";
+import { EMERGENCY_NUMBER } from "../constants/emergency";
 
 type Mode = "login" | "signup" | "recover";
 
@@ -442,8 +443,8 @@ export default function AuthPage() {
                   <span className="font-body-sm text-body-sm text-on-surface-variant">No necesitas iniciar sesión para llamar.</span>
                 </div>
               </div>
-              <a className="px-space-md py-space-xs bg-error text-on-error rounded-full font-label-md text-label-md font-bold hover:opacity-90 transition-opacity flex-shrink-0" href="tel:112">
-                Llamar 112
+              <a className="px-space-md py-space-xs bg-error text-on-error rounded-full font-label-md text-label-md font-bold hover:opacity-90 transition-opacity flex-shrink-0" href={`tel:${EMERGENCY_NUMBER}`}>
+                Llamar {EMERGENCY_NUMBER}
               </a>
             </div>
           </aside>

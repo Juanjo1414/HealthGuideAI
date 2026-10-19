@@ -28,99 +28,35 @@ guarda ningun estado entre llamadas a run() mas alla de lo que se
 construye una sola vez en __init__ (prompt estatico, indice de
 recuperacion de solo lectura) — no hay "memoria" de conversacion que un
 usuario pueda envenenar entre requests.
+
+Chat conversacional: la logica de run() (red flags, RAG, llamada al
+modelo, normalizacion, drop_named_disease_causes, gate de emergencia) se
+extrajo a pipeline.run_pipeline() para que ChatOrchestrator la reutilice
+sin duplicarla. run() es ahora un wrapper de una linea — su comportamiento
+observable no cambia.
 """
 
 from __future__ import annotations
 
 from ..knowledge.retrieval import KnowledgeRetriever
-from ..knowledge.sanitization import sanitize_chunk_text
 from ..knowledge.sources import KNOWLEDGE_BASE
-from ..providers.base import ModelProvider, ModelProviderError
-from ..validation.safe_response import build_provider_error_fallback
-from .cause_filter import drop_named_disease_causes
-from .contract import HUMAN_DECISION, SYSTEM_VALIDATIONS
-from .prompt_builder import build_system_prompt
-from .red_flags import detect_red_flags
-
-_MAX_TOKENS = 1800
-_RAG_TOP_K = 2
+from ..providers.base import ModelProvider
+from .pipeline import run_pipeline
 
 
 class TriageOrchestrator:
     def __init__(self, provider: ModelProvider, retriever: KnowledgeRetriever | None = None):
         self._provider = provider
-        self._system_prompt = build_system_prompt()
         # Inyectable (Dependency Inversion, igual que provider) sobre todo
         # para tests: permite probar sanitizacion/recuperacion con un
         # corpus controlado sin depender del corpus real de produccion.
         self._knowledge_retriever = retriever or KnowledgeRetriever(KNOWLEDGE_BASE)
 
     def run(self, symptoms_text: str) -> dict:
-        red_flags = detect_red_flags(symptoms_text)
-        retrieved = self._knowledge_retriever.search(symptoms_text, top_k=_RAG_TOP_K)
-
-        payload = {
-            "input": symptoms_text,
-            "context": {
-                "human_decision": HUMAN_DECISION,
-                "system_validations": SYSTEM_VALIDATIONS,
-            },
-        }
-        if retrieved:
-            # Nunca se fuerza contexto irrelevante (retrieved viene vacio si
-            # ningun chunk matcheo de verdad — ver KnowledgeRetriever.search).
-            payload["contexto_recuperado"] = [
-                {
-                    "fuente": chunk.source_name,
-                    "url": chunk.source_url,
-                    "contenido": sanitize_chunk_text(chunk.text_es),
-                }
-                for chunk in retrieved
-            ]
-
-        try:
-            output = self._provider.generate_json(
-                self._system_prompt,
-                payload,
-                max_tokens=_MAX_TOKENS,
-            )
-        except ModelProviderError:
-            if red_flags:
-                # Gate de salida del mentor (MAKERS_ACCEPTANCE.md): un fallo
-                # del proveedor no puede omitir revision ante una señal de
-                # alarma real que ya detectamos de forma determinista, sin
-                # depender de que el LLM haya respondido.
-                return build_provider_error_fallback()
-            raise
-
-        # Misma normalizacion que run_prototype(): no se le "ruega" al prompt
-        # que use mayusculas, se corrige en codigo (.claude/CLAUDE.md seccion 8).
-        if isinstance(output.get("prioridad"), str):
-            output["prioridad"] = output["prioridad"].strip().upper()
-
-        # Causas generales, nunca enfermedades con nombre (cause_filter.py).
-        if "posibles_causas" in output:
-            output["posibles_causas"] = drop_named_disease_causes(output["posibles_causas"])
-
-        if red_flags and output.get("prioridad") != "EMERGENCIA":
-            # El LLM ya no puede bajar esta clasificacion — el input tiene
-            # una señal de alarma determinista, sin importar que haya
-            # contestado el modelo. "Si hay duda, el nivel mas severo"
-            # (mismo criterio que evals/CLINICAL_SAFETY_CATALOG.md).
-            #
-            # Hallazgo real (Sesion 7, corrida de evals contra NVIDIA real):
-            # esto antes toleraba "ALTA" sin corregir ("not in {ALTA,
-            # EMERGENCIA}"), asumiendo que ALTA ya era "suficientemente
-            # severo". red_flag_fiebre_bebe volvio a clasificar ALTA en esa
-            # corrida — un falso negativo real de EMERGENCIA, violando el gate
-            # bloqueante de CONSTRAINTS.md ("cero falsos negativos"). Cada
-            # entrada de RED_FLAG_KEYWORDS y PEDIATRIC_FEVER_PATTERN es,
-            # segun la propia rubrica del prompt (contract.PRIORITY_RUBRIC),
-            # un criterio de EMERGENCIA — no existe un red flag que la
-            # rubrica describa como "solo ALTA". Tolerar ALTA aca era una
-            # excepcion sin respaldo en la rubrica, no una regla real.
-            output["prioridad"] = "EMERGENCIA"
-        if red_flags:
-            output["requiere_revision"] = True
-
-        return output
+        return run_pipeline(
+            symptoms_text,
+            symptoms_text,
+            self._provider,
+            self._knowledge_retriever,
+            already_emergency=False,
+        )

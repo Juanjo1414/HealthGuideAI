@@ -70,6 +70,11 @@ class Settings:
     # (api/client_ip.py): 0 directo, 1 detras del gateway, 2 en Vercel -> Render.
     trusted_proxy_hops: int = 0
     auth_rate_limit_window_seconds: float = 60.0
+    # Chat conversacional (Sesion de triage conversacional): bucket aparte
+    # del de triage/auth para que el namespace "chat:" no comparta cuota
+    # con esos otros dos — mismo patron que auth_rate_limit_*.
+    chat_rate_limit_max_requests: int = 20
+    chat_rate_limit_window_seconds: float = 60.0
     # Postgres (Sesion 4 — reemplaza el SQLite/JSONL de sesiones anteriores).
     # El default apunta a localhost:5433 (no 5432: ver el comentario en
     # compose.yml sobre el conflicto con un Postgres nativo instalado por
@@ -129,6 +134,8 @@ def get_settings() -> Settings:
         rate_limit_window_seconds=float(os.getenv("RATE_LIMIT_WINDOW_SECONDS", "60")),
         auth_rate_limit_max_requests=int(os.getenv("AUTH_RATE_LIMIT_MAX_REQUESTS", "10")),
         auth_rate_limit_window_seconds=float(os.getenv("AUTH_RATE_LIMIT_WINDOW_SECONDS", "60")),
+        chat_rate_limit_max_requests=int(os.getenv("CHAT_RATE_LIMIT_MAX_REQUESTS", "20")),
+        chat_rate_limit_window_seconds=float(os.getenv("CHAT_RATE_LIMIT_WINDOW_SECONDS", "60")),
         database_url=os.getenv(
             "DATABASE_URL",
             "postgresql://healthguide:healthguide_dev_only@localhost:5433/healthguide",

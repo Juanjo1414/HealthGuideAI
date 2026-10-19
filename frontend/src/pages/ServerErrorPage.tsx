@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import PageShell from "../components/layout/PageShell";
 import { checkReady, type ReadyStatus } from "../api/healthApi";
+import { EMERGENCY_NUMBER } from "../constants/emergency";
 
 /**
  * Pantalla de contingencia (Stitch: "error_de_servidor_500"). Sin el folio
@@ -92,17 +93,9 @@ export default function ServerErrorPage() {
                 </div>
               </div>
               <div className="pt-space-xs flex flex-wrap gap-space-sm items-center">
-                <a className="flex-1 min-w-[140px] inline-flex items-center justify-center gap-space-xs px-space-md py-3 rounded-xl bg-error text-on-error font-label-lg text-label-lg shadow-sm hover:opacity-90 active:scale-95 transition-all" href="tel:112">
+                <a className="flex-1 min-w-[140px] inline-flex items-center justify-center gap-space-xs px-space-md py-3 rounded-xl bg-error text-on-error font-label-lg text-label-lg shadow-sm hover:opacity-90 active:scale-95 transition-all" href={`tel:${EMERGENCY_NUMBER}`}>
                   <span aria-hidden="true" className="material-symbols-outlined text-xl">phone_in_talk</span>
-                  <span>Llamar al 112 (Europa)</span>
-                </a>
-                <a className="flex-1 min-w-[140px] inline-flex items-center justify-center gap-space-xs px-space-md py-3 rounded-xl bg-error-container text-on-error-container font-label-lg text-label-lg shadow-sm hover:bg-error hover:text-on-error active:scale-95 transition-all" href="tel:911">
-                  <span aria-hidden="true" className="material-symbols-outlined text-xl">phone_in_talk</span>
-                  <span>Llamar al 911 (América)</span>
-                </a>
-                <a className="flex-1 min-w-[140px] inline-flex items-center justify-center gap-space-xs px-space-md py-3 rounded-xl bg-error-container text-on-error-container font-label-lg text-label-lg shadow-sm hover:bg-error hover:text-on-error active:scale-95 transition-all" href="tel:123">
-                  <span aria-hidden="true" className="material-symbols-outlined text-xl">phone_in_talk</span>
-                  <span>Llamar al 123 (Colombia)</span>
+                  <span>Llamar al {EMERGENCY_NUMBER}</span>
                 </a>
               </div>
             </div>

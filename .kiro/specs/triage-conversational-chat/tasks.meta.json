@@ -1,0 +1,442 @@
+{
+  "pbtResults": {},
+  "executionHistory": {
+    "1. Agregar Hypothesis como dependencia de test y extraer el pipeline compartido": [
+      {
+        "executionId": "18d2241b-f3db-4343-8b66-8fecdfb85ff1",
+        "chatSessionId": "sess_d771dd27-c552-4296-9fa3-20cf1834880c",
+        "timestamp": 1792431653223
+      },
+      {
+        "executionId": "18d2241b-f3db-4343-8b66-8fecdfb85ff1",
+        "chatSessionId": "sess_d771dd27-c552-4296-9fa3-20cf1834880c",
+        "timestamp": 1792431875641
+      },
+      {
+        "executionId": "18d2241b-f3db-4343-8b66-8fecdfb85ff1",
+        "chatSessionId": "sess_d771dd27-c552-4296-9fa3-20cf1834880c",
+        "timestamp": 1792432079709
+      }
+    ],
+    "2. Checkpoint — Confirmar que la extracción no rompió nada": [
+      {
+        "executionId": "18d2241b-f3db-4343-8b66-8fecdfb85ff1",
+        "chatSessionId": "sess_d771dd27-c552-4296-9fa3-20cf1834880c",
+        "timestamp": 1792431653266
+      },
+      {
+        "executionId": "18d2241b-f3db-4343-8b66-8fecdfb85ff1",
+        "chatSessionId": "sess_d771dd27-c552-4296-9fa3-20cf1834880c",
+        "timestamp": 1792432635265
+      },
+      {
+        "executionId": "18d2241b-f3db-4343-8b66-8fecdfb85ff1",
+        "chatSessionId": "sess_d771dd27-c552-4296-9fa3-20cf1834880c",
+        "timestamp": 1792432679553
+      }
+    ],
+    "3.1 Agregar las tablas `conversations` y `chat_messages` a `backend/app/storage/schema.py` (`CREATE_STATEMENTS`), con los índices `idx_conversations_user_id`, `idx_conversations_last_activity`, `idx_chat_messages_conversation_id`": [
+      {
+        "executionId": "18d2241b-f3db-4343-8b66-8fecdfb85ff1",
+        "chatSessionId": "sess_d771dd27-c552-4296-9fa3-20cf1834880c",
+        "timestamp": 1792431653301
+      },
+      {
+        "executionId": "18d2241b-f3db-4343-8b66-8fecdfb85ff1",
+        "chatSessionId": "sess_d771dd27-c552-4296-9fa3-20cf1834880c",
+        "timestamp": 1792431725093
+      },
+      {
+        "executionId": "18d2241b-f3db-4343-8b66-8fecdfb85ff1",
+        "chatSessionId": "sess_d771dd27-c552-4296-9fa3-20cf1834880c",
+        "timestamp": 1792432081147
+      }
+    ],
+    "3.2 Crear la migración Alembic `backend/alembic/versions/0002_chat_conversations.py` reutilizando las mismas sentencias DDL de `schema.py`": [
+      {
+        "executionId": "18d2241b-f3db-4343-8b66-8fecdfb85ff1",
+        "chatSessionId": "sess_d771dd27-c552-4296-9fa3-20cf1834880c",
+        "timestamp": 1792431653344
+      },
+      {
+        "executionId": "18d2241b-f3db-4343-8b66-8fecdfb85ff1",
+        "chatSessionId": "sess_d771dd27-c552-4296-9fa3-20cf1834880c",
+        "timestamp": 1792432122652
+      },
+      {
+        "executionId": "18d2241b-f3db-4343-8b66-8fecdfb85ff1",
+        "chatSessionId": "sess_d771dd27-c552-4296-9fa3-20cf1834880c",
+        "timestamp": 1792432270696
+      }
+    ],
+    "4.1 Crear `backend/app/storage/conversation_store.py` con `create_conversation`, `get_conversation` (filtrado por `user_id` en SQL), `list_conversations` (ordenado por `last_activity_at DESC`), `append_message` (actualiza `last_activity_at`/`message_count` en la misma transacción), `mark_emergency_locked`, `messages_for` (orden cronológico), `delete_conversation` (con `WHERE user_id = %s`)": [
+      {
+        "executionId": "18d2241b-f3db-4343-8b66-8fecdfb85ff1",
+        "chatSessionId": "sess_d771dd27-c552-4296-9fa3-20cf1834880c",
+        "timestamp": 1792431653385
+      },
+      {
+        "executionId": "18d2241b-f3db-4343-8b66-8fecdfb85ff1",
+        "chatSessionId": "sess_d771dd27-c552-4296-9fa3-20cf1834880c",
+        "timestamp": 1792432124802
+      },
+      {
+        "executionId": "18d2241b-f3db-4343-8b66-8fecdfb85ff1",
+        "chatSessionId": "sess_d771dd27-c552-4296-9fa3-20cf1834880c",
+        "timestamp": 1792432272648
+      }
+    ],
+    "5.1 Crear `backend/app/orchestration/chat_orchestrator.py` con `ChatOrchestrator.run_turn(history, new_user_message, already_emergency)`: construye `evaluation_text` (concatenación cronológica de todos los mensajes de usuario + el nuevo), construye el payload con el campo `\"historial\"` (lista `{\"rol\", \"texto\"}`), y llama a `run_pipeline()`": [
+      {
+        "executionId": "18d2241b-f3db-4343-8b66-8fecdfb85ff1",
+        "chatSessionId": "sess_d771dd27-c552-4296-9fa3-20cf1834880c",
+        "timestamp": 1792431653429
+      },
+      {
+        "executionId": "18d2241b-f3db-4343-8b66-8fecdfb85ff1",
+        "chatSessionId": "sess_d771dd27-c552-4296-9fa3-20cf1834880c",
+        "timestamp": 1792432303756
+      },
+      {
+        "executionId": "18d2241b-f3db-4343-8b66-8fecdfb85ff1",
+        "chatSessionId": "sess_d771dd27-c552-4296-9fa3-20cf1834880c",
+        "timestamp": 1792432554507
+      }
+    ],
+    "5.2 Agregar `\"historial\"` a `INSTRUCTION_HIERARCHY` en `backend/app/orchestration/contract.py` y a las instrucciones de `backend/app/orchestration/prompt_builder.py`, siguiendo el mismo criterio ya usado para `\"contexto_recuperado\"`": [
+      {
+        "executionId": "18d2241b-f3db-4343-8b66-8fecdfb85ff1",
+        "chatSessionId": "sess_d771dd27-c552-4296-9fa3-20cf1834880c",
+        "timestamp": 1792431653471
+      },
+      {
+        "executionId": "18d2241b-f3db-4343-8b66-8fecdfb85ff1",
+        "chatSessionId": "sess_d771dd27-c552-4296-9fa3-20cf1834880c",
+        "timestamp": 1792432692490
+      },
+      {
+        "executionId": "18d2241b-f3db-4343-8b66-8fecdfb85ff1",
+        "chatSessionId": "sess_d771dd27-c552-4296-9fa3-20cf1834880c",
+        "timestamp": 1792432785073
+      }
+    ],
+    "6. Checkpoint — Ensure all tests pass": [
+      {
+        "executionId": "18d2241b-f3db-4343-8b66-8fecdfb85ff1",
+        "chatSessionId": "sess_d771dd27-c552-4296-9fa3-20cf1834880c",
+        "timestamp": 1792431653508
+      },
+      {
+        "executionId": "18d2241b-f3db-4343-8b66-8fecdfb85ff1",
+        "chatSessionId": "sess_d771dd27-c552-4296-9fa3-20cf1834880c",
+        "timestamp": 1792432794209
+      },
+      {
+        "executionId": "18d2241b-f3db-4343-8b66-8fecdfb85ff1",
+        "chatSessionId": "sess_d771dd27-c552-4296-9fa3-20cf1834880c",
+        "timestamp": 1792432888262
+      }
+    ],
+    "7.1 Agregar `enforce_chat_rate_limit`/`get_chat_rate_limiter` a `backend/app/api/rate_limit.py` (clave `\"chat:\"`, mismo patrón que `enforce_auth_rate_limit`), y las settings `CHAT_RATE_LIMIT_MAX_REQUESTS`/`CHAT_RATE_LIMIT_WINDOW_SECONDS` en `backend/app/config.py` (default 20/60s)": [
+      {
+        "executionId": "18d2241b-f3db-4343-8b66-8fecdfb85ff1",
+        "chatSessionId": "sess_d771dd27-c552-4296-9fa3-20cf1834880c",
+        "timestamp": 1792431653545
+      },
+      {
+        "executionId": "18d2241b-f3db-4343-8b66-8fecdfb85ff1",
+        "chatSessionId": "sess_d771dd27-c552-4296-9fa3-20cf1834880c",
+        "timestamp": 1792432126425
+      },
+      {
+        "executionId": "18d2241b-f3db-4343-8b66-8fecdfb85ff1",
+        "chatSessionId": "sess_d771dd27-c552-4296-9fa3-20cf1834880c",
+        "timestamp": 1792432269598
+      }
+    ],
+    "7.3 Crear `backend/app/schemas/chat.py` con `SendMessageRequest`, `ChatMessageOut`, `ConversationDetail`, `ConversationSummary`": [
+      {
+        "executionId": "18d2241b-f3db-4343-8b66-8fecdfb85ff1",
+        "chatSessionId": "sess_d771dd27-c552-4296-9fa3-20cf1834880c",
+        "timestamp": 1792431653583
+      },
+      {
+        "executionId": "18d2241b-f3db-4343-8b66-8fecdfb85ff1",
+        "chatSessionId": "sess_d771dd27-c552-4296-9fa3-20cf1834880c",
+        "timestamp": 1792432693576
+      },
+      {
+        "executionId": "18d2241b-f3db-4343-8b66-8fecdfb85ff1",
+        "chatSessionId": "sess_d771dd27-c552-4296-9fa3-20cf1834880c",
+        "timestamp": 1792432787147
+      }
+    ],
+    "8.1 Agregar `get_chat_orchestrator` y `get_conversation_store` a `backend/app/api/dependencies.py` (patrón `@lru_cache`)": [
+      {
+        "executionId": "18d2241b-f3db-4343-8b66-8fecdfb85ff1",
+        "chatSessionId": "sess_d771dd27-c552-4296-9fa3-20cf1834880c",
+        "timestamp": 1792431653619
+      },
+      {
+        "executionId": "18d2241b-f3db-4343-8b66-8fecdfb85ff1",
+        "chatSessionId": "sess_d771dd27-c552-4296-9fa3-20cf1834880c",
+        "timestamp": 1792432897262
+      },
+      {
+        "executionId": "18d2241b-f3db-4343-8b66-8fecdfb85ff1",
+        "chatSessionId": "sess_d771dd27-c552-4296-9fa3-20cf1834880c",
+        "timestamp": 1792432999483
+      }
+    ],
+    "8.2 Crear `backend/app/api/routes_chat.py` con `POST /chat/conversations`, `GET /chat/conversations`, `GET /chat/conversations/{id}`, `DELETE /chat/conversations/{id}`, protegidos por `require_authenticated`": [
+      {
+        "executionId": "18d2241b-f3db-4343-8b66-8fecdfb85ff1",
+        "chatSessionId": "sess_d771dd27-c552-4296-9fa3-20cf1834880c",
+        "timestamp": 1792431653656
+      },
+      {
+        "executionId": "18d2241b-f3db-4343-8b66-8fecdfb85ff1",
+        "chatSessionId": "sess_d771dd27-c552-4296-9fa3-20cf1834880c",
+        "timestamp": 1792433008056
+      },
+      {
+        "executionId": "18d2241b-f3db-4343-8b66-8fecdfb85ff1",
+        "chatSessionId": "sess_d771dd27-c552-4296-9fa3-20cf1834880c",
+        "timestamp": 1792433125887
+      }
+    ],
+    "8.3 Implementar `POST /chat/conversations/{id}/messages` siguiendo el flujo del diseño: 404 genérico si no existe/no es del usuario, 409 si se alcanzó `TURN_LIMIT`, invocación de `ChatOrchestrator.run_turn`, `validate_output` sobre el texto acumulado, `build_safe_fallback` si falla, `mark_emergency_locked` si corresponde, persistencia de ambos mensajes + evidencia en una transacción lógica": [
+      {
+        "executionId": "18d2241b-f3db-4343-8b66-8fecdfb85ff1",
+        "chatSessionId": "sess_d771dd27-c552-4296-9fa3-20cf1834880c",
+        "timestamp": 1792431653692
+      },
+      {
+        "executionId": "18d2241b-f3db-4343-8b66-8fecdfb85ff1",
+        "chatSessionId": "sess_d771dd27-c552-4296-9fa3-20cf1834880c",
+        "timestamp": 1792433130874
+      },
+      {
+        "executionId": "18d2241b-f3db-4343-8b66-8fecdfb85ff1",
+        "chatSessionId": "sess_d771dd27-c552-4296-9fa3-20cf1834880c",
+        "timestamp": 1792433363975
+      }
+    ],
+    "8.4 Montar `routes_chat.router` en `backend/app/main.py` bajo `/api/v1` (sin exponerlo también en el prefijo deprecado sin versión, ya que es un endpoint nuevo)": [
+      {
+        "executionId": "18d2241b-f3db-4343-8b66-8fecdfb85ff1",
+        "chatSessionId": "sess_d771dd27-c552-4296-9fa3-20cf1834880c",
+        "timestamp": 1792431653730
+      },
+      {
+        "executionId": "18d2241b-f3db-4343-8b66-8fecdfb85ff1",
+        "chatSessionId": "sess_d771dd27-c552-4296-9fa3-20cf1834880c",
+        "timestamp": 1792433368494
+      },
+      {
+        "executionId": "18d2241b-f3db-4343-8b66-8fecdfb85ff1",
+        "chatSessionId": "sess_d771dd27-c552-4296-9fa3-20cf1834880c",
+        "timestamp": 1792433517326
+      }
+    ],
+    "9. Checkpoint — Ensure all tests pass": [
+      {
+        "executionId": "18d2241b-f3db-4343-8b66-8fecdfb85ff1",
+        "chatSessionId": "sess_d771dd27-c552-4296-9fa3-20cf1834880c",
+        "timestamp": 1792431653771
+      },
+      {
+        "executionId": "18d2241b-f3db-4343-8b66-8fecdfb85ff1",
+        "chatSessionId": "sess_d771dd27-c552-4296-9fa3-20cf1834880c",
+        "timestamp": 1792433522182
+      },
+      {
+        "executionId": "18d2241b-f3db-4343-8b66-8fecdfb85ff1",
+        "chatSessionId": "sess_d771dd27-c552-4296-9fa3-20cf1834880c",
+        "timestamp": 1792433658309
+      }
+    ],
+    "10.1 Crear `frontend/src/constants/emergency.ts` exportando `EMERGENCY_NUMBER = \"123\"` (mismo patrón que `frontend/src/constants/priority.ts`)": [
+      {
+        "executionId": "18d2241b-f3db-4343-8b66-8fecdfb85ff1",
+        "chatSessionId": "sess_d771dd27-c552-4296-9fa3-20cf1834880c",
+        "timestamp": 1792431653809
+      },
+      {
+        "executionId": "18d2241b-f3db-4343-8b66-8fecdfb85ff1",
+        "chatSessionId": "sess_d771dd27-c552-4296-9fa3-20cf1834880c",
+        "timestamp": 1792431726192
+      },
+      {
+        "executionId": "18d2241b-f3db-4343-8b66-8fecdfb85ff1",
+        "chatSessionId": "sess_d771dd27-c552-4296-9fa3-20cf1834880c",
+        "timestamp": 1792432082236
+      }
+    ],
+    "10.2 Crear `frontend/src/api/chatApi.ts` (mismo patrón que `triageApi.ts`): `createConversation`, `listConversations`, `getConversation`, `sendMessage`, `deleteConversation`, y los tipos correspondientes agregados a `frontend/src/api/types.ts`": [
+      {
+        "executionId": "18d2241b-f3db-4343-8b66-8fecdfb85ff1",
+        "chatSessionId": "sess_d771dd27-c552-4296-9fa3-20cf1834880c",
+        "timestamp": 1792431653844
+      },
+      {
+        "executionId": "18d2241b-f3db-4343-8b66-8fecdfb85ff1",
+        "chatSessionId": "sess_d771dd27-c552-4296-9fa3-20cf1834880c",
+        "timestamp": 1792432898588
+      },
+      {
+        "executionId": "18d2241b-f3db-4343-8b66-8fecdfb85ff1",
+        "chatSessionId": "sess_d771dd27-c552-4296-9fa3-20cf1834880c",
+        "timestamp": 1792432998590
+      }
+    ],
+    "11.1 Reemplazar los literales `\"112\"`/`\"911\"` por `EMERGENCY_NUMBER` en `AuthPage.tsx`, `SiteHeader.tsx`, `SiteFooter.tsx`, `HomePage.tsx`, `NotFoundPage.tsx`, `OfflinePanel.tsx`, `ResultPage.tsx`, `TermsPage.tsx`, `ServerErrorPage.tsx`, `EmergencyPanel.tsx`, `ProtocolPage.tsx`, sin tocar `ProfilePage.tsx` ni el `Country_Selector`": [
+      {
+        "executionId": "18d2241b-f3db-4343-8b66-8fecdfb85ff1",
+        "chatSessionId": "sess_d771dd27-c552-4296-9fa3-20cf1834880c",
+        "timestamp": 1792431653884
+      },
+      {
+        "executionId": "18d2241b-f3db-4343-8b66-8fecdfb85ff1",
+        "chatSessionId": "sess_d771dd27-c552-4296-9fa3-20cf1834880c",
+        "timestamp": 1792432305609
+      },
+      {
+        "executionId": "18d2241b-f3db-4343-8b66-8fecdfb85ff1",
+        "chatSessionId": "sess_d771dd27-c552-4296-9fa3-20cf1834880c",
+        "timestamp": 1792432556674
+      }
+    ],
+    "12.1 Crear `frontend/src/pages/ChatPage.tsx`: envío de mensajes, renderizado del historial en orden cronológico, manejo de 409 (límite de turnos) y 401 (redirección a login/signup)": [
+      {
+        "executionId": "18d2241b-f3db-4343-8b66-8fecdfb85ff1",
+        "chatSessionId": "sess_d771dd27-c552-4296-9fa3-20cf1834880c",
+        "timestamp": 1792431653926
+      },
+      {
+        "executionId": "18d2241b-f3db-4343-8b66-8fecdfb85ff1",
+        "chatSessionId": "sess_d771dd27-c552-4296-9fa3-20cf1834880c",
+        "timestamp": 1792433669562
+      },
+      {
+        "executionId": "18d2241b-f3db-4343-8b66-8fecdfb85ff1",
+        "chatSessionId": "sess_d771dd27-c552-4296-9fa3-20cf1834880c",
+        "timestamp": 1792433848010
+      }
+    ],
+    "13.1 Crear `frontend/src/pages/ConversationListPage.tsx` listando conversaciones ordenadas por actividad reciente, con navegación a cada conversación y acción de borrado": [
+      {
+        "executionId": "18d2241b-f3db-4343-8b66-8fecdfb85ff1",
+        "chatSessionId": "sess_d771dd27-c552-4296-9fa3-20cf1834880c",
+        "timestamp": 1792431653971
+      },
+      {
+        "executionId": "18d2241b-f3db-4343-8b66-8fecdfb85ff1",
+        "chatSessionId": "sess_d771dd27-c552-4296-9fa3-20cf1834880c",
+        "timestamp": 1792433852597
+      },
+      {
+        "executionId": "18d2241b-f3db-4343-8b66-8fecdfb85ff1",
+        "chatSessionId": "sess_d771dd27-c552-4296-9fa3-20cf1834880c",
+        "timestamp": 1792433960763
+      }
+    ],
+    "13.2 Eliminar `frontend/src/pages/HistoryPage.tsx` y `HistoryPage.test.tsx`, y actualizar `frontend/src/App.tsx` para que la ruta `/historial` (o una ruta nueva) monte `ConversationListPage` y una ruta nueva monte `ChatPage`": [
+      {
+        "executionId": "18d2241b-f3db-4343-8b66-8fecdfb85ff1",
+        "chatSessionId": "sess_d771dd27-c552-4296-9fa3-20cf1834880c",
+        "timestamp": 1792431654010
+      },
+      {
+        "executionId": "18d2241b-f3db-4343-8b66-8fecdfb85ff1",
+        "chatSessionId": "sess_d771dd27-c552-4296-9fa3-20cf1834880c",
+        "timestamp": 1792433964955
+      },
+      {
+        "executionId": "18d2241b-f3db-4343-8b66-8fecdfb85ff1",
+        "chatSessionId": "sess_d771dd27-c552-4296-9fa3-20cf1834880c",
+        "timestamp": 1792434086231
+      }
+    ],
+    "14. Checkpoint final — Ensure all tests pass": [
+      {
+        "executionId": "18d2241b-f3db-4343-8b66-8fecdfb85ff1",
+        "chatSessionId": "sess_d771dd27-c552-4296-9fa3-20cf1834880c",
+        "timestamp": 1792431654048
+      },
+      {
+        "executionId": "18d2241b-f3db-4343-8b66-8fecdfb85ff1",
+        "chatSessionId": "sess_d771dd27-c552-4296-9fa3-20cf1834880c",
+        "timestamp": 1792434090425
+      },
+      {
+        "executionId": "18d2241b-f3db-4343-8b66-8fecdfb85ff1",
+        "chatSessionId": "sess_d771dd27-c552-4296-9fa3-20cf1834880c",
+        "timestamp": 1792434197555
+      }
+    ],
+    "3. Esquema de base de datos para conversaciones": [
+      {
+        "executionId": "18d2241b-f3db-4343-8b66-8fecdfb85ff1",
+        "chatSessionId": "sess_d771dd27-c552-4296-9fa3-20cf1834880c",
+        "timestamp": 1792432270730
+      }
+    ],
+    "4. Implementar `ConversationStore`": [
+      {
+        "executionId": "18d2241b-f3db-4343-8b66-8fecdfb85ff1",
+        "chatSessionId": "sess_d771dd27-c552-4296-9fa3-20cf1834880c",
+        "timestamp": 1792432272684
+      }
+    ],
+    "11. Frontend: corregir el número de emergencia hardcodeado": [
+      {
+        "executionId": "18d2241b-f3db-4343-8b66-8fecdfb85ff1",
+        "chatSessionId": "sess_d771dd27-c552-4296-9fa3-20cf1834880c",
+        "timestamp": 1792432556710
+      }
+    ],
+    "5. Implementar `ChatOrchestrator`": [
+      {
+        "executionId": "18d2241b-f3db-4343-8b66-8fecdfb85ff1",
+        "chatSessionId": "sess_d771dd27-c552-4296-9fa3-20cf1834880c",
+        "timestamp": 1792432785125
+      }
+    ],
+    "7. Rate limiting y schemas de chat": [
+      {
+        "executionId": "18d2241b-f3db-4343-8b66-8fecdfb85ff1",
+        "chatSessionId": "sess_d771dd27-c552-4296-9fa3-20cf1834880c",
+        "timestamp": 1792432787183
+      }
+    ],
+    "10. Frontend: cliente de API y constante de emergencia": [
+      {
+        "executionId": "18d2241b-f3db-4343-8b66-8fecdfb85ff1",
+        "chatSessionId": "sess_d771dd27-c552-4296-9fa3-20cf1834880c",
+        "timestamp": 1792432998648
+      }
+    ],
+    "8. Implementar la capa de API de chat": [
+      {
+        "executionId": "18d2241b-f3db-4343-8b66-8fecdfb85ff1",
+        "chatSessionId": "sess_d771dd27-c552-4296-9fa3-20cf1834880c",
+        "timestamp": 1792433517365
+      }
+    ],
+    "12. Frontend: página de chat": [
+      {
+        "executionId": "18d2241b-f3db-4343-8b66-8fecdfb85ff1",
+        "chatSessionId": "sess_d771dd27-c552-4296-9fa3-20cf1834880c",
+        "timestamp": 1792433848052
+      }
+    ],
+    "13. Frontend: lista de conversaciones reemplaza el historial": [
+      {
+        "executionId": "18d2241b-f3db-4343-8b66-8fecdfb85ff1",
+        "chatSessionId": "sess_d771dd27-c552-4296-9fa3-20cf1834880c",
+        "timestamp": 1792434086297
+      }
+    ]
+  }
+}
