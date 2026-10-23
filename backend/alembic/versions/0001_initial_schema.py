@@ -4,10 +4,10 @@ Traduce a Postgres el esquema que antes vivia hardcodeado en
 storage/db.py (SQLite) mas la tabla evidence nueva, que reemplaza al
 JSONL de evidence_store.py. Ver docs/PLAN_IMPLEMENTACION.md Sesion 4.
 
-Las sentencias en si viven en app/storage/schema.py, no acá — es la
-misma lista que usa el fixture de tests para crear un schema aislado por
-test, para no tener el DDL escrito en dos lugares que se puedan
-desincronizar.
+Las sentencias en si viven en app/storage/schema.py (INITIAL_STATEMENTS),
+no acá — son las mismas que usa el fixture de tests para crear un schema
+aislado por test, para no tener el DDL escrito en dos lugares que se
+puedan desincronizar. Solo este grupo: las tablas del chat son de la 0002.
 
 Revision ID: 0001
 Revises:
@@ -22,7 +22,7 @@ from pathlib import Path
 from alembic import op
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
-from app.storage.schema import CREATE_STATEMENTS  # noqa: E402
+from app.storage.schema import INITIAL_STATEMENTS  # noqa: E402
 
 revision = "0001"
 down_revision = None
@@ -31,7 +31,7 @@ depends_on = None
 
 
 def upgrade() -> None:
-    for statement in CREATE_STATEMENTS:
+    for statement in INITIAL_STATEMENTS:
         op.execute(statement)
 
 

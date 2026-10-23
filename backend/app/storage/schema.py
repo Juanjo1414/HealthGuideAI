@@ -1,15 +1,22 @@
 """
-DDL del esquema, en una sola lista de sentencias — una única fuente de
-verdad que usan dos consumidores distintos: la migración inicial de
-Alembic (backend/alembic/versions/0001_initial_schema.py) y el fixture de
-tests que crea un schema aislado por test (backend/tests/conftest.py).
-Sin esto, "cómo se ve la tabla `evidence`" viviría escrito dos veces y
-se podrían desincronizar sin que ningún test lo note.
+DDL del esquema — una única fuente de verdad que usan dos consumidores
+distintos: las migraciones de Alembic (backend/alembic/versions/) y el
+fixture de tests que crea un schema aislado por test
+(backend/tests/conftest.py). Sin esto, "cómo se ve la tabla `evidence`"
+viviría escrito dos veces y se podrían desincronizar sin que ningún test
+lo note.
+
+Las sentencias están agrupadas POR MIGRACIÓN (INITIAL_STATEMENTS para la
+0001, CHAT_STATEMENTS para la 0002...) y CREATE_STATEMENTS es la suma para
+los tests. Cada migración nueva agrega su propio grupo y NO se mete en uno
+anterior: una migración ya aplicada en producción no puede cambiar, y si la
+0001 ejecutara también las tablas del chat, en una base nueva la 0002 las
+crearía por segunda vez y fallaría con "relation already exists".
 """
 
 from __future__ import annotations
 
-CREATE_STATEMENTS: list[str] = [
+INITIAL_STATEMENTS: list[str] = [
     """
     CREATE TABLE users (
         id SERIAL PRIMARY KEY,
@@ -46,6 +53,10 @@ CREATE_STATEMENTS: list[str] = [
     """,
     "CREATE INDEX idx_evidence_user_id ON evidence(user_id)",
     'CREATE INDEX idx_evidence_timestamp ON evidence("timestamp")',
+]
+
+# Migración 0002: chat conversacional.
+CHAT_STATEMENTS: list[str] = [
     """
     CREATE TABLE conversations (
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -70,3 +81,6 @@ CREATE_STATEMENTS: list[str] = [
     """,
     "CREATE INDEX idx_chat_messages_conversation_id ON chat_messages(conversation_id, created_at)",
 ]
+
+# Todo el esquema, en orden de migración: lo usa el fixture de tests.
+CREATE_STATEMENTS: list[str] = [*INITIAL_STATEMENTS, *CHAT_STATEMENTS]
