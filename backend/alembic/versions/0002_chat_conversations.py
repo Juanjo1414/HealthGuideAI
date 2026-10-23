@@ -5,10 +5,10 @@ Agrega las tablas que soportan el chat conversacional multi-turno:
 `locked_emergency` para el gate de emergencia) y `chat_messages` (los
 turnos individuales, en orden cronológico por `created_at`).
 
-Las sentencias en sí viven en app/storage/schema.py, no acá — son las
-últimas de la misma lista que usa el fixture de tests para crear un
-schema aislado por test, para no tener el DDL escrito en dos lugares
-que se puedan desincronizar.
+Las sentencias en sí viven en app/storage/schema.py (CHAT_STATEMENTS),
+no acá — las mismas que usa el fixture de tests para crear un schema
+aislado por test, para no tener el DDL escrito en dos lugares que se
+puedan desincronizar.
 
 Revision ID: 0002
 Revises: 0001
@@ -23,18 +23,16 @@ from pathlib import Path
 from alembic import op
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
-from app.storage.schema import CREATE_STATEMENTS  # noqa: E402
+from app.storage.schema import CHAT_STATEMENTS  # noqa: E402
 
 revision = "0002"
 down_revision = "0001"
 branch_labels = None
 depends_on = None
 
-_NEW_STATEMENTS = CREATE_STATEMENTS[-5:]
-
 
 def upgrade() -> None:
-    for statement in _NEW_STATEMENTS:
+    for statement in CHAT_STATEMENTS:
         op.execute(statement)
 
 
