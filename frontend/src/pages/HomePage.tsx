@@ -103,6 +103,11 @@ export default function HomePage() {
   const [status, setStatus] = useState<"idle" | "loading" | "offline" | "error">("idle");
   const [errorMessage, setErrorMessage] = useState("");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  // Foco al resultado cuando llega el primero (lectores de pantalla): sin esto,
+  // al ocultarse el formulario el foco se pierde. Los turnos siguientes se
+  // anuncian por aria-live sin mover el foco del composer.
+  const resultRef = useRef<HTMLDivElement>(null);
+  const [focusResultSignal, setFocusResultSignal] = useState(0);
   const dictation = useSpeechDictation((transcript) =>
     setText((prev) => `${prev}${prev && !prev.endsWith(" ") ? " " : ""}${transcript}`.slice(0, MAX_LENGTH))
   );
@@ -121,7 +126,7 @@ export default function HomePage() {
   // sin que el usuario pierda lo que ya escribió.
   const [lastAttempt, setLastAttempt] = useState<string | null>(null);
 
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [isLoadingExistingConversation, setIsLoadingExistingConversation] = useState(false);
 
   // Si llega con `?conversationId=xxx` (desde "Mi Historial") y hay sesión,
@@ -191,6 +196,10 @@ export default function HomePage() {
     localStorage.setItem(ANONYMOUS_CHAT_STORAGE_KEY, JSON.stringify({ turns, alreadyEmergency }));
   }, [turns, alreadyEmergency, authStatus, isAuthenticated]);
 
+  useEffect(() => {
+    if (focusResultSignal > 0) resultRef.current?.focus();
+  }, [focusResultSignal]);
+
   async function submit(symptomsText: string) {
     const trimmed = symptomsText.trim();
     if (!trimmed || isSending) return;
@@ -232,6 +241,7 @@ export default function HomePage() {
       }
       setStatus("idle");
       setText("");
+      if (turns.length === 0) setFocusResultSignal((n) => n + 1);
     } catch (error) {
       if (error instanceof ChatApiError && error.status === 0) {
         setStatus("offline");
@@ -258,6 +268,28 @@ export default function HomePage() {
     } finally {
       setIsSending(false);
     }
+  }
+
+  /**
+   * Sale de la conversación en curso y vuelve al formulario inicial. Una
+   * conversación con cuenta sigue en "Mis conversaciones"; la anónima solo
+   * vive en este navegador, así que ahí se pide confirmación antes de perderla.
+   * La emergencia marcada también se reinicia: es una evaluación nueva.
+   */
+  function startNewEvaluation() {
+    if (!isAuthenticated && !window.confirm("¿Empezar una nueva evaluación? La conversación actual se borrará de este navegador.")) {
+      return;
+    }
+    setTurns([]);
+    setConversationId(null);
+    setAlreadyEmergency(false);
+    setText("");
+    setDuration(null);
+    setLastAttempt(null);
+    setErrorMessage("");
+    setStatus("idle");
+    if (searchParams.has("conversationId")) setSearchParams({}, { replace: true });
+    window.scrollTo(0, 0);
   }
 
   function handleSubmit(event: FormEvent) {
@@ -299,6 +331,8 @@ export default function HomePage() {
               </div>
             </div>
 
+            {/* Con una conversación en curso el h1 de la página es el del resultado. */}
+            {(turns.length === 0 || isLoadingExistingConversation) && (
             <div className="max-w-3xl mb-space-lg">
               <h1 className="font-display-lg-mobile text-display-lg-mobile md:font-display-lg md:text-display-lg text-primary tracking-tight mb-space-sm">
                 ¿Cómo te sientes hoy? Cuéntanos qué molestias tienes
@@ -308,6 +342,7 @@ export default function HomePage() {
                 acudir de inmediato a urgencias.
               </p>
             </div>
+            )}
 
             {isLoadingExistingConversation ? (
               <div className="flex items-center justify-center py-space-xl" role="status" aria-live="polite">
@@ -467,7 +502,18 @@ export default function HomePage() {
                 )}
               </div>
             ) : (
-              <div className="w-full flex flex-col gap-space-lg">
+              <div ref={resultRef} tabIndex={-1} aria-live="polite" className="w-full flex flex-col gap-space-lg outline-none">
+                <div className="flex justify-end">
+                  <button
+                    type="button"
+                    onClick={startNewEvaluation}
+                    disabled={isSending}
+                    className="inline-flex items-center gap-space-xs px-space-md py-2 rounded-full bg-surface-container-lowest text-primary font-label-md text-label-md shadow-sm hover:bg-surface-container-low active:scale-95 transition-all disabled:opacity-50 disabled:pointer-events-none"
+                  >
+                    <span aria-hidden="true" className="material-symbols-outlined text-[18px]">add_circle</span>
+                    Nueva evaluación
+                  </button>
+                </div>
                 {firstAssistantTurn && firstUserTurn && (
                   firstAssistantTurn.result ? (
                     <TriageResultCard result={firstAssistantTurn.result} symptoms={firstUserTurn.content} />

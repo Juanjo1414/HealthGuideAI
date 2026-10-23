@@ -55,6 +55,19 @@ class ConversationSummary:
     preview: str
 
 
+def _is_uuid(value: UUID | str) -> bool:
+    """El id llega de la URL: si no es un UUID, Postgres tira
+    InvalidTextRepresentation al castear y la API terminaba en 500. Para el
+    cliente es lo mismo que una conversación que no existe."""
+    if isinstance(value, UUID):
+        return True
+    try:
+        UUID(value)
+    except ValueError:
+        return False
+    return True
+
+
 class ConversationStore:
     def __init__(self, db: Database):
         self._db = db
@@ -74,6 +87,8 @@ class ConversationStore:
         """None si no existe O si pertenece a otro usuario — mismo criterio
         de autorización real en SQL que EvidenceStore.entries_for_user
         (WHERE user_id = %s), nunca filtrado en Python."""
+        if not _is_uuid(conversation_id):
+            return None
         row = self._db.query_one(
             """
             SELECT id, user_id, created_at, last_activity_at, message_count, locked_emergency
@@ -192,6 +207,8 @@ class ConversationStore:
         """DELETE con WHERE user_id = %s — borra chat_messages vía ON
         DELETE CASCADE. No distingue "no existe" de "no es tuyo"; ambos
         casos simplemente no borran ninguna fila."""
+        if not _is_uuid(conversation_id):
+            return
         self._db.execute(
             "DELETE FROM conversations WHERE id = %s AND user_id = %s",
             (str(conversation_id), user_id),

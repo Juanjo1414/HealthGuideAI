@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import PageShell from "../components/layout/PageShell";
 import { ChatApiError, deleteConversation, listConversations } from "../api/chatApi";
 import type { ConversationSummary } from "../api/types";
@@ -32,7 +32,6 @@ function whenLabel(iso: string): string {
  * conversación" navega a `/` sin parámetro (el formulario normal).
  */
 export default function ConversationListPage() {
-  const navigate = useNavigate();
   const [conversations, setConversations] = useState<ConversationSummary[]>([]);
   const [state, setState] = useState<"loading" | "ready" | "error">("loading");
   const [errorMessage, setErrorMessage] = useState("");
@@ -46,10 +45,9 @@ export default function ConversationListPage() {
         setState("ready");
       })
       .catch((error) => {
-        if (error instanceof ChatApiError && error.status === 401) {
-          navigate("/login", { replace: true });
-          return;
-        }
+        // Un 401 se muestra, no se esconde: redirigir a /login mientras la app
+        // todavía cree tener sesión terminaba devolviendo al usuario al inicio
+        // sin explicación.
         setErrorMessage(
           error instanceof ChatApiError ? error.message : "No se pudo cargar la lista de conversaciones."
         );
@@ -69,10 +67,6 @@ export default function ConversationListPage() {
       await deleteConversation(id);
       setConversations((prev) => prev.filter((c) => c.id !== id));
     } catch (error) {
-      if (error instanceof ChatApiError && error.status === 401) {
-        navigate("/login", { replace: true });
-        return;
-      }
       setDeleteError({
         id,
         message: error instanceof ChatApiError ? error.message : "No se pudo borrar la conversación.",

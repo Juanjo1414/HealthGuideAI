@@ -21,7 +21,7 @@ describe("pantallas informativas", () => {
     for (const page of [<NotFoundPage key="404" />, <TermsPage key="t" />, <ProtocolPage key="p" />, <ServerErrorPage key="500" />]) {
       const { unmount } = renderAt(page);
       expect(screen.getByText(/aviso médico legal y ético permanente/i)).toBeInTheDocument();
-      expect(screen.getAllByRole("link", { name: /llamar 112/i }).length).toBeGreaterThan(0);
+      expect(screen.getAllByRole("link", { name: /llamar 123/i }).length).toBeGreaterThan(0);
       unmount();
     }
   });
