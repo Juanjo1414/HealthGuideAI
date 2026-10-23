@@ -58,7 +58,7 @@ export default function ServerErrorPage() {
           </div>
           <div className="text-center max-w-2xl mx-auto mb-space-xl">
             <p className="font-label-md text-label-md text-secondary font-semibold uppercase tracking-widest mb-space-xs">Error del servidor • Código 500</p>
-            <h1 className="font-display-lg-mobile text-display-lg-mobile md:font-display-lg md:text-display-lg text-primary font-bold tracking-tight mb-space-md">
+            <h1 className="font-display-lg-mobile text-display-lg-mobile md:font-display-lg md:text-display-lg text-ink font-bold tracking-tight mb-space-md">
               Interrupción temporal del asistente
             </h1>
             <p className="font-body-md text-body-md md:font-body-lg md:text-body-lg text-on-surface-variant leading-relaxed">

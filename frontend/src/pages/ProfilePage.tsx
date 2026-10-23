@@ -39,7 +39,7 @@ const FONT_STEPS: FontScale[] = ["16", "18", "20"];
 const FONT_LABELS: Record<FontScale, string> = { "16": "100% (Estándar)", "18": "112% (Amplio)", "20": "125% (Máxima)" };
 
 const INPUT =
-  "w-full h-[52px] px-space-md bg-surface-container-low rounded-lg text-on-surface placeholder:text-outline font-body-md text-body-md focus:bg-surface-container-lowest focus:outline-none focus:shadow-[0_0_0_3px_rgba(15,81,68,0.2)] transition-all";
+  "w-full h-[52px] px-space-md bg-surface-container-low rounded-lg text-on-surface placeholder:text-outline font-body-md text-body-md focus:bg-surface-container-lowest focus:outline-none focus:shadow-[0_0_0_3px_rgba(15,60,140,0.2)] transition-all";
 
 export default function ProfilePage() {
   const { user, logout } = useAuth();
@@ -121,7 +121,7 @@ export default function ProfilePage() {
               <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-primary-container text-on-primary font-label-sm text-label-sm">04</span>
               <span className="font-label-sm text-label-sm text-secondary uppercase tracking-wider font-semibold">Configuración del expediente personal</span>
             </div>
-            <h1 className="font-headline-lg-mobile text-headline-lg-mobile md:font-headline-lg md:text-headline-lg text-primary tracking-tight">Centro de Privacidad &amp; Perfil</h1>
+            <h1 className="font-headline-lg-mobile text-headline-lg-mobile md:font-headline-lg md:text-headline-lg text-ink tracking-tight">Centro de Privacidad &amp; Perfil</h1>
             <p className="font-body-md text-body-md text-on-surface-variant">
               Controla tus datos, exporta o borra tu historial y ajusta la lectura a lo que necesites.
             </p>
@@ -423,7 +423,7 @@ function Module({ number, title, description, children }: { number: string; titl
     <section className="bg-surface-container-lowest p-space-md md:p-space-lg rounded-xl shadow-sm">
       <div className="pb-space-sm mb-space-md">
         <span className="font-label-sm text-label-sm text-secondary font-bold uppercase tracking-wider">Módulo {number}</span>
-        <h2 className="font-headline-md text-headline-md text-primary">{title}</h2>
+        <h2 className="font-headline-md text-headline-md text-ink">{title}</h2>
         <p className="font-body-sm text-body-sm text-on-surface-variant mt-1">{description}</p>
       </div>
       {children}

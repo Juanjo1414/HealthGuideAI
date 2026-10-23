@@ -1,6 +1,6 @@
-import { screen, waitFor } from "@testing-library/react";
+import { act, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import HomePage from "./HomePage";
 import { renderAt, triageResponse } from "../test/utils";
 import { sendAnonymousMessage, sendMessage, createConversation, getConversation, ChatApiError } from "../api/chatApi";
@@ -373,5 +373,42 @@ describe("HomePage — nueva evaluación", () => {
     await userEvent.click(screen.getByRole("button", { name: /nueva evaluación/i }));
 
     expect(await screen.findByLabelText(/describe tus síntomas/i)).toBeInTheDocument();
+  });
+});
+
+describe("HomePage — dictado por voz", () => {
+  afterEach(() => {
+    delete (window as unknown as Record<string, unknown>).webkitSpeechRecognition;
+  });
+
+  it("si el micrófono falla, el usuario ve el motivo y el botón vuelve a 'Hablar'", async () => {
+    class FakeRecognition {
+      static last: FakeRecognition | null = null;
+      listeners: Record<string, Array<(e?: unknown) => void>> = {};
+      lang = "";
+      continuous = false;
+      interimResults = false;
+      start = vi.fn();
+      stop = vi.fn();
+      constructor() {
+        FakeRecognition.last = this;
+      }
+      addEventListener(type: string, listener: (e?: unknown) => void) {
+        (this.listeners[type] ??= []).push(listener);
+      }
+    }
+    (window as unknown as Record<string, unknown>).webkitSpeechRecognition = FakeRecognition;
+    renderAt(<HomePage />);
+
+    await userEvent.click(screen.getByRole("button", { name: /hablar/i }));
+    expect(screen.getByRole("button", { name: /detener/i })).toBeInTheDocument();
+
+    act(() => {
+      FakeRecognition.last!.listeners.error.forEach((l) => l({ error: "not-allowed" }));
+      FakeRecognition.last!.listeners.end?.forEach((l) => l());
+    });
+
+    expect(await screen.findByRole("alert")).toHaveTextContent(/permiso para usar el micrófono/i);
+    expect(screen.getByRole("button", { name: /hablar/i })).toBeInTheDocument();
   });
 });

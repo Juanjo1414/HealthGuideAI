@@ -64,6 +64,26 @@ simular una conversación que no existe sería engañoso. Está en el backlog.
   lea como la más grave (mismo principio que el bug corregido en la Sesión 9). Metadatos y textos en
   `constants/priority.ts`, alineados con `contract.PRIORITY_RUBRIC` del backend.
 
+## Rediseño visual azul y blanco + Poppins (2026-10-22)
+
+Se re-tematizó la interfaz sin tocar estructura, textos, rutas ni funcionalidad. Los **nombres de
+token de Stitch se conservan** (`bg-primary-container`, `text-on-surface-variant`…) y solo cambian sus
+valores en `frontend/src/styles/tailwind.css`, así que portar una pantalla de Stitch sigue siendo copiar
+su marcado, pero con la paleta nueva:
+
+- `primary-container` #1565d8 (botones), `primary` #0f4fb0 (hover y texto), `secondary` #0f5bc4,
+  superficies blanco y azul muy claro, texto `ink` #0a2540 (azul marino, no negro) y `slate-600` para párrafos. Tipografía **Poppins** 400/500/600.
+- Tokens nuevos: `ink`, `primary-hover`, `primary-text`, `primary-deep`, `primary-soft`, `bg-tint`,
+  `bg-card`, `heading-muted`, y sombras `shadow-btn` / `shadow-card-hover`.
+- Botón primario = `<a|button>` con `bg-primary-container rounded-full`: la sombra azul, la altura de
+  48 px y el hover salen de una regla global al final de `tailwind.css`. `.card-lift` eleva las tarjetas.
+- **Se desvió de la referencia para cumplir AA** (`CONSTRAINTS.md`, cero violaciones serias de axe):
+  `heading-muted` es #7a8fab (3.3:1), más oscuro que una referencia gris-lavanda de ~1.8:1; el texto secundario usa #475569 y los rótulos
+  #55677f en vez de slate-400 (2.6:1); el foco visible es un contorno sólido de 2 px, no una sombra al 35 %.
+- La escala de **prioridad** no se re-tematiza: BAJA/MEDIA/ALTA/EMERGENCIA conservan verde/ámbar/rojo,
+  porque el color es semántico.
+- Los íconos siguen siendo Material Symbols (Stitch); no se migraron a lucide.
+
 ## Desvío deliberado del diseño: "Lo que identificamos" y "Qué podría estar pasando" (2026-10-04)
 
 El resultado de Stitch no tiene un bloque para las causas posibles: solo aparecían convertidas en

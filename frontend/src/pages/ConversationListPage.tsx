@@ -85,7 +85,7 @@ export default function ConversationListPage() {
               <span aria-hidden="true" className="material-symbols-outlined text-[16px]">verified_user</span>
               <span>Expediente personal • Solo tú lo ves</span>
             </div>
-            <h1 className="font-headline-lg-mobile text-headline-lg-mobile md:font-headline-lg md:text-headline-lg text-primary tracking-tight font-bold">
+            <h1 className="font-headline-lg-mobile text-headline-lg-mobile md:font-headline-lg md:text-headline-lg text-ink tracking-tight font-bold">
               Mis conversaciones
             </h1>
             <p className="font-body-md text-body-md text-on-surface-variant mt-space-xs">
@@ -120,7 +120,7 @@ export default function ConversationListPage() {
 
         {state === "ready" && conversations.length === 0 && (
           <div className="rounded-2xl bg-surface-container-lowest p-space-xl shadow-sm flex flex-col items-center text-center gap-space-sm">
-            <div className="w-14 h-14 rounded-2xl bg-surface-container text-primary flex items-center justify-center">
+            <div className="w-14 h-14 rounded-xl bg-surface-container text-primary flex items-center justify-center">
               <span aria-hidden="true" className="material-symbols-outlined text-[28px]">forum</span>
             </div>
             <h2 className="font-headline-sm text-headline-sm text-on-surface">Todavía no tienes conversaciones</h2>

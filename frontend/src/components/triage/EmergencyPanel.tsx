@@ -37,7 +37,7 @@ export default function EmergencyPanel({ signals, dispatchSummary }: EmergencyPa
         <div className="absolute -right-16 -top-16 w-80 h-80 rounded-full bg-error/10 pointer-events-none blur-2xl" />
         <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-space-md">
           <div className="flex items-start gap-space-md">
-            <div className="w-14 h-14 rounded-2xl bg-error text-on-error flex items-center justify-center flex-shrink-0 shadow-md animate-pulse motion-reduce:animate-none">
+            <div className="w-14 h-14 rounded-xl bg-error text-on-error flex items-center justify-center flex-shrink-0 shadow-md animate-pulse motion-reduce:animate-none">
               <span aria-hidden="true" className="material-symbols-outlined text-[32px]">crisis_alert</span>
             </div>
             <div className="flex flex-col">
@@ -55,7 +55,7 @@ export default function EmergencyPanel({ signals, dispatchSummary }: EmergencyPa
               <p className="font-body-md text-body-md text-on-error-container/90 max-w-3xl">
                 {named ? (
                   <>
-                    Tu descripción contiene indicadores de <strong className="text-error font-semibold">{named}</strong>.{" "}
+                    Tu descripción contiene indicadores de <strong className="text-on-error-container font-semibold">{named}</strong>.{" "}
                   </>
                 ) : null}
                 Para proteger tu vida, el sistema no intenta tranquilizarte: escala la prioridad a emergencia y te
