@@ -4,6 +4,7 @@ import PageShell from "../components/layout/PageShell";
 import OfflinePanel from "../components/triage/OfflinePanel";
 import TriageResultCard from "../components/triage/TriageResultCard";
 import ChatComposer from "../components/triage/ChatComposer";
+import FaqSection from "../components/home/FaqSection";
 import { ChatApiError, createConversation, getConversation, sendAnonymousMessage, sendMessage } from "../api/chatApi";
 import { useAuth } from "../context/AuthContext";
 import { useSpeechDictation } from "../lib/useSpeechDictation";
@@ -334,8 +335,8 @@ export default function HomePage() {
             {/* Con una conversación en curso el h1 de la página es el del resultado. */}
             {(turns.length === 0 || isLoadingExistingConversation) && (
             <div className="max-w-3xl mb-space-lg">
-              <h1 className="font-display-lg-mobile text-display-lg-mobile md:font-display-lg md:text-display-lg text-primary tracking-tight mb-space-sm">
-                ¿Cómo te sientes hoy? Cuéntanos qué molestias tienes
+              <h1 className="font-display-lg-mobile text-hero-mobile md:font-display-lg md:text-hero text-ink tracking-tight mb-space-sm">
+                ¿Cómo te sientes hoy? Cuéntanos qué <span className="text-highlight">molestias tienes</span>
               </h1>
               <p className="font-body-lg text-body-lg text-on-surface-variant leading-relaxed max-w-2xl">
                 Respuestas claras y orientación médica responsable para saber si debes descansar en casa, agendar cita o
@@ -354,7 +355,7 @@ export default function HomePage() {
                 </span>
               </div>
             ) : turns.length === 0 ? (
-              <div className="w-full bg-surface-container-lowest rounded-3xl p-space-md md:p-space-lg lg:p-space-xl shadow-[0_12px_36px_-6px_rgba(15,81,68,0.08)] relative">
+              <div className="w-full bg-surface-container-lowest rounded-3xl p-space-md md:p-space-lg lg:p-space-xl shadow-[0_12px_36px_-6px_rgba(15,60,140,0.08)] relative">
                 <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-secondary-fixed via-primary-container to-secondary rounded-t-3xl" />
                 <form className="flex flex-col gap-space-md" onSubmit={handleSubmit}>
                   <div className="flex items-center justify-between flex-wrap gap-space-xs">
@@ -367,7 +368,7 @@ export default function HomePage() {
                     </span>
                   </div>
 
-                  <div className="relative w-full rounded-2xl bg-surface-container-low transition-all duration-200 focus-within:bg-surface-container-lowest focus-within:shadow-[0_0_0_3px_rgba(15,81,68,0.18)]">
+                  <div className="relative w-full rounded-2xl bg-surface-container-low transition-all duration-200 focus-within:bg-surface-container-lowest focus-within:shadow-[0_0_0_3px_rgba(15,60,140,0.18)]">
                     <textarea
                       ref={textareaRef}
                       aria-describedby="char-counter symptom-hint"
@@ -407,6 +408,11 @@ export default function HomePage() {
                         </button>
                       )}
                     </div>
+                    {dictation.error && (
+                      <p role="alert" className="px-space-md pb-space-sm font-body-sm text-body-sm text-error">
+                        {dictation.error}
+                      </p>
+                    )}
                   </div>
 
                   <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-space-md pt-space-xs">
@@ -438,7 +444,7 @@ export default function HomePage() {
                       </div>
                     </div>
                     <button
-                      className="inline-flex items-center justify-center gap-space-sm px-space-xl py-3.5 rounded-full bg-primary-container text-on-primary font-headline-sm text-headline-sm hover:opacity-95 active:scale-[0.99] transition-all shadow-[0_8px_20px_rgba(15,81,68,0.22)] flex-shrink-0 disabled:opacity-50 disabled:pointer-events-none"
+                      className="inline-flex items-center justify-center gap-space-sm px-space-xl py-3.5 rounded-full bg-primary-container text-on-primary font-headline-sm text-headline-sm hover:opacity-95 active:scale-[0.99] transition-all flex-shrink-0 disabled:opacity-50 disabled:pointer-events-none"
                       type="submit"
                       disabled={isLoading || !text.trim()}
                     >
@@ -466,7 +472,7 @@ export default function HomePage() {
                           className={
                             chip.urgent
                               ? "px-space-md py-space-xs bg-error-container text-on-error-container hover:bg-error hover:text-on-error rounded-full font-label-md text-label-md transition-colors flex items-center gap-1.5"
-                              : "px-space-md py-space-xs bg-surface-container-low hover:bg-secondary-fixed/20 text-on-surface hover:text-primary rounded-full font-label-md text-label-md transition-colors flex items-center gap-1.5"
+                              : "px-space-md py-space-xs bg-white border border-slate-200 hover:border-primary hover:text-primary text-on-surface rounded-full font-label-md text-label-md transition-colors flex items-center gap-1.5"
                           }
                         >
                           <span className={`w-1.5 h-1.5 rounded-full ${chip.urgent ? "bg-error animate-pulse motion-reduce:animate-none" : "bg-secondary"}`} />
@@ -508,7 +514,7 @@ export default function HomePage() {
                     type="button"
                     onClick={startNewEvaluation}
                     disabled={isSending}
-                    className="inline-flex items-center gap-space-xs px-space-md py-2 rounded-full bg-surface-container-lowest text-primary font-label-md text-label-md shadow-sm hover:bg-surface-container-low active:scale-95 transition-all disabled:opacity-50 disabled:pointer-events-none"
+                    className="inline-flex items-center gap-space-xs px-space-md py-2 rounded-full bg-white border border-primary/40 text-primary font-label-md text-label-md hover:border-primary hover:bg-primary-soft active:scale-95 transition-all disabled:opacity-50 disabled:pointer-events-none"
                   >
                     <span aria-hidden="true" className="material-symbols-outlined text-[18px]">add_circle</span>
                     Nueva evaluación
@@ -601,7 +607,7 @@ export default function HomePage() {
 
             <div className="mt-space-lg rounded-2xl bg-surface-container-lowest p-space-md md:p-space-lg shadow-sm flex flex-col md:flex-row items-center justify-between gap-space-md">
               <div className="flex items-center gap-space-md">
-                <div className="w-12 h-12 rounded-2xl bg-error-container text-on-error-container flex items-center justify-center flex-shrink-0 shadow-[0_2px_8px_rgba(186,26,26,0.18)]">
+                <div className="w-12 h-12 rounded-xl bg-error-container text-on-error-container flex items-center justify-center flex-shrink-0 shadow-[0_2px_8px_rgba(186,26,26,0.18)]">
                   <span aria-hidden="true" className="material-symbols-outlined text-headline-md">e911_emergency</span>
                 </div>
                 <div>
@@ -625,11 +631,14 @@ export default function HomePage() {
           </div>
         </div>
 
-        <section className="w-full max-w-[1280px] mx-auto px-margin md:px-margin-tablet lg:px-margin-desktop py-space-xl">
+        <FaqSection />
+
+        <div className="w-full bg-white">
+        <section className="w-full max-w-[1280px] mx-auto px-margin md:px-margin-tablet lg:px-margin-desktop py-16 md:py-24">
           <div className="text-center max-w-2xl mx-auto mb-space-xl">
             <span className="font-label-sm text-label-sm uppercase tracking-wider text-secondary">Marco Clínico Riguroso</span>
-            <h2 className="font-headline-lg text-headline-lg text-primary tracking-tight mt-space-xs">
-              Compromiso de Orientación Médica Ética y Responsable
+            <h2 className="font-headline-lg text-headline-lg text-ink tracking-tight mt-space-xs">
+              <span className="text-heading-muted">Compromiso de Orientación Médica </span>Ética y Responsable
             </h2>
             <p className="font-body-md text-body-md text-on-surface-variant mt-space-xs">
               Diseñado para evitar el alarmismo infundado y proteger las decisiones oportunas de salud.
@@ -639,9 +648,9 @@ export default function HomePage() {
             {PILLARS.map((pillar, index) => {
               const tone = pillar.tone === "error" ? "text-error" : "text-secondary";
               return (
-                <div key={pillar.title} className="bg-surface-container-lowest p-space-lg rounded-2xl shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between">
+                <div key={pillar.title} className="bg-bg-card border border-slate-200 p-space-lg rounded-2xl card-lift flex flex-col justify-between">
                   <div>
-                    <div className={`w-12 h-12 rounded-xl bg-surface-container flex items-center justify-center mb-space-md ${pillar.tone === "error" ? "text-error" : "text-primary"}`}>
+                    <div className={`w-12 h-12 rounded-xl bg-primary-soft flex items-center justify-center mb-space-md ${pillar.tone === "error" ? "text-error" : "text-primary-deep"}`}>
                       <span aria-hidden="true" className="material-symbols-outlined text-headline-sm">{pillar.icon}</span>
                     </div>
                     <span className={`font-label-sm text-label-sm uppercase font-bold ${tone}`}>Pilar 0{index + 1}</span>
@@ -657,8 +666,9 @@ export default function HomePage() {
             })}
           </div>
         </section>
+        </div>
 
-        <section className="w-full bg-surface-container-low py-space-xl">
+        <section className="w-full bg-bg-tint py-16 md:py-24">
           <div className="max-w-[1280px] mx-auto px-margin md:px-margin-tablet lg:px-margin-desktop">
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-space-lg items-center">
               <div className="lg:col-span-7 flex flex-col gap-space-md">
@@ -672,7 +682,7 @@ export default function HomePage() {
                 </blockquote>
                 <div className="flex items-center gap-space-md pt-space-xs">
                   <div className="w-14 h-14 rounded-full overflow-hidden flex-shrink-0 shadow-sm bg-surface-container-lowest flex items-center justify-center">
-                    <img alt="" className="w-full h-full object-contain" src="/stitch/logo.jpg" />
+                    <img alt="" className="w-full h-full object-contain" src="/logo-mark.png" />
                   </div>
                   <div>
                     <p className="font-label-lg text-label-lg text-on-surface">Equipo HealthGuide AI</p>
@@ -723,11 +733,12 @@ export default function HomePage() {
           </div>
         </section>
 
-        <section id="como-funciona" className="w-full max-w-[1280px] mx-auto px-margin md:px-margin-tablet lg:px-margin-desktop py-space-xl scroll-mt-24">
+        <div className="w-full bg-white">
+        <section id="como-funciona" className="w-full max-w-[1280px] mx-auto px-margin md:px-margin-tablet lg:px-margin-desktop py-16 md:py-24 scroll-mt-24">
           <div className="flex flex-col md:flex-row md:items-end justify-between mb-space-lg gap-space-sm">
             <div>
               <span className="font-label-sm text-label-sm uppercase tracking-wider text-secondary">Flujo Transparente</span>
-              <h2 className="font-headline-lg text-headline-lg text-primary tracking-tight mt-1">Tres pasos guiados en menos de 2 minutos</h2>
+              <h2 className="font-headline-lg text-headline-lg text-ink tracking-tight mt-1"><span className="text-heading-muted">Tres pasos guiados </span>en menos de 2 minutos</h2>
             </div>
             <p className="font-body-sm text-body-sm text-on-surface-variant max-w-md">
               Sin cuestionarios infinitos ni términos incomprensibles.
@@ -735,7 +746,7 @@ export default function HomePage() {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-space-md">
             {STEPS.map((step) => (
-              <div key={step.n} className="bg-surface-container-low p-space-lg rounded-2xl flex flex-col justify-between">
+              <div key={step.n} className="bg-bg-card border border-slate-200 p-space-lg rounded-2xl card-lift flex flex-col justify-between">
                 <div>
                   <span className="text-display-lg-mobile font-display-lg text-secondary font-bold">{step.n}</span>
                   <h3 className="font-headline-sm text-headline-sm text-primary mt-space-xs mb-space-xs">{step.title}</h3>
@@ -749,23 +760,25 @@ export default function HomePage() {
             ))}
           </div>
         </section>
+        </div>
 
-        <section className="w-full max-w-[1280px] mx-auto px-margin md:px-margin-tablet lg:px-margin-desktop pb-space-xl">
-          <div className="bg-primary-container text-on-primary rounded-3xl p-space-lg md:p-space-xl relative overflow-hidden shadow-lg">
-            <div className="pointer-events-none absolute -bottom-16 -right-16 w-80 h-80 rounded-full bg-secondary-container/10 blur-2xl" />
+        <section className="w-full max-w-[1280px] mx-auto px-margin md:px-margin-tablet lg:px-margin-desktop py-16 md:py-24">
+          <div className="bg-primary-soft text-ink rounded-3xl p-space-lg md:p-space-xl relative overflow-hidden">
+            <div className="pointer-events-none absolute -bottom-24 -right-16 w-96 h-96 rounded-full bg-primary-container/20 blur-3xl" />
+            <div className="pointer-events-none absolute -top-24 -left-16 w-72 h-72 rounded-full bg-primary-fixed-dim/60 blur-3xl" />
             <div className="max-w-2xl relative z-10">
-              <span className="px-space-md py-1 bg-surface-container-lowest/10 rounded-full font-label-sm text-label-sm uppercase tracking-wider text-secondary-fixed">
+              <span className="px-space-md py-1 bg-white rounded-full font-label-sm text-label-sm uppercase tracking-wider text-primary-deep">
                 Atención Gratuita &amp; Confidencial
               </span>
-              <h2 className="font-headline-lg text-headline-lg tracking-tight mt-space-md mb-space-xs text-on-primary">
+              <h2 className="font-headline-lg text-headline-lg tracking-tight mt-space-md mb-space-xs text-ink">
                 No te quedes con la duda ni alimentes la preocupación
               </h2>
-              <p className="font-body-md text-body-md text-on-primary-container mb-space-lg leading-relaxed">
+              <p className="font-body-md text-body-md text-on-surface-variant mb-space-lg leading-relaxed">
                 Toma una decisión informada sobre tu salud en menos de dos minutos. Sin formularios de registro previos.
               </p>
               <div className="flex flex-wrap items-center gap-space-md">
                 <button
-                  className="inline-flex items-center gap-space-xs px-space-xl py-3 rounded-full bg-secondary-fixed text-on-secondary-fixed font-headline-sm text-headline-sm shadow-md hover:bg-secondary-fixed-dim active:scale-95 transition-all"
+                  className="inline-flex items-center gap-space-xs px-space-xl py-3 rounded-full bg-primary-container text-on-primary font-headline-sm text-headline-sm active:scale-95 transition-all"
                   type="button"
                   onClick={focusForm}
                 >
@@ -773,7 +786,7 @@ export default function HomePage() {
                   <span aria-hidden="true" className="material-symbols-outlined">north_east</span>
                 </button>
                 {!isAuthenticated && (
-                  <Link className="font-label-lg text-label-lg text-secondary-fixed underline-offset-4 hover:underline" to="/signup">
+                  <Link className="font-label-lg text-label-lg text-primary-deep underline underline-offset-4 hover:text-primary" to="/signup">
                     o crea una cuenta para guardar tu historial
                   </Link>
                 )}

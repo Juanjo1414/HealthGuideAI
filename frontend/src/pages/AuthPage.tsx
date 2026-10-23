@@ -11,7 +11,7 @@ import { EMERGENCY_NUMBER } from "../constants/emergency";
 type Mode = "login" | "signup" | "recover";
 
 const INPUT =
-  "w-full h-[52px] pl-11 pr-4 bg-surface-container-lowest rounded-xl text-on-surface font-body-md text-body-md placeholder:text-on-surface-variant/50 shadow-[0_1px_3px_rgba(15,81,68,0.06)] ring-1 ring-outline-variant/40 focus:outline-none focus:ring-2 focus:ring-primary-container transition-all disabled:opacity-60";
+  "w-full h-[52px] pl-11 pr-4 bg-surface-container-lowest rounded-xl text-on-surface font-body-md text-body-md placeholder:text-on-surface-variant/50 shadow-[0_1px_3px_rgba(15,60,140,0.06)] ring-1 ring-outline-variant/40 focus:outline-none focus:ring-2 focus:ring-primary-container transition-all disabled:opacity-60";
 
 function modeFromPath(pathname: string): Mode {
   if (pathname.startsWith("/signup")) return "signup";
@@ -90,7 +90,7 @@ export default function AuthPage() {
                 <span className="w-2 h-2 rounded-full bg-secondary" />
                 <span className="font-label-sm text-label-sm text-secondary uppercase tracking-wider font-bold">Portal Seguro</span>
               </div>
-              <h1 className="font-headline-lg-mobile text-headline-lg-mobile md:font-headline-lg md:text-headline-lg text-primary tracking-tight font-bold">
+              <h1 className="font-headline-lg-mobile text-headline-lg-mobile md:font-headline-lg md:text-headline-lg text-ink tracking-tight font-bold">
                 Tu Salud, Tus Datos, Bajo Tu Control
               </h1>
               <p className="font-body-md text-body-md text-on-surface-variant max-w-xl">
@@ -99,7 +99,7 @@ export default function AuthPage() {
               </p>
             </div>
 
-            <div className="bg-surface-container-lowest rounded-2xl shadow-[0_4px_24px_-4px_rgba(15,81,68,0.06),0_1px_8px_-1px_rgba(15,81,68,0.03)] p-space-md sm:p-space-lg flex flex-col gap-space-lg">
+            <div className="bg-surface-container-lowest rounded-2xl shadow-[0_4px_24px_-4px_rgba(15,60,140,0.06),0_1px_8px_-1px_rgba(15,60,140,0.03)] p-space-md sm:p-space-lg flex flex-col gap-space-lg">
               <nav className="flex p-1.5 bg-surface-container-low rounded-xl gap-1" aria-label="Tipo de acceso">
                 <TabLink to="/login" active={mode === "login"} icon="login" label="Iniciar Sesión" />
                 <TabLink to="/signup" active={mode === "signup"} icon="person_add" label="Crear Cuenta" />
@@ -282,8 +282,8 @@ export default function AuthPage() {
                     <button
                       className={`w-full h-[52px] rounded-xl text-on-primary font-label-lg text-label-lg flex items-center justify-center gap-space-xs transition-all active:scale-[0.99] mt-space-xs disabled:opacity-50 disabled:pointer-events-none ${
                         mode === "signup"
-                          ? "bg-secondary hover:bg-primary shadow-[0_4px_16px_rgba(0,108,73,0.2)]"
-                          : "bg-primary-container hover:bg-primary shadow-[0_4px_16px_rgba(15,81,68,0.2)]"
+                          ? "bg-secondary hover:bg-primary shadow-[0_4px_16px_rgba(37,112,230,0.2)]"
+                          : "bg-primary-container hover:bg-primary shadow-[0_4px_16px_rgba(15,60,140,0.2)]"
                       }`}
                       type="submit"
                       disabled={isLoading || !email.trim() || !password}
@@ -348,7 +348,7 @@ export default function AuthPage() {
                         />
                       </Field>
                       <button
-                        className="w-full h-[52px] rounded-xl bg-primary-container hover:bg-primary text-on-primary font-label-lg text-label-lg flex items-center justify-center gap-space-xs shadow-[0_4px_16px_rgba(15,81,68,0.2)] transition-all active:scale-[0.99]"
+                        className="w-full h-[52px] rounded-xl bg-primary-container hover:bg-primary text-on-primary font-label-lg text-label-lg flex items-center justify-center gap-space-xs shadow-[0_4px_16px_rgba(15,60,140,0.2)] transition-all active:scale-[0.99]"
                         type="submit"
                       >
                         <span aria-hidden="true" className="material-symbols-outlined text-[20px]">outgoing_mail</span>
@@ -368,41 +368,41 @@ export default function AuthPage() {
           </section>
 
           <aside className="lg:col-span-5 flex flex-col gap-space-md">
-            <div className="bg-primary-container text-on-primary rounded-2xl p-space-md sm:p-space-lg shadow-[0_12px_32px_-4px_rgba(15,81,68,0.18)] flex flex-col gap-space-lg relative overflow-hidden">
-              <div className="absolute -right-12 -top-12 w-48 h-48 rounded-full bg-secondary-fixed/10 pointer-events-none blur-2xl" />
-              <div className="absolute -left-12 -bottom-12 w-40 h-40 rounded-full bg-surface-container/5 pointer-events-none blur-xl" />
+            <div className="bg-white text-on-surface-variant border border-slate-200 rounded-2xl p-space-md sm:p-space-lg shadow-card flex flex-col gap-space-lg relative overflow-hidden">
+              <div className="absolute -right-12 -top-12 w-48 h-48 rounded-full bg-primary-fixed-dim/40 pointer-events-none blur-2xl" />
+              <div className="absolute -left-12 -bottom-12 w-40 h-40 rounded-full bg-primary-fixed/70 pointer-events-none blur-xl" />
               <div className="flex items-center justify-between relative z-10">
                 <div className="flex items-center gap-space-sm">
-                  <div className="w-10 h-10 rounded-xl bg-on-primary/10 flex items-center justify-center">
-                    <span aria-hidden="true" className="material-symbols-outlined text-secondary-fixed text-[24px]">verified_user</span>
+                  <div className="w-10 h-10 rounded-xl bg-primary-soft flex items-center justify-center">
+                    <span aria-hidden="true" className="material-symbols-outlined text-primary text-[24px]">verified_user</span>
                   </div>
                   <div>
-                    <h3 className="font-headline-sm text-headline-sm font-bold tracking-tight">Compromiso Ético</h3>
-                    <p className="font-label-sm text-label-sm text-on-primary-container">Reglas que no se negocian</p>
+                    <h3 className="font-headline-sm text-headline-sm font-bold tracking-tight text-ink">Compromiso Ético</h3>
+                    <p className="font-label-sm text-label-sm text-on-surface-variant">Reglas que no se negocian</p>
                   </div>
                 </div>
-                <span className="px-2.5 py-1 rounded-full bg-secondary-fixed text-on-secondary-fixed font-label-sm text-label-sm font-bold uppercase tracking-wider">Siempre activas</span>
+                <span className="px-2.5 py-1 rounded-full bg-primary-soft text-primary-deep font-label-sm text-label-sm font-bold uppercase tracking-wider">Siempre activas</span>
               </div>
 
-              <div className="bg-primary/40 p-space-md rounded-xl backdrop-blur-sm relative z-10 flex flex-col gap-space-sm">
+              <div className="bg-bg-tint border border-slate-200 p-space-md rounded-xl relative z-10 flex flex-col gap-space-sm">
                 <div className="flex items-center justify-between">
-                  <span className="font-label-md text-label-md text-on-primary">Flujo de seguridad en cada consulta</span>
-                  <span className="font-label-sm text-label-sm text-secondary-fixed">Doble control</span>
+                  <span className="font-label-md text-label-md text-ink">Flujo de seguridad en cada consulta</span>
+                  <span className="font-label-sm text-label-sm text-primary">Doble control</span>
                 </div>
                 <div className="w-full py-1">
-                  <svg className="w-full h-16 text-on-primary-container" fill="none" viewBox="0 0 340 50" aria-hidden="true">
+                  <svg className="w-full h-16 text-primary" fill="none" viewBox="0 0 340 50" aria-hidden="true">
                     <circle cx="30" cy="25" fill="currentColor" fillOpacity="0.2" r="16" />
-                    <text fill="#FFFFFF" fontFamily="Plus Jakarta Sans" fontSize="9" fontWeight="600" textAnchor="middle" x="30" y="28">Tu texto</text>
+                    <text fill="#111111" fontFamily="Poppins" fontSize="7.5" fontWeight="600" textAnchor="middle" x="30" y="28">Tu texto</text>
                     <path d="M50 25H90" stroke="currentColor" strokeDasharray="3 3" />
-                    <circle cx="70" cy="25" fill="#6CF8BB" r="4" />
-                    <rect fill="#006C49" height="30" rx="6" width="70" x="94" y="10" />
-                    <text fill="#FFFFFF" fontFamily="Plus Jakarta Sans" fontSize="9" fontWeight="600" textAnchor="middle" x="129" y="28">Reglas de alarma</text>
+                    <circle cx="70" cy="25" fill="#2570e6" r="4" />
+                    <rect fill="#134aa3" height="30" rx="6" width="70" x="94" y="10" />
+                    <text fill="#FFFFFF" fontFamily="Poppins" fontSize="7.5" fontWeight="600" textAnchor="middle" x="129" y="28">Reglas de alarma</text>
                     <path d="M168 25H210" stroke="currentColor" />
                     <rect fill="currentColor" fillOpacity="0.2" height="30" rx="6" width="100" x="214" y="10" />
-                    <text fill="#B1EFDD" fontFamily="Plus Jakarta Sans" fontSize="9" fontWeight="600" textAnchor="middle" x="264" y="28">IA + validador</text>
+                    <text fill="#111111" fontFamily="Poppins" fontSize="7.5" fontWeight="600" textAnchor="middle" x="264" y="28">IA + validador</text>
                   </svg>
                 </div>
-                <p className="font-body-sm text-body-sm text-on-primary-container leading-relaxed">
+                <p className="font-body-sm text-body-sm text-on-surface-variant leading-relaxed">
                   Reglas deterministas revisan tu descripción antes del modelo, y un validador revisa la respuesta: nunca
                   diagnostica, nunca receta, y ante una señal de alarma escala a emergencia.
                 </p>
@@ -411,29 +411,29 @@ export default function AuthPage() {
               <div className="flex flex-col gap-space-sm relative z-10">
                 {[
                   ["lock", "Contraseñas resguardadas con bcrypt", "Nunca guardamos tu contraseña en texto plano; tu sesión viaja en una cookie que el navegador no expone a scripts."],
-                  ["incognito", "Consulta sin cuenta", "Puedes evaluar tus síntomas sin registrarte. Sin cuenta, no guardamos el texto de tu consulta."],
+                  ["person_off", "Consulta sin cuenta", "Puedes evaluar tus síntomas sin registrarte. Sin cuenta, no guardamos el texto de tu consulta."],
                   ["policy", "Derecho al olvido en 1 clic", "Desde tu perfil puedes borrar todo tu historial de consultas de forma definitiva."],
                 ].map(([icon, title, body]) => (
-                  <div key={title} className="flex items-start gap-space-sm p-space-sm bg-on-primary/5 rounded-xl hover:bg-on-primary/10 transition-colors">
-                    <span aria-hidden="true" className="material-symbols-outlined text-secondary-fixed text-[22px] flex-shrink-0 mt-0.5">{icon}</span>
+                  <div key={title} className="flex items-start gap-space-sm p-space-sm bg-bg-tint border border-slate-200 rounded-xl hover:bg-primary-soft transition-colors">
+                    <span aria-hidden="true" className="material-symbols-outlined text-primary text-[22px] flex-shrink-0 mt-0.5">{icon}</span>
                     <div className="flex flex-col">
-                      <span className="font-label-lg text-label-lg font-bold">{title}</span>
-                      <span className="font-body-sm text-body-sm text-primary-fixed-dim">{body}</span>
+                      <span className="font-label-lg text-label-lg font-bold text-ink">{title}</span>
+                      <span className="font-body-sm text-body-sm text-on-surface-variant">{body}</span>
                     </div>
                   </div>
                 ))}
               </div>
 
-              <div className="relative z-10 pt-space-xs border-t border-on-primary/10 flex items-center gap-space-sm">
-                <img className="w-10 h-10 rounded-full object-contain bg-surface-container-lowest flex-shrink-0" alt="" src="/stitch/logo.jpg" />
+              <div className="relative z-10 pt-space-xs border-t border-slate-200 flex items-center gap-space-sm">
+                <img className="w-10 h-10 rounded-full object-contain bg-white border border-slate-200 flex-shrink-0" alt="" src="/logo-mark.png" />
                 <div className="flex flex-col">
-                  <span className="font-label-md text-label-md font-semibold text-on-primary">Equipo HealthGuide AI</span>
-                  <span className="font-label-sm text-label-sm text-on-primary-container">Proyecto académico · Makers Fellowship</span>
+                  <span className="font-label-md text-label-md font-semibold text-ink">Equipo HealthGuide AI</span>
+                  <span className="font-label-sm text-label-sm text-on-surface-variant">Proyecto académico · Makers Fellowship</span>
                 </div>
               </div>
             </div>
 
-            <div className="bg-surface-container-lowest rounded-2xl p-space-md shadow-[0_2px_12px_rgba(15,81,68,0.04)] flex items-center justify-between gap-space-md">
+            <div className="bg-surface-container-lowest rounded-2xl p-space-md shadow-[0_2px_12px_rgba(15,60,140,0.04)] flex items-center justify-between gap-space-md">
               <div className="flex items-center gap-space-sm">
                 <div className="w-9 h-9 rounded-full bg-error-container text-on-error-container flex items-center justify-center flex-shrink-0">
                   <span aria-hidden="true" className="material-symbols-outlined text-[20px]">crisis_alert</span>
@@ -450,7 +450,7 @@ export default function AuthPage() {
           </aside>
         </div>
 
-        <div className="mt-space-xl pt-space-lg flex flex-wrap items-center justify-center gap-space-lg opacity-80">
+        <div className="mt-space-xl pt-space-lg flex flex-wrap items-center justify-center gap-space-lg">
           {[
             ["cookie", "Cookies HttpOnly"],
             ["key", "Hash bcrypt"],

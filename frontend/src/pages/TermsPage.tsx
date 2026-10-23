@@ -53,7 +53,7 @@ export default function TermsPage() {
               <span className="w-2 h-2 rounded-full bg-secondary" />
               <span>VERSIÓN 2026 • REGLAS CLÍNICAS DEL PRODUCTO</span>
             </div>
-            <h1 className="font-display-lg-mobile text-display-lg-mobile md:font-display-lg md:text-display-lg text-primary tracking-tight font-bold mb-4">
+            <h1 className="font-display-lg-mobile text-display-lg-mobile md:font-display-lg md:text-display-lg text-ink tracking-tight font-bold mb-4">
               Marco Legal, Condiciones de Uso y Restricciones Médicas
             </h1>
             <p className="font-body-lg text-body-lg text-on-surface-variant leading-relaxed">
@@ -134,7 +134,7 @@ export default function TermsPage() {
 
         <div className="flex-1 flex flex-col gap-12 max-w-4xl">
           <Article id="seccion-1" tag="Cláusula primaria" article="Artículo 1">
-            <h2 className="font-headline-lg-mobile text-headline-lg-mobile md:font-headline-lg md:text-headline-lg text-primary font-bold mb-4">1. Naturaleza no diagnóstica ni asistencial</h2>
+            <h2 className="font-headline-lg-mobile text-headline-lg-mobile md:font-headline-lg md:text-headline-lg text-ink font-bold mb-4">1. Naturaleza no diagnóstica ni asistencial</h2>
             <div className="p-5 md:p-6 rounded-xl bg-surface-container-low text-primary flex flex-col sm:flex-row items-start gap-4 mb-6">
               <div className="p-3 bg-surface-container-lowest rounded-xl flex-shrink-0 text-primary">
                 <span aria-hidden="true" className="material-symbols-outlined text-headline-md">stethoscope</span>
@@ -183,7 +183,7 @@ export default function TermsPage() {
           </Article>
 
           <Article id="seccion-2" tag="Medicación" article="Artículo 2">
-            <h2 className="font-headline-lg-mobile text-headline-lg-mobile md:font-headline-lg md:text-headline-lg text-primary font-bold mb-4">2. Prohibición de recomendar medicamentos</h2>
+            <h2 className="font-headline-lg-mobile text-headline-lg-mobile md:font-headline-lg md:text-headline-lg text-ink font-bold mb-4">2. Prohibición de recomendar medicamentos</h2>
             <p className="font-body-md text-body-md text-on-surface mb-6 leading-relaxed">
               El sistema nunca recomienda medicamentos, dosis ni posologías. Un validador de seguridad revisa cada respuesta
               y, si detecta una recomendación de medicación, la reemplaza por una respuesta segura antes de mostrártela.
@@ -245,7 +245,7 @@ export default function TermsPage() {
           </Article>
 
           <Article id="seccion-4" tag="Privacidad" article="Artículo 4">
-            <h2 className="font-headline-lg-mobile text-headline-lg-mobile md:font-headline-lg md:text-headline-lg text-primary font-bold mb-4">4. Tus datos y cómo los tratamos</h2>
+            <h2 className="font-headline-lg-mobile text-headline-lg-mobile md:font-headline-lg md:text-headline-lg text-ink font-bold mb-4">4. Tus datos y cómo los tratamos</h2>
             <p className="font-body-md text-body-md text-on-surface mb-6 leading-relaxed">
               Los datos de salud son sensibles. Esto es exactamente lo que hace el sistema hoy, sin adornos:
             </p>
@@ -285,7 +285,7 @@ export default function TermsPage() {
           </Article>
 
           <Article id="seccion-5" tag="Compromiso ético" article="Artículo 5">
-            <h2 className="font-headline-lg-mobile text-headline-lg-mobile md:font-headline-lg md:text-headline-lg text-primary font-bold mb-4">5. Consentimiento y contacto</h2>
+            <h2 className="font-headline-lg-mobile text-headline-lg-mobile md:font-headline-lg md:text-headline-lg text-ink font-bold mb-4">5. Consentimiento y contacto</h2>
             <p className="font-body-md text-body-md text-on-surface mb-6 leading-relaxed">
               Al usar HealthGuide AI confirmas que entiendes la diferencia entre una orientación automática y la atención
               médica humana.

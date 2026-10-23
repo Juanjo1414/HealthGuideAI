@@ -15,7 +15,7 @@ export default function OfflinePanel({ onRetry, isRetrying }: OfflinePanelProps)
     <div className="bg-surface-container-lowest p-space-lg md:p-space-xl rounded-2xl shadow-sm flex flex-col gap-space-lg" role="alert">
       <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-space-md">
         <div className="flex items-center gap-space-md">
-          <div className="w-14 h-14 rounded-2xl bg-surface-container-highest text-on-surface-variant flex items-center justify-center flex-shrink-0">
+          <div className="w-14 h-14 rounded-xl bg-surface-container-highest text-on-surface-variant flex items-center justify-center flex-shrink-0">
             <span aria-hidden="true" className="material-symbols-outlined text-[32px]">cloud_off</span>
           </div>
           <div>

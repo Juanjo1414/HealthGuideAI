@@ -98,6 +98,21 @@ export async function expectNoSeriousA11yViolations(page: Page) {
   ).toEqual([]);
 }
 
+/**
+ * El encabezado es `fixed`: si su contenido se pasa del ancho no agranda la
+ * página, así que expectNoHorizontalOverflow no lo ve y los enlaces quedaban
+ * cortados. Se mide cada elemento visible del encabezado contra la ventana.
+ */
+export async function expectHeaderFits(page: Page) {
+  const cutOff = await page.evaluate(() =>
+    [...document.querySelectorAll("header a, header img")]
+      .map((el) => ({ el, rect: el.getBoundingClientRect() }))
+      .filter(({ rect }) => rect.width > 0 && rect.right > window.innerWidth + 0.5)
+      .map(({ el }) => (el.textContent?.trim() || el.getAttribute("alt") || el.tagName).slice(0, 40))
+  );
+  expect(cutOff).toEqual([]);
+}
+
 /** Responsive: nada se sale del ancho de la pantalla. */
 export async function expectNoHorizontalOverflow(page: Page) {
   const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
