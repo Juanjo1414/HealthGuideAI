@@ -55,3 +55,93 @@ export interface HistoryEntry {
   recomendacion: string | null;
   confianza: number | null;
 }
+
+/**
+ * Un mensaje dentro de una conversación — ver backend/app/schemas/chat.py
+ * (ChatMessageOut). `prioridad`/`requiere_revision` solo vienen presentes
+ * en turnos "assistant"; en turnos "user" quedan en null.
+ */
+export interface ChatMessageOut {
+  id: string;
+  role: "user" | "assistant";
+  content: string;
+  created_at: string;
+  prioridad: Priority | null;
+  requiere_revision: boolean | null;
+}
+
+/**
+ * Respuesta de GET /chat/conversations/{id} y POST /chat/conversations —
+ * ver backend/app/schemas/chat.py (ConversationDetail). Incluye el
+ * historial completo en orden cronológico.
+ */
+export interface ConversationDetail {
+  id: string;
+  created_at: string;
+  last_activity_at: string;
+  locked_emergency: boolean;
+  turn_limit_reached: boolean;
+  messages: ChatMessageOut[];
+}
+
+/**
+ * Una fila de GET /chat/conversations — ver backend/app/schemas/chat.py
+ * (ConversationSummary). No incluye los mensajes completos, solo un
+ * `preview` para mostrar en el listado.
+ */
+export interface ConversationSummary {
+  id: string;
+  last_activity_at: string;
+  message_count: number;
+  locked_emergency: boolean;
+  preview: string;
+}
+
+/**
+ * Respuesta de POST /chat/conversations/{id}/messages — ver
+ * backend/app/schemas/chat.py (ChatMessageResponse). Mismo shape que
+ * TriageResponse más `conversation_id`/`message_id` (el id del
+ * Chat_Message "assistant" recién creado); a diferencia de
+ * ChatMessageOut, NO tiene forma de mensaje de historial — el contenido
+ * persistido para ese turno es `${resumen}\n\n${recomendacion}` (ver
+ * routes_chat.py), que hay que reconstruir en el cliente si se quiere
+ * mostrar como un mensaje más en el historial.
+ */
+export interface ChatMessageResponse {
+  resumen: string;
+  sintomas_detectados: string[];
+  prioridad: Priority;
+  posibles_causas: string[];
+  alertas: string[];
+  recomendacion: string;
+  requiere_revision: boolean;
+  confianza: number;
+  validation: ValidationSummary;
+  conversation_id: string;
+  message_id: string;
+}
+
+/** Un turno dentro del historial que viaja en POST /chat/anonymous/messages. */
+export interface AnonymousChatTurn {
+  role: "user" | "assistant";
+  content: string;
+}
+
+/**
+ * Respuesta de POST /chat/anonymous/messages — ver
+ * backend/app/schemas/chat.py (AnonymousChatMessageResponse). Mismo shape
+ * que ChatMessageResponse pero sin `conversation_id`/`message_id`: el
+ * backend no persiste nada para el chat anónimo, así que el cliente es
+ * quien mantiene el historial (ver chatApi.sendAnonymousMessage).
+ */
+export interface AnonymousChatMessageResponse {
+  resumen: string;
+  sintomas_detectados: string[];
+  prioridad: Priority;
+  posibles_causas: string[];
+  alertas: string[];
+  recomendacion: string;
+  requiere_revision: boolean;
+  confianza: number;
+  validation: ValidationSummary;
+}

@@ -28,9 +28,12 @@ function LocationProbe() {
   return <div data-testid="location">{location.pathname}</div>;
 }
 
-export function renderAt(ui: ReactElement, { path = "/", route = "/", state }: { path?: string; route?: string; state?: unknown } = {}) {
+export function renderAt(
+  ui: ReactElement,
+  { path = "/", route = "/", search = "", state }: { path?: string; route?: string; search?: string; state?: unknown } = {}
+) {
   return render(
-    <MemoryRouter initialEntries={[{ pathname: route, state }]}>
+    <MemoryRouter initialEntries={[{ pathname: route, search, state }]}>
       <Routes>
         <Route path={path} element={ui} />
         <Route path="*" element={null} />

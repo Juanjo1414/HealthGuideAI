@@ -7,3 +7,7 @@ coverage/
 test-results/
 playwright-report/
 blob-report/
+
+# Variables locales de Vite (cada quien apunta a su propio backend)
+.env.local
+.env.*.local

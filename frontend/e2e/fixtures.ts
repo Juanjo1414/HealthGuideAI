@@ -17,15 +17,16 @@ export function triageBody(prioridad: Priority, overrides: Record<string, unknow
     requiere_revision: emergency || prioridad === "ALTA",
     confianza: 0.6,
     validation: { passed: true, checks: {}, reasons: [] },
-    requires_human_review: emergency || prioridad === "ALTA",
-    request_id: crypto.randomUUID(),
     ...overrides,
   };
 }
 
-/** Simula la respuesta de POST /triage (el resto del backend sigue siendo real). */
-export async function mockTriage(page: Page, status: number, body: unknown) {
-  await page.route("**/api/triage", (route) =>
+/**
+ * Simula la respuesta del chat sin cuenta (POST /v1/chat/anonymous/messages);
+ * el resto del backend sigue siendo real. Es el camino de "/" sin sesión.
+ */
+export async function mockChat(page: Page, status: number, body: unknown) {
+  await page.route("**/api/v1/chat/anonymous/messages", (route) =>
     route.request().method() === "POST"
       ? route.fulfill({ status, contentType: "application/json", body: JSON.stringify(body) })
       : route.fallback()
@@ -35,6 +36,12 @@ export async function mockTriage(page: Page, status: number, body: unknown) {
 export async function submitSymptoms(page: Page, text: string) {
   await page.getByLabel(/describe tus síntomas/i).fill(text);
   await page.getByRole("button", { name: /iniciar evaluación de síntomas/i }).click();
+}
+
+/** Segundo turno de la conversación: el composer que reemplaza al formulario inicial. */
+export async function sendFollowUp(page: Page, text: string) {
+  await page.getByLabel(/escribe tu mensaje/i).fill(text);
+  await page.getByRole("button", { name: /^enviar$/i }).click();
 }
 
 export function uniqueEmail() {
@@ -89,6 +96,21 @@ export async function expectNoSeriousA11yViolations(page: Page) {
   expect(
     serious.map((v) => `${v.id}: ${v.help} (${v.nodes.map((n) => n.target.join(" ")).slice(0, 3).join(" | ")})`)
   ).toEqual([]);
+}
+
+/**
+ * El encabezado es `fixed`: si su contenido se pasa del ancho no agranda la
+ * página, así que expectNoHorizontalOverflow no lo ve y los enlaces quedaban
+ * cortados. Se mide cada elemento visible del encabezado contra la ventana.
+ */
+export async function expectHeaderFits(page: Page) {
+  const cutOff = await page.evaluate(() =>
+    [...document.querySelectorAll("header a, header img")]
+      .map((el) => ({ el, rect: el.getBoundingClientRect() }))
+      .filter(({ rect }) => rect.width > 0 && rect.right > window.innerWidth + 0.5)
+      .map(({ el }) => (el.textContent?.trim() || el.getAttribute("alt") || el.tagName).slice(0, 40))
+  );
+  expect(cutOff).toEqual([]);
 }
 
 /** Responsive: nada se sale del ancho de la pantalla. */
