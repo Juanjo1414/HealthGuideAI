@@ -20,6 +20,9 @@ test.describe("triaje sin cuenta (chat anónimo)", () => {
       await submitSymptoms(page, LONG_TEXT);
 
       await expect(page).toHaveURL(/\/$/);
+      // El chat contesta primero; la evaluación completa está plegada hasta abrirla.
+      await expect(page.getByText(/por lo que me cuentas/i)).toBeVisible();
+      await page.getByRole("button", { name: /ver evaluación completa/i }).click();
       await expect(page.getByRole("heading", { level: 1 })).toHaveText(EXPECTED[priority]);
       await expect(page.getByText(/no calibrada clínicamente/i)).toContainText(/puede equivocarse/i);
     });
