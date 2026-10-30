@@ -30,6 +30,15 @@ from .contract import HUMAN_DECISION, SYSTEM_VALIDATIONS
 from .prompt_builder import build_system_prompt
 from .red_flags import detect_red_flags
 
+# Si el gate fuerza EMERGENCIA sobre lo que dijo el modelo, su `respuesta` venía
+# escrita para otra prioridad ("agenda una cita"): se reemplaza por un texto
+# fijo para que el mensaje del chat nunca contradiga la alerta de urgencias.
+_EMERGENCY_GATE_RESPONSE = (
+    "Lo que describes incluye una señal de alarma. No esperes: busca atención de "
+    "urgencias ahora o llama a la línea de emergencias. Esta orientación no reemplaza "
+    "a un profesional de la salud."
+)
+
 _MAX_TOKENS = 1800
 _RAG_TOP_K = 2
 
@@ -101,7 +110,8 @@ def run_pipeline(
     if "posibles_causas" in output:
         output["posibles_causas"] = drop_named_disease_causes(output["posibles_causas"])
 
-    if red_flags and output.get("prioridad") != "EMERGENCIA":
+    gate_overrides_model = bool(red_flags) and output.get("prioridad") != "EMERGENCIA"
+    if gate_overrides_model:
         # El LLM ya no puede bajar esta clasificacion — el input tiene
         # una señal de alarma determinista, sin importar que haya
         # contestado el modelo. "Si hay duda, el nivel mas severo"
@@ -121,5 +131,14 @@ def run_pipeline(
         output["prioridad"] = "EMERGENCIA"
     if red_flags:
         output["requiere_revision"] = True
+
+    # `respuesta` es lo que la persona lee en el chat (decisión 7). Se normaliza
+    # en código, no se le ruega al prompt (CLAUDE.md sección 8): si el gate
+    # cambió la prioridad se reemplaza; si el modelo no la mandó, se arma con
+    # el resumen y la recomendación, que siempre vienen.
+    if gate_overrides_model:
+        output["respuesta"] = _EMERGENCY_GATE_RESPONSE
+    elif not (isinstance(output.get("respuesta"), str) and output["respuesta"].strip()):
+        output["respuesta"] = f"{output.get('resumen', '')}\n\n{output.get('recomendacion', '')}".strip()
 
     return output

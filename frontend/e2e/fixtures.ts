@@ -6,6 +6,9 @@ export type Priority = "BAJA" | "MEDIA" | "ALTA" | "EMERGENCIA";
 export function triageBody(prioridad: Priority, overrides: Record<string, unknown> = {}) {
   const emergency = prioridad === "EMERGENCIA";
   return {
+    respuesta: emergency
+      ? "Lo que describes es una emergencia: busca atención de urgencias ahora."
+      : "Por lo que me cuentas, conviene que le hagas seguimiento. Te dejo el detalle abajo.",
     resumen: emergency ? "Dolor opresivo en el pecho con falta de aire." : "Molestia descrita por el usuario.",
     sintomas_detectados: emergency ? ["dolor en el pecho", "falta de aire"] : ["tos"],
     prioridad,

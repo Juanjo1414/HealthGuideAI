@@ -32,6 +32,8 @@ LONG_TEXT = "Tengo dolor de cabeza leve desde ayer por la tarde y algo de cansan
 
 def model_output(**overrides) -> dict:
     output = {
+        # El pipeline real siempre la arma (pipeline.py), aunque el modelo no la mande.
+        "respuesta": "Por lo que me cuentas, conviene que te revisen esta semana.",
         "resumen": "Dolor de cabeza leve reportado.",
         "sintomas_detectados": ["dolor de cabeza"],
         "prioridad": "BAJA",
@@ -385,3 +387,29 @@ def test_anonymous_unsafe_output_gets_the_safe_fallback(db):
 
     assert body["validation"]["passed"] is False
     assert "paracetamol" not in body["recomendacion"].lower()
+
+
+def test_history_keeps_the_chat_respuesta_and_the_full_evaluation(db):
+    """Lo que se guarda como mensaje es lo que la persona leyó; la evaluación
+    completa vuelve al reabrir la conversación, igual que se vio en vivo."""
+    client, *_ = build(db, output=model_output(prioridad="MEDIA", posibles_causas=["tension muscular: tras el esfuerzo"]))
+    conversation_id = new_conversation(client)
+
+    client.post(f"/api/v1/chat/conversations/{conversation_id}/messages", json={"content": LONG_TEXT})
+    assistant = client.get(f"/api/v1/chat/conversations/{conversation_id}").json()["messages"][1]
+
+    assert assistant["content"] == "Por lo que me cuentas, conviene que te revisen esta semana."
+    assert assistant["evaluacion"]["prioridad"] == "MEDIA"
+    assert assistant["evaluacion"]["posibles_causas"] == ["tension muscular: tras el esfuerzo"]
+
+
+def test_old_rows_without_a_full_evaluation_still_load(db):
+    client, _, _, alice, _, conversations = build(db)
+    conversation_id = new_conversation(client)
+    conversations.append_message(conversation_id, "user", "Texto viejo.")
+    conversations.append_message(conversation_id, "assistant", "Respuesta vieja.", model_output={"prioridad": "BAJA"})
+
+    detail = client.get(f"/api/v1/chat/conversations/{conversation_id}")
+
+    assert detail.status_code == 200
+    assert detail.json()["messages"][1]["evaluacion"] is None

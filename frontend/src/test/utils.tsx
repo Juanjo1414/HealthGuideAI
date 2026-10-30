@@ -7,6 +7,7 @@ export const USER: User = { id: 7, email: "paciente@example.com", role: "user", 
 
 export function triageResponse(overrides: Partial<TriageResponse> = {}): TriageResponse {
   return {
+    respuesta: "Por lo que me cuentas, conviene que te revisen esta semana.",
     resumen: "Dolor de garganta con fiebre leve desde ayer.",
     sintomas_detectados: ["dolor de garganta", "fiebre"],
     prioridad: "MEDIA",
