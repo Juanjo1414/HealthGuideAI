@@ -59,7 +59,11 @@ describe("HomePage — triaje sin cuenta, fusionado con el chat", () => {
       )
     );
     // El resultado se muestra en la misma pantalla (sin navegar a /resultado).
-    expect(await screen.findByText(/dolor de garganta con fiebre leve desde ayer/i)).toBeInTheDocument();
+    expect(await screen.findByText(/por lo que me cuentas/i)).toBeInTheDocument();
+    // La evaluación estructurada queda plegada hasta que la persona la abre.
+    expect(screen.queryByText(/dolor de garganta con fiebre leve desde ayer/i)).not.toBeInTheDocument();
+    await userEvent.click(screen.getByRole("button", { name: /ver evaluación completa/i }));
+    expect(screen.getByText(/dolor de garganta con fiebre leve desde ayer/i)).toBeInTheDocument();
     expect(screen.getByTestId("location")).toHaveTextContent("/");
     // El formulario inicial se oculta una vez que hay una conversación en curso.
     expect(screen.queryByLabelText(/describe tus síntomas/i)).not.toBeInTheDocument();
@@ -68,14 +72,14 @@ describe("HomePage — triaje sin cuenta, fusionado con el chat", () => {
   });
 
   it("continuar la conversación manda el historial acumulado al endpoint anónimo", async () => {
-    mockedSendAnonymous.mockResolvedValueOnce(anonymousResult({ resumen: "Primer resumen." }));
+    mockedSendAnonymous.mockResolvedValueOnce(anonymousResult({ respuesta: "Primer resumen." }));
     renderAt(<HomePage />);
 
     await userEvent.type(screen.getByLabelText(/describe tus síntomas/i), "Me duele la cabeza");
     await userEvent.click(screen.getByRole("button", { name: /iniciar evaluación/i }));
     await screen.findByText("Primer resumen.");
 
-    mockedSendAnonymous.mockResolvedValueOnce(anonymousResult({ resumen: "Segundo resumen." }));
+    mockedSendAnonymous.mockResolvedValueOnce(anonymousResult({ respuesta: "Segundo resumen." }));
     await userEvent.type(screen.getByLabelText(/escribe tu mensaje/i), "También tengo náuseas");
     await userEvent.click(screen.getByRole("button", { name: /^enviar$/i }));
 
@@ -101,7 +105,7 @@ describe("HomePage — triaje sin cuenta, fusionado con el chat", () => {
   });
 
   it("un error 5xx no navega fuera de la pantalla si ya hay turnos previos (no se pierde el contexto)", async () => {
-    mockedSendAnonymous.mockResolvedValueOnce(anonymousResult({ resumen: "Primer resumen." }));
+    mockedSendAnonymous.mockResolvedValueOnce(anonymousResult({ respuesta: "Primer resumen." }));
     renderAt(<HomePage />);
     await userEvent.type(screen.getByLabelText(/describe tus síntomas/i), "Me duele la cabeza");
     await userEvent.click(screen.getByRole("button", { name: /iniciar evaluación/i }));
@@ -164,7 +168,7 @@ describe("HomePage — triaje con cuenta", () => {
       messages: [],
     });
     mockedSendMessage.mockResolvedValueOnce({
-      ...triageResponse({ resumen: "Resumen autenticado." }),
+      ...triageResponse({ respuesta: "Resumen autenticado." }),
       conversation_id: "conv-1",
       message_id: "msg-1",
     });
@@ -177,7 +181,7 @@ describe("HomePage — triaje con cuenta", () => {
     expect(mockedCreateConversation).toHaveBeenCalledTimes(1);
 
     mockedSendMessage.mockResolvedValueOnce({
-      ...triageResponse({ resumen: "Segundo resumen autenticado." }),
+      ...triageResponse({ respuesta: "Segundo resumen autenticado." }),
       conversation_id: "conv-1",
       message_id: "msg-2",
     });
@@ -191,7 +195,7 @@ describe("HomePage — triaje con cuenta", () => {
 
 describe("HomePage — accesibilidad y reglas de la conversación", () => {
   it("el foco pasa al resultado cuando llega el primero (lectores de pantalla)", async () => {
-    mockedSendAnonymous.mockResolvedValue(anonymousResult({ resumen: "Primer resumen." }));
+    mockedSendAnonymous.mockResolvedValue(anonymousResult({ respuesta: "Primer resumen." }));
     renderAt(<HomePage />);
 
     await userEvent.type(screen.getByLabelText(/describe tus síntomas/i), "Me duele la cabeza");
@@ -210,7 +214,7 @@ describe("HomePage — accesibilidad y reglas de la conversación", () => {
 
     expect(await screen.findByText(/esta conversación fue marcada como emergencia/i)).toBeInTheDocument();
 
-    mockedSendAnonymous.mockResolvedValueOnce(anonymousResult({ prioridad: "BAJA", resumen: "Ya mejor." }));
+    mockedSendAnonymous.mockResolvedValueOnce(anonymousResult({ prioridad: "BAJA", respuesta: "Ya mejor." }));
     await userEvent.type(screen.getByLabelText(/escribe tu mensaje/i), "Ya me siento mejor");
     await userEvent.click(screen.getByRole("button", { name: /^enviar$/i }));
 
@@ -238,7 +242,7 @@ describe("HomePage — accesibilidad y reglas de la conversación", () => {
       turn_limit_reached: false,
       messages: [],
     });
-    mockedSendMessage.mockResolvedValue({ ...triageResponse({ resumen: "Con cuenta." }), conversation_id: "conv-1", message_id: "m1" });
+    mockedSendMessage.mockResolvedValue({ ...triageResponse({ respuesta: "Con cuenta." }), conversation_id: "conv-1", message_id: "m1" });
     renderAt(<HomePage />);
 
     await userEvent.type(screen.getByLabelText(/describe tus síntomas/i), "Me duele la cabeza");
@@ -261,7 +265,7 @@ describe("HomePage — accesibilidad y reglas de la conversación", () => {
         { id: "2", role: "assistant", content: "Busca atención ya.", created_at: "2026-01-01T00:00:01Z", prioridad: "EMERGENCIA", requiere_revision: true, evaluacion: null },
       ],
     });
-    mockedSendMessage.mockResolvedValue({ ...triageResponse({ resumen: "Seguimos." }), conversation_id: "conv-9", message_id: "m3" });
+    mockedSendMessage.mockResolvedValue({ ...triageResponse({ respuesta: "Seguimos." }), conversation_id: "conv-9", message_id: "m3" });
     renderAt(<HomePage />, { search: "?conversationId=conv-9" });
 
     expect(await screen.findByText(/busca atención ya\./i)).toBeInTheDocument();
@@ -283,7 +287,7 @@ describe("HomePage — accesibilidad y reglas de la conversación", () => {
 });
 
 async function startAnonymousConversation(overrides: Parameters<typeof anonymousResult>[0] = {}) {
-  mockedSendAnonymous.mockResolvedValueOnce(anonymousResult({ resumen: "Primer resumen.", ...overrides }));
+  mockedSendAnonymous.mockResolvedValueOnce(anonymousResult({ respuesta: "Primer resumen.", ...overrides }));
   renderAt(<HomePage />);
   await userEvent.type(screen.getByLabelText(/describe tus síntomas/i), "Me duele la cabeza");
   await userEvent.click(screen.getByRole("button", { name: /iniciar evaluación/i }));
@@ -325,7 +329,7 @@ describe("HomePage — nueva evaluación", () => {
     expect(screen.getByText(/esta conversación fue marcada como emergencia/i)).toBeInTheDocument();
 
     await userEvent.click(screen.getByRole("button", { name: /nueva evaluación/i }));
-    mockedSendAnonymous.mockResolvedValueOnce(anonymousResult({ prioridad: "BAJA", resumen: "Otro caso." }));
+    mockedSendAnonymous.mockResolvedValueOnce(anonymousResult({ prioridad: "BAJA", respuesta: "Otro caso." }));
     await userEvent.type(await screen.findByLabelText(/describe tus síntomas/i), "Tengo tos leve");
     await userEvent.click(screen.getByRole("button", { name: /iniciar evaluación/i }));
 
@@ -340,7 +344,7 @@ describe("HomePage — nueva evaluación", () => {
     mockedCreateConversation
       .mockResolvedValueOnce({ id: "conv-1", created_at: "", last_activity_at: "", locked_emergency: false, turn_limit_reached: false, messages: [] })
       .mockResolvedValueOnce({ id: "conv-2", created_at: "", last_activity_at: "", locked_emergency: false, turn_limit_reached: false, messages: [] });
-    mockedSendMessage.mockResolvedValue({ ...triageResponse({ resumen: "Con cuenta." }), conversation_id: "x", message_id: "m" });
+    mockedSendMessage.mockResolvedValue({ ...triageResponse({ respuesta: "Con cuenta." }), conversation_id: "x", message_id: "m" });
     renderAt(<HomePage />);
 
     await userEvent.type(screen.getByLabelText(/describe tus síntomas/i), "Me duele la cabeza");
