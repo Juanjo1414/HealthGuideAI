@@ -3,11 +3,11 @@ import { signupViaApi, signupViaUi, uniqueEmail } from "./fixtures";
 
 /** Auth contra el backend real (Postgres + Redis del stack de compose). */
 test.describe("cuenta", () => {
-  test("signup → historial vacío → logout → login → historial", async ({ page }) => {
+  test("signup → conversaciones vacías → logout → login → conversaciones", async ({ page }) => {
     const { email, password } = await signupViaUi(page);
 
     await page.goto("/historial");
-    await expect(page.getByText(/todavía no tienes consultas guardadas/i)).toBeVisible();
+    await expect(page.getByText(/todavía no tienes conversaciones/i)).toBeVisible();
 
     await page.goto("/perfil");
     await expect(page.getByLabel(/correo de la cuenta/i)).toHaveValue(email);

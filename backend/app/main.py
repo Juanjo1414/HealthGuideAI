@@ -19,6 +19,7 @@ from .api.csrf import CSRFOriginCheckMiddleware
 from .api.errors import install_error_handlers
 from .api.middleware import AccessLogMiddleware, RequestIdMiddleware
 from .api.routes_auth import router as auth_router
+from .api.routes_chat import router as chat_router
 from .api.routes_health import router as health_router
 from .api.routes_triage import router as triage_router
 from .api.security_headers import SecurityHeadersMiddleware
@@ -74,6 +75,10 @@ app.include_router(health_router)
 
 app.include_router(auth_router, prefix="/api/v1")
 app.include_router(triage_router, prefix="/api/v1")
+# chat es un endpoint nuevo (Sesion 9+): solo vive bajo /api/v1, nunca se
+# agrega al prefijo deprecado sin version porque ningun cliente existente
+# depende de una ruta sin version para esto.
+app.include_router(chat_router, prefix="/api/v1")
 
 app.include_router(auth_router, prefix="/api", deprecated=True)
 app.include_router(triage_router, prefix="/api", deprecated=True)

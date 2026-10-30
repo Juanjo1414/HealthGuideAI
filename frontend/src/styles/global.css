@@ -34,8 +34,8 @@ button {
 }
 
 :focus-visible {
-  outline: none;
-  box-shadow: 0 0 0 3px rgba(15, 81, 68, 0.35);
+  outline: 2px solid #2570e6;
+  outline-offset: 2px;
   border-radius: 6px;
 }
 

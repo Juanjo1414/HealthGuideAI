@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import PageShell from "../components/layout/PageShell";
+import { EMERGENCY_NUMBER } from "../constants/emergency";
 
 const SECTIONS = [
   ["seccion-1", "1. Naturaleza no diagnóstica"],
@@ -52,7 +53,7 @@ export default function TermsPage() {
               <span className="w-2 h-2 rounded-full bg-secondary" />
               <span>VERSIÓN 2026 • REGLAS CLÍNICAS DEL PRODUCTO</span>
             </div>
-            <h1 className="font-display-lg-mobile text-display-lg-mobile md:font-display-lg md:text-display-lg text-primary tracking-tight font-bold mb-4">
+            <h1 className="font-display-lg-mobile text-display-lg-mobile md:font-display-lg md:text-display-lg text-ink tracking-tight font-bold mb-4">
               Marco Legal, Condiciones de Uso y Restricciones Médicas
             </h1>
             <p className="font-body-lg text-body-lg text-on-surface-variant leading-relaxed">
@@ -124,16 +125,16 @@ export default function TermsPage() {
               <span>¿Tienes una urgencia?</span>
             </div>
             <p className="font-body-sm text-body-sm mb-4 leading-relaxed">No leas términos si presentas síntomas incapacitantes.</p>
-            <a className="w-full py-2.5 px-4 bg-error text-on-error rounded-full font-label-md text-label-md flex items-center justify-center gap-2 shadow-sm hover:opacity-90 transition-opacity" href="tel:112">
+            <a className="w-full py-2.5 px-4 bg-error text-on-error rounded-full font-label-md text-label-md flex items-center justify-center gap-2 shadow-sm hover:opacity-90 transition-opacity" href={`tel:${EMERGENCY_NUMBER}`}>
               <span aria-hidden="true" className="material-symbols-outlined text-sm">call</span>
-              <span>Llamada directa 112 / 911</span>
+              <span>Llamada directa {EMERGENCY_NUMBER}</span>
             </a>
           </div>
         </aside>
 
         <div className="flex-1 flex flex-col gap-12 max-w-4xl">
           <Article id="seccion-1" tag="Cláusula primaria" article="Artículo 1">
-            <h2 className="font-headline-lg-mobile text-headline-lg-mobile md:font-headline-lg md:text-headline-lg text-primary font-bold mb-4">1. Naturaleza no diagnóstica ni asistencial</h2>
+            <h2 className="font-headline-lg-mobile text-headline-lg-mobile md:font-headline-lg md:text-headline-lg text-ink font-bold mb-4">1. Naturaleza no diagnóstica ni asistencial</h2>
             <div className="p-5 md:p-6 rounded-xl bg-surface-container-low text-primary flex flex-col sm:flex-row items-start gap-4 mb-6">
               <div className="p-3 bg-surface-container-lowest rounded-xl flex-shrink-0 text-primary">
                 <span aria-hidden="true" className="material-symbols-outlined text-headline-md">stethoscope</span>
@@ -175,14 +176,14 @@ export default function TermsPage() {
                   <li>• Diagnóstico médico de una enfermedad específica.</li>
                   <li>• Cambios a tratamientos que ya tengas.</li>
                   <li>• Recetas, certificados o incapacidades.</li>
-                  <li>• Atención de emergencias: para eso, llama al 112 / 911 / 123.</li>
+                  <li>• Atención de emergencias: para eso, llama al {EMERGENCY_NUMBER}.</li>
                 </ul>
               </div>
             </div>
           </Article>
 
           <Article id="seccion-2" tag="Medicación" article="Artículo 2">
-            <h2 className="font-headline-lg-mobile text-headline-lg-mobile md:font-headline-lg md:text-headline-lg text-primary font-bold mb-4">2. Prohibición de recomendar medicamentos</h2>
+            <h2 className="font-headline-lg-mobile text-headline-lg-mobile md:font-headline-lg md:text-headline-lg text-ink font-bold mb-4">2. Prohibición de recomendar medicamentos</h2>
             <p className="font-body-md text-body-md text-on-surface mb-6 leading-relaxed">
               El sistema nunca recomienda medicamentos, dosis ni posologías. Un validador de seguridad revisa cada respuesta
               y, si detecta una recomendación de medicación, la reemplaza por una respuesta segura antes de mostrártela.
@@ -238,14 +239,13 @@ export default function TermsPage() {
                 <p className="font-label-md text-label-md">Si sospechas alguna de estas condiciones, deja de navegar y llama.</p>
               </div>
               <div className="flex gap-2 w-full sm:w-auto">
-                <a className="flex-1 sm:flex-none px-6 py-2.5 bg-error text-on-error rounded-full font-label-md text-label-md text-center shadow-md hover:opacity-90" href="tel:112">Llamar al 112</a>
-                <a className="flex-1 sm:flex-none px-6 py-2.5 bg-on-error-container text-on-primary rounded-full font-label-md text-label-md text-center shadow-md hover:opacity-90" href="tel:911">Llamar al 911</a>
+                <a className="flex-1 sm:flex-none px-6 py-2.5 bg-error text-on-error rounded-full font-label-md text-label-md text-center shadow-md hover:opacity-90" href={`tel:${EMERGENCY_NUMBER}`}>Llamar al {EMERGENCY_NUMBER}</a>
               </div>
             </div>
           </Article>
 
           <Article id="seccion-4" tag="Privacidad" article="Artículo 4">
-            <h2 className="font-headline-lg-mobile text-headline-lg-mobile md:font-headline-lg md:text-headline-lg text-primary font-bold mb-4">4. Tus datos y cómo los tratamos</h2>
+            <h2 className="font-headline-lg-mobile text-headline-lg-mobile md:font-headline-lg md:text-headline-lg text-ink font-bold mb-4">4. Tus datos y cómo los tratamos</h2>
             <p className="font-body-md text-body-md text-on-surface mb-6 leading-relaxed">
               Los datos de salud son sensibles. Esto es exactamente lo que hace el sistema hoy, sin adornos:
             </p>
@@ -285,7 +285,7 @@ export default function TermsPage() {
           </Article>
 
           <Article id="seccion-5" tag="Compromiso ético" article="Artículo 5">
-            <h2 className="font-headline-lg-mobile text-headline-lg-mobile md:font-headline-lg md:text-headline-lg text-primary font-bold mb-4">5. Consentimiento y contacto</h2>
+            <h2 className="font-headline-lg-mobile text-headline-lg-mobile md:font-headline-lg md:text-headline-lg text-ink font-bold mb-4">5. Consentimiento y contacto</h2>
             <p className="font-body-md text-body-md text-on-surface mb-6 leading-relaxed">
               Al usar HealthGuide AI confirmas que entiendes la diferencia entre una orientación automática y la atención
               médica humana.

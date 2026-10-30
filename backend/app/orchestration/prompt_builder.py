@@ -71,6 +71,9 @@ Disclaimer obligatorio — tiene que quedar reflejado en el texto de "recomendac
 Contexto recuperado automaticamente (RAG, Sesion 7):
 {contract.RAG_INSTRUCTIONS}
 
+Historial de la conversacion (si aplica):
+{contract.HISTORIAL_INSTRUCTIONS}
+
 Ejemplos de referencia (formato exacto esperado, no copies el contenido si no aplica al caso real):
 {_format_few_shot()}
 

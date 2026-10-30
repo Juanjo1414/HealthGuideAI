@@ -1,4 +1,5 @@
 import { toast } from "sonner";
+import { EMERGENCY_NUMBER } from "../../constants/emergency";
 
 interface EmergencyPanelProps {
   /** Señales concretas a nombrar (alertas del modelo o síntomas detectados). */
@@ -36,7 +37,7 @@ export default function EmergencyPanel({ signals, dispatchSummary }: EmergencyPa
         <div className="absolute -right-16 -top-16 w-80 h-80 rounded-full bg-error/10 pointer-events-none blur-2xl" />
         <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-space-md">
           <div className="flex items-start gap-space-md">
-            <div className="w-14 h-14 rounded-2xl bg-error text-on-error flex items-center justify-center flex-shrink-0 shadow-md animate-pulse motion-reduce:animate-none">
+            <div className="w-14 h-14 rounded-xl bg-error text-on-error flex items-center justify-center flex-shrink-0 shadow-md animate-pulse motion-reduce:animate-none">
               <span aria-hidden="true" className="material-symbols-outlined text-[32px]">crisis_alert</span>
             </div>
             <div className="flex flex-col">
@@ -54,7 +55,7 @@ export default function EmergencyPanel({ signals, dispatchSummary }: EmergencyPa
               <p className="font-body-md text-body-md text-on-error-container/90 max-w-3xl">
                 {named ? (
                   <>
-                    Tu descripción contiene indicadores de <strong className="text-error font-semibold">{named}</strong>.{" "}
+                    Tu descripción contiene indicadores de <strong className="text-on-error-container font-semibold">{named}</strong>.{" "}
                   </>
                 ) : null}
                 Para proteger tu vida, el sistema no intenta tranquilizarte: escala la prioridad a emergencia y te
@@ -83,27 +84,13 @@ export default function EmergencyPanel({ signals, dispatchSummary }: EmergencyPa
               No esperes a que los síntomas cedan. El operador del servicio de emergencias puede orientarte y enviar una
               unidad de atención.
             </p>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-space-sm">
-              <a className="group flex items-center justify-between p-space-md rounded-xl bg-error text-on-error shadow-md hover:bg-on-error-container transition-all" href="tel:123">
+            <div className="grid grid-cols-1 gap-space-sm">
+              <a className="group flex items-center justify-between p-space-md rounded-xl bg-error text-on-error shadow-md hover:bg-on-error-container transition-all" href={`tel:${EMERGENCY_NUMBER}`}>
                 <div className="flex flex-col">
                   <span className="font-label-sm text-label-sm text-on-error/80 uppercase">Colombia</span>
-                  <span className="font-headline-md text-headline-md font-bold">Llamar 123</span>
+                  <span className="font-headline-md text-headline-md font-bold">Llamar {EMERGENCY_NUMBER}</span>
                 </div>
                 <span aria-hidden="true" className="material-symbols-outlined text-[24px]">call</span>
-              </a>
-              <a className="group flex items-center justify-between p-space-md rounded-xl bg-error text-on-error shadow-md hover:bg-on-error-container transition-all" href="tel:112">
-                <div className="flex flex-col">
-                  <span className="font-label-sm text-label-sm text-on-error/80 uppercase">Europa / Internacional</span>
-                  <span className="font-headline-md text-headline-md font-bold">Llamar 112</span>
-                </div>
-                <span aria-hidden="true" className="material-symbols-outlined text-[24px]">call</span>
-              </a>
-              <a className="group flex items-center justify-between p-space-md rounded-xl bg-primary text-on-primary shadow-md hover:bg-primary-container transition-all" href="tel:911">
-                <div className="flex flex-col">
-                  <span className="font-label-sm text-label-sm text-on-primary/80 uppercase">América</span>
-                  <span className="font-headline-md text-headline-md font-bold">Llamar 911</span>
-                </div>
-                <span aria-hidden="true" className="material-symbols-outlined text-[24px]">emergency_home</span>
               </a>
             </div>
             <div className="p-space-sm bg-surface-container rounded-xl flex items-center gap-space-sm">

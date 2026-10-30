@@ -35,9 +35,9 @@ export const PRIORITY_META: Record<Priority, PriorityMeta> = {
     suggestion: "Autocuidado y vigilancia",
     icon: "check_circle",
     badgeClass: "bg-priority-baja-bg text-priority-baja-text border-priority-baja-border",
-    stripClass: "from-secondary-fixed via-secondary-fixed-dim to-secondary",
+    stripClass: "from-priority-baja-bg via-priority-baja-border/60 to-priority-baja-border",
     pillClass: "bg-priority-baja-bg text-priority-baja-text",
-    gaugeClass: "text-secondary",
+    gaugeClass: "text-priority-baja-border",
   },
   MEDIA: {
     level: 2,
