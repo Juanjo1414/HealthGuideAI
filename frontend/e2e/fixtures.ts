@@ -121,3 +121,8 @@ export async function expectNoHorizontalOverflow(page: Page) {
   const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
   expect(overflow).toBeLessThanOrEqual(1);
 }
+
+/** Abre el desplegable "Ver evaluación completa" del último mensaje del asistente. */
+export async function openEvaluation(page: Page) {
+  await page.getByRole("button", { name: /ver evaluación completa/i }).last().click();
+}
