@@ -14,6 +14,11 @@ def build_provider_error_fallback() -> dict:
     modelo) — sin esto, ese caso terminaba en un 502 mudo sin que nadie
     se enterara de que había una señal de alarma real en el texto."""
     return {
+        "respuesta": (
+            "No pude completar el análisis, pero lo que describes incluye una señal de "
+            "alarma. Busca atención de urgencias ahora o llama a la línea de emergencias. "
+            "Esta orientación no reemplaza a un profesional de la salud."
+        ),
         "resumen": (
             "No se pudo completar el análisis automático, pero tu descripción "
             "incluye una señal de alarma conocida."
@@ -54,6 +59,11 @@ def build_safe_fallback(validation: dict, model_output: dict) -> dict:
         )
 
     return {
+        "respuesta": (
+            "No pude darte una orientación automática segura esta vez. "
+            + recommendation
+            + " Esta orientación no reemplaza a un profesional de la salud."
+        ),
         "resumen": "No fue posible generar una orientación automática segura y completa.",
         "sintomas_detectados": [],
         "prioridad": priority,

@@ -2,25 +2,26 @@ import { useEffect, useRef, useState, type FormEvent } from "react";
 import { Link, useLocation, useSearchParams } from "react-router-dom";
 import PageShell from "../components/layout/PageShell";
 import OfflinePanel from "../components/triage/OfflinePanel";
-import TriageResultCard from "../components/triage/TriageResultCard";
+import AssistantMessage from "../components/triage/AssistantMessage";
+import type { TriageResultCardData } from "../components/triage/TriageResultCard";
 import ChatComposer from "../components/triage/ChatComposer";
 import FaqSection from "../components/home/FaqSection";
 import { ChatApiError, createConversation, getConversation, sendAnonymousMessage, sendMessage } from "../api/chatApi";
 import { useAuth } from "../context/AuthContext";
 import { useSpeechDictation } from "../lib/useSpeechDictation";
 import { EMERGENCY_NUMBER } from "../constants/emergency";
-import type { AnonymousChatMessageResponse, ChatMessageOut, AnonymousChatTurn, ChatMessageResponse } from "../api/types";
+import type { AnonymousChatTurn, ChatMessageOut } from "../api/types";
 
 const MAX_LENGTH = 600;
 
 /** Clave de localStorage para la conversación anónima en curso (ver diseño triage-conversational-chat). */
 const ANONYMOUS_CHAT_STORAGE_KEY = "healthguide_anonymous_chat";
 
-/** Un turno de la conversación mostrada en pantalla, con o sin resultado estructurado. */
+/** Un turno de la conversación mostrada en pantalla, con o sin evaluación estructurada. */
 interface TurnRecord {
   role: "user" | "assistant";
   content: string;
-  result?: AnonymousChatMessageResponse | ChatMessageResponse;
+  result?: TriageResultCardData;
 }
 
 const DURATIONS = ["Hoy", "1 a 3 días", "+1 semana"] as const;
@@ -147,6 +148,7 @@ export default function HomePage() {
           conversation.messages.map((message: ChatMessageOut) => ({
             role: message.role,
             content: message.content,
+            result: message.evaluacion ?? undefined,
           }))
         );
       })
@@ -224,20 +226,12 @@ export default function HomePage() {
           setConversationId(activeConversationId);
         }
         const response = await sendMessage(activeConversationId, payload);
-        setTurns((prev) => [
-          ...prev,
-          userTurn,
-          { role: "assistant", content: `${response.resumen}\n\n${response.recomendacion}`, result: response },
-        ]);
+        setTurns((prev) => [...prev, userTurn, { role: "assistant", content: response.respuesta, result: response }]);
         if (response.prioridad === "EMERGENCIA") setAlreadyEmergency(true);
       } else {
         const historyForRequest: AnonymousChatTurn[] = turns.map(({ role, content }) => ({ role, content }));
         const response = await sendAnonymousMessage(payload, historyForRequest, alreadyEmergency);
-        setTurns((prev) => [
-          ...prev,
-          userTurn,
-          { role: "assistant", content: `${response.resumen}\n\n${response.recomendacion}`, result: response },
-        ]);
+        setTurns((prev) => [...prev, userTurn, { role: "assistant", content: response.respuesta, result: response }]);
         if (response.prioridad === "EMERGENCIA") setAlreadyEmergency(true);
       }
       setStatus("idle");
@@ -308,9 +302,15 @@ export default function HomePage() {
   }
 
   const isLoading = status === "loading";
-  const firstUserTurn = turns[0];
-  const firstAssistantTurn = turns[1];
-  const followUpTurns = turns.slice(2);
+  // Texto del mensaje de usuario que cada turno de asistente responde — lo
+  // necesita AssistantMessage para armar la ficha imprimible y las preguntas
+  // sugeridas para el médico (TriageResultCard.symptoms).
+  const precedingUserContent = (index: number) => {
+    for (let i = index - 1; i >= 0; i -= 1) {
+      if (turns[i].role === "user") return turns[i].content;
+    }
+    return "";
+  };
 
   return (
     <PageShell>
@@ -520,44 +520,30 @@ export default function HomePage() {
                     Nueva evaluación
                   </button>
                 </div>
-                {firstAssistantTurn && firstUserTurn && (
-                  firstAssistantTurn.result ? (
-                    <TriageResultCard result={firstAssistantTurn.result} symptoms={firstUserTurn.content} />
-                  ) : (
-                    // Conversación restaurada desde "Mi Historial": el backend solo
-                    // devuelve el texto del mensaje (ChatMessageOut), no los campos
-                    // estructurados que necesita TriageResultCard — se muestra como
-                    // un mensaje de chat más en vez de perder el primer turno.
-                    <div className="flex flex-col gap-space-sm bg-surface-container-lowest rounded-3xl p-space-md md:p-space-lg shadow-sm">
-                      <div className="max-w-[85%] self-end rounded-2xl px-space-md py-space-sm whitespace-pre-wrap font-body-md text-body-md bg-primary-container text-on-primary">
-                        {firstUserTurn.content}
+                {/* Conversación completa en formato chat (triage-conversational-chat): cada
+                    turno de usuario es una burbuja a la derecha, y cada turno de asistente
+                    una burbuja a la izquierda con la evaluación completa plegada debajo —
+                    salvo EMERGENCIA, que nunca queda oculta detrás de un clic (ver
+                    AssistantMessage). */}
+                <div className="flex flex-col gap-space-md bg-surface-container-lowest rounded-3xl p-space-md md:p-space-lg shadow-sm">
+                  {turns.map((turn, index) =>
+                    turn.role === "user" ? (
+                      <div
+                        key={index}
+                        className="max-w-[85%] self-end rounded-2xl px-space-md py-space-sm whitespace-pre-wrap font-body-md text-body-md bg-primary-container text-on-primary"
+                      >
+                        {turn.content}
                       </div>
-                      <div className="max-w-[85%] self-start rounded-2xl px-space-md py-space-sm whitespace-pre-wrap font-body-md text-body-md bg-surface-container-low text-on-surface">
-                        {firstAssistantTurn.content}
-                      </div>
-                    </div>
-                  )
-                )}
-
-                {followUpTurns.length > 0 && (
-                  <div className="flex flex-col gap-space-sm bg-surface-container-lowest rounded-3xl p-space-md md:p-space-lg shadow-sm">
-                    {followUpTurns.map((turn, index) => {
-                      const isUser = turn.role === "user";
-                      return (
-                        <div
-                          key={index}
-                          className={`max-w-[85%] rounded-2xl px-space-md py-space-sm whitespace-pre-wrap font-body-md text-body-md ${
-                            isUser
-                              ? "self-end bg-primary-container text-on-primary"
-                              : "self-start bg-surface-container-low text-on-surface"
-                          }`}
-                        >
-                          {turn.content}
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
+                    ) : (
+                      <AssistantMessage
+                        key={index}
+                        content={turn.content}
+                        result={turn.result}
+                        symptoms={precedingUserContent(index)}
+                      />
+                    )
+                  )}
+                </div>
 
                 {alreadyEmergency && (
                   <div

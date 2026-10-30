@@ -20,6 +20,8 @@ export interface ValidationSummary {
 }
 
 export interface TriageResponse {
+  /** Respuesta conversacional, lo que el chat le muestra primero a la persona. */
+  respuesta: string;
   resumen: string;
   sintomas_detectados: string[];
   prioridad: Priority;
@@ -57,9 +59,27 @@ export interface HistoryEntry {
 }
 
 /**
+ * Evaluación estructurada de un turno "assistant" — ver
+ * backend/app/schemas/chat.py (AssistantEvaluation). Se muestra plegada
+ * dentro del mensaje de chat, como TriageResultCard.
+ */
+export interface AssistantEvaluation {
+  resumen: string;
+  sintomas_detectados: string[];
+  prioridad: Priority;
+  posibles_causas: string[];
+  alertas: string[];
+  recomendacion: string;
+  requiere_revision: boolean;
+  confianza: number;
+}
+
+/**
  * Un mensaje dentro de una conversación — ver backend/app/schemas/chat.py
- * (ChatMessageOut). `prioridad`/`requiere_revision` solo vienen presentes
- * en turnos "assistant"; en turnos "user" quedan en null.
+ * (ChatMessageOut). `prioridad`/`requiere_revision`/`evaluacion` solo vienen
+ * presentes en turnos "assistant"; en turnos "user" quedan en null.
+ * `evaluacion` puede venir null en turnos "assistant" viejos, de antes de
+ * que el backend guardara la evaluación completa.
  */
 export interface ChatMessageOut {
   id: string;
@@ -68,6 +88,7 @@ export interface ChatMessageOut {
   created_at: string;
   prioridad: Priority | null;
   requiere_revision: boolean | null;
+  evaluacion: AssistantEvaluation | null;
 }
 
 /**
@@ -101,13 +122,11 @@ export interface ConversationSummary {
  * Respuesta de POST /chat/conversations/{id}/messages — ver
  * backend/app/schemas/chat.py (ChatMessageResponse). Mismo shape que
  * TriageResponse más `conversation_id`/`message_id` (el id del
- * Chat_Message "assistant" recién creado); a diferencia de
- * ChatMessageOut, NO tiene forma de mensaje de historial — el contenido
- * persistido para ese turno es `${resumen}\n\n${recomendacion}` (ver
- * routes_chat.py), que hay que reconstruir en el cliente si se quiere
- * mostrar como un mensaje más en el historial.
+ * Chat_Message "assistant" recién creado). El contenido persistido para
+ * ese turno es `respuesta` (ver routes_chat.py).
  */
 export interface ChatMessageResponse {
+  respuesta: string;
   resumen: string;
   sintomas_detectados: string[];
   prioridad: Priority;
@@ -135,6 +154,7 @@ export interface AnonymousChatTurn {
  * quien mantiene el historial (ver chatApi.sendAnonymousMessage).
  */
 export interface AnonymousChatMessageResponse {
+  respuesta: string;
   resumen: string;
   sintomas_detectados: string[];
   prioridad: Priority;

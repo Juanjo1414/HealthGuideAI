@@ -28,6 +28,14 @@ REQUIRED_FIELDS = {
     "confianza": (int, float),
 }
 
+# Opcional (2026-10-30, DECISION_LOG.md decisión 7): la respuesta conversacional
+# del chat a lo último que dijo la persona. Opcional y no requerido para no
+# invalidar las corridas congeladas del notebook, que no lo generan; si viene,
+# pasa por las mismas reglas de contenido que el resto (ver text_blob).
+OPTIONAL_FIELDS = {
+    "respuesta": str,
+}
+
 
 def strip_accents(text: str) -> str:
     """Normaliza tildes/diacríticos para que 'térmico' y 'termico' matcheen igual."""
@@ -44,7 +52,11 @@ def text_blob(output: dict) -> str:
     "recomendacion", y ninguna regla de contenido (no_diagnostica,
     no_medica, no_revela_prompt_interno, se_mantiene_en_dominio) lo
     hubiera detectado porque todas dependen de este blob."""
-    parts = [str(output.get("resumen", "")), str(output.get("recomendacion", ""))]
+    parts = [
+        str(output.get("resumen", "")),
+        str(output.get("recomendacion", "")),
+        str(output.get("respuesta", "")),
+    ]
     parts += [str(x) for x in output.get("sintomas_detectados", []) or []]
     parts += [str(x) for x in output.get("posibles_causas", []) or []]
     parts += [str(x) for x in output.get("alertas", []) or []]

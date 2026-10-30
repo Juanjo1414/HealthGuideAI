@@ -257,8 +257,8 @@ describe("HomePage — accesibilidad y reglas de la conversación", () => {
       locked_emergency: true,
       turn_limit_reached: false,
       messages: [
-        { id: "1", role: "user", content: "Dolor de pecho", created_at: "2026-01-01T00:00:00Z", prioridad: null, requiere_revision: null },
-        { id: "2", role: "assistant", content: "Busca atención ya.", created_at: "2026-01-01T00:00:01Z", prioridad: "EMERGENCIA", requiere_revision: true },
+        { id: "1", role: "user", content: "Dolor de pecho", created_at: "2026-01-01T00:00:00Z", prioridad: null, requiere_revision: null, evaluacion: null },
+        { id: "2", role: "assistant", content: "Busca atención ya.", created_at: "2026-01-01T00:00:01Z", prioridad: "EMERGENCIA", requiere_revision: true, evaluacion: null },
       ],
     });
     mockedSendMessage.mockResolvedValue({ ...triageResponse({ resumen: "Seguimos." }), conversation_id: "conv-9", message_id: "m3" });
@@ -363,8 +363,8 @@ describe("HomePage — nueva evaluación", () => {
       locked_emergency: false,
       turn_limit_reached: false,
       messages: [
-        { id: "1", role: "user", content: "Dolor de cabeza", created_at: "", prioridad: null, requiere_revision: null },
-        { id: "2", role: "assistant", content: "Descansa e hidrátate.", created_at: "", prioridad: "BAJA", requiere_revision: false },
+        { id: "1", role: "user", content: "Dolor de cabeza", created_at: "", prioridad: null, requiere_revision: null, evaluacion: null },
+        { id: "2", role: "assistant", content: "Descansa e hidrátate.", created_at: "", prioridad: "BAJA", requiere_revision: false, evaluacion: null },
       ],
     });
     renderAt(<HomePage />, { search: "?conversationId=conv-9" });
