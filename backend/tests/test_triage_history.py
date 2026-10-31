@@ -24,6 +24,7 @@ class StubOrchestrator:
 
 def model_output(**overrides):
     output = {
+        "respuesta": "Por lo que me cuentas, conviene que te revisen esta semana.",
         "resumen": "Dolor reportado por el usuario.",
         "sintomas_detectados": ["dolor de cabeza"],
         "prioridad": "MEDIA",

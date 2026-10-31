@@ -59,3 +59,11 @@ def test_provider_error_fallback_always_passes_its_own_validator():
     result = validate_triage_output(fallback, "Tengo dolor en el pecho y no puedo respirar bien.")
 
     assert result["pass"] is True
+
+
+def test_fallbacks_carry_a_chat_respuesta_that_passes_the_validator():
+    """En el chat lo que se lee primero es `respuesta`: los fallbacks también la traen."""
+    validation = {"checks": {}, "reasons": ["x"], "pass": False}
+    for fallback in (build_safe_fallback(validation, {"prioridad": "MEDIA"}), build_provider_error_fallback()):
+        assert fallback["respuesta"].strip()
+        assert validate_triage_output(fallback, "Cualquier input de prueba, no importa el contenido.")["pass"] is True

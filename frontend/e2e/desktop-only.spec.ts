@@ -17,7 +17,7 @@ test.describe("teclado", () => {
     await page.keyboard.press("Enter");
 
     // El foco pasa al resultado para que el lector de pantalla lo anuncie.
-    await expect(page.locator(":focus")).toContainText(/puedes monitorear tus síntomas en casa/i);
+    await expect(page.locator(":focus")).toContainText(/por lo que me cuentas/i);
   });
 });
 
@@ -31,6 +31,7 @@ test.describe("viewports del inventario (375 / 768 / 1024 / 1440)", () => {
       await expectHeaderFits(page);
 
       await submitSymptoms(page, "Tengo dolor abdominal intenso desde hace 6 horas y no mejora con reposo.");
+      await page.getByRole("button", { name: /ver evaluación completa/i }).click();
       await expect(page.getByRole("heading", { level: 1 })).toHaveText(/busca atención médica en las próximas horas/i);
       await expectNoHorizontalOverflow(page);
     });

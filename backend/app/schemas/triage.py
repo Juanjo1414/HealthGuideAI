@@ -71,6 +71,8 @@ class TriageResponse(BaseModel):
         },
     )
 
+    # Respuesta conversacional (decisión 7); el pipeline siempre la arma.
+    respuesta: str
     resumen: str
     sintomas_detectados: list[str]
     prioridad: Priority

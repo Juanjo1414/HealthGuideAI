@@ -141,3 +141,27 @@ def test_accepts_normal_response_within_domain():
     )
 
     assert result["checks"]["se_mantiene_en_dominio"] is True
+
+
+INPUT = "Tengo malestar general desde ayer por la tarde y algo de cansancio."
+
+
+def test_respuesta_is_optional():
+    """El notebook (evidencia congelada) no la genera: sus salidas siguen siendo válidas."""
+    assert validate_triage_output(valid_output(), INPUT)["pass"] is True
+    assert validate_triage_output(valid_output(respuesta="Descansa y consulta si empeora."), INPUT)["pass"] is True
+
+
+def test_respuesta_must_be_text():
+    result = validate_triage_output(valid_output(respuesta=["no", "es", "texto"]), INPUT)
+
+    assert result["checks"]["esquema_valido"] is False
+
+
+def test_content_rules_also_read_respuesta():
+    """Lo primero que lee la persona en el chat no puede medicar ni diagnosticar."""
+    medicates = validate_triage_output(valid_output(respuesta="Toma ibuprofeno cada 8 horas."), INPUT)
+    diagnoses = validate_triage_output(valid_output(respuesta="Tienes gripe, descansa."), INPUT)
+
+    assert medicates["checks"]["no_medica"] is False
+    assert diagnoses["checks"]["no_diagnostica"] is False

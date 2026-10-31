@@ -217,3 +217,33 @@ def test_drops_causes_that_name_a_specific_disease():
     result = orchestrator.run("Tengo fiebre de 38 y dolor de cabeza desde ayer, me duele el cuerpo.")
 
     assert result["posibles_causas"] == ["infeccion viral generalizada: fiebre y dolor corporal de pocos dias"]
+
+
+def test_keeps_the_model_respuesta_when_nothing_overrides_it():
+    orchestrator = TriageOrchestrator(FakeProvider(response=base_output(respuesta="Descansa y toma líquidos.")))
+
+    result = orchestrator.run("Tengo un resfriado leve desde ayer.")
+
+    assert result["respuesta"] == "Descansa y toma líquidos."
+
+
+def test_builds_respuesta_when_the_model_omits_it():
+    orchestrator = TriageOrchestrator(FakeProvider(response=base_output()))
+
+    result = orchestrator.run("Tengo un resfriado leve desde ayer.")
+
+    assert "Paciente con síntomas leves." in result["respuesta"]
+    assert "Descansa e hidrátate." in result["respuesta"]
+
+
+def test_emergency_gate_replaces_a_respuesta_written_for_a_lower_priority():
+    """El chat no puede decir 'agenda una cita' debajo de una alerta de urgencias."""
+    orchestrator = TriageOrchestrator(
+        FakeProvider(response=base_output(prioridad="BAJA", respuesta="Agenda una cita esta semana."))
+    )
+
+    result = orchestrator.run("Tengo dolor en el pecho y me cuesta respirar desde hace un rato.")
+
+    assert result["prioridad"] == "EMERGENCIA"
+    assert "urgencias" in result["respuesta"]
+    assert "Agenda una cita" not in result["respuesta"]
