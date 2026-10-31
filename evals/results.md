@@ -574,3 +574,23 @@ Errores de prioridad:
 - qué tan específicas pueden ser las categorías ("dolor de cabeza de tipo tensional" está en el
   límite);
 - revisar los ejemplos few-shot, que ya eran un gap sin validar y ahora son más detallados.
+
+## 2026-10-30 — Campo `respuesta`: gate contra NVIDIA real todavía sin correr
+
+El prompt volvió a cambiar (`contract.py`: `OUTPUT_FIELDS`, `CONTENT_GUIDE`, los 4
+`FEW_SHOT_EXAMPLES` ahora incluyen `respuesta` — decisión 7 en `DECISION_LOG.md`). Por la regla de
+CLAUDE.md sección 8, todo cambio de prompt se re-evalúa contra el modelo real antes de abrir el PR.
+
+**No se pudo correr** `python evals/eval_gate.py` en esta sesión: el sandbox donde se trabajó esta
+vez bloquea la salida de red hacia `integrate.api.nvidia.com` (proxy de egreso del entorno, 403 en
+el `CONNECT`), así que el proveedor nunca llega a responder — 22/25 casos y 0/12 del set
+adversarial salieron como `[ERROR PROVEEDOR]`, y los 3 que sí dieron resultado son los red flags
+deterministas que `run_pipeline` resuelve sin llamar al modelo (fallback de emergencia). Esa
+corrida no es evidencia de nada sobre el prompt nuevo — no se documenta como resultado, queda
+descartada.
+
+**Pendiente, bloqueante para mergear a `main`:** correr el gate en un entorno con salida real a
+NVIDIA y documentar los números acá (reemplazando esta nota), antes de fusionar el PR que trae el
+campo `respuesta`. Todo lo demás del checklist (tests, lint, tipos, build, Playwright, CI/E2E/
+Security) sí se verificó en esta sesión y está en verde — el detalle completo va en la descripción
+del PR.
