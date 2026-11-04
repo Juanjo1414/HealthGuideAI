@@ -26,12 +26,14 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from fastapi import APIRouter, Depends, HTTPException
+from pydantic import ValidationError
 
 from ..orchestration.chat_orchestrator import TURN_LIMIT, ChatOrchestrator
 from ..providers.base import ModelProviderError
 from ..schemas.chat import (
     AnonymousChatMessageResponse,
     AnonymousSendMessageRequest,
+    AssistantEvaluation,
     ChatMessageOut,
     ChatMessageResponse,
     ConversationDetail,
@@ -301,7 +303,9 @@ def send_message(
         conversation_store.mark_emergency_locked(conversation_id)
 
     conversation_store.append_message(conversation_id, "user", request.content)
-    assistant_content = f"{response_output['resumen']}\n\n{response_output['recomendacion']}"
+    # Lo que queda en el historial es lo que la persona leyó en el chat; la
+    # evaluación completa va aparte, en model_output.
+    assistant_content = response_output["respuesta"]
     assistant_message = conversation_store.append_message(
         conversation_id, "assistant", assistant_content, model_output=response_output
     )
@@ -355,4 +359,18 @@ def _message_to_schema(message: ChatMessage) -> ChatMessageOut:
         created_at=message.created_at,
         prioridad=model_output.get("prioridad") if model_output else None,
         requiere_revision=model_output.get("requiere_revision") if model_output else None,
+        evaluacion=_evaluation_from(model_output),
     )
+
+
+def _evaluation_from(model_output: dict | None) -> AssistantEvaluation | None:
+    """La evaluación guardada del turno, para reabrir la conversación igual que
+    se vio en vivo. Las filas viejas o incompletas devuelven None en vez de
+    romper la carga de toda la conversación."""
+    if not model_output:
+        return None
+    fields = {name: model_output.get(name) for name in AssistantEvaluation.model_fields}
+    try:
+        return AssistantEvaluation(**fields)
+    except ValidationError:
+        return None

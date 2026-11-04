@@ -205,3 +205,38 @@ scripts de evals, y el proveedor pide `response_format={"type": "json_object"}`.
 configuración, y cualquier cambio de modelo pasa por el gate de evals antes de llegar a `main`.
 Resultados completos en `evals/results.md`.
 
+
+
+## Decisión 7 — Campo `respuesta` para el texto del chat, separado de la evaluación estructurada
+
+**Estado:** implementada y validada con el gate de evals contra NVIDIA real (2 corridas, 1 en verde)
+(ver "Resultado del gate" al final).
+
+**Por qué hubo que decidir:** el chat contestaba siempre con `resumen` + `recomendacion`, así que
+una pregunta puntual de seguimiento ("¿qué puedo comer?") recibía otra vez el mismo resumen de la
+evaluación. Había que decidir de dónde sale el texto que se le dice a la persona en cada turno.
+
+| Opción | A favor | En contra |
+| --- | --- | --- |
+| (a) Seguir concatenando `resumen` + `recomendacion` | Cero cambios al contrato | Repite el mismo bloque en cada turno; no puede contestar la pregunta puntual |
+| (b) Meter la respuesta conversacional dentro de `recomendacion` | Sin campo nuevo | Mezcla "qué hacer clínicamente" con "qué le digo ahora"; la ficha completa pierde un campo limpio |
+| **(c) Campo nuevo `respuesta`** (elegida) | Separa el texto del chat de la evaluación; las reglas de contenido lo revisan igual que al resto | Contrato con un 9.º campo; el prompt cambia y hay que re-evaluarlo |
+
+**Qué cambió en el código:**
+
+- `respuesta` es **opcional** en el validador compartido (`OPTIONAL_FIELDS` en
+  `evals/triage_parsing.py`): el notebook congelado no lo genera y sus salidas viejas siguen siendo
+  válidas. `text_blob()` lo incluye, para que no sirva de rendija para medicación o diagnóstico.
+- `run_pipeline` es el único lugar que arma `respuesta`: respeta la del modelo; si el gate
+  determinista de emergencia fuerza `EMERGENCIA`, la reemplaza por un texto fijo (el chat nunca dice
+  "agenda una cita" bajo una alerta de urgencias); si el modelo no la manda, la arma con
+  `resumen` + `recomendacion`.
+- La evaluación completa del turno se persiste y se devuelve (`AssistantEvaluation`) para poder
+  mostrar el mismo desplegable al reabrir una conversación. En EMERGENCIA el frontend nunca la pliega.
+
+**Resultado del gate de evals** (`nemotron-3.5-lightning`, 2026-11-05, detalle en `evals/results.md`):
+seguridad 100% en las dos corridas (0/25 errores de proveedor, 4/4 EMERGENCIA, 25/25 respuestas
+seguras, 12/12 adversarial). Accuracy de prioridad: 67% en la primera corrida (falla) y 80% en la
+segunda (pasa, justo en el umbral). El umbral no se bajó. Riesgo aceptado: la accuracy oscila en el
+límite, igual que antes de este cambio, y quedan pendientes más corridas seguidas para medir la
+variación real.

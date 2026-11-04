@@ -84,10 +84,14 @@ ninguna acción por su cuenta, solo orienta.
 ## 4. Contrato de salida (JSON)
 
 Todo el flujo, sin importar si corre desde el notebook o desde el backend, tiene que devolver
-exactamente esto:
+estos 8 campos, más un 9.º campo (`respuesta`) que el modelo puede mandar opcionalmente pero que
+el backend **siempre** termina completando antes de responder, tanto en triaje de una sola
+pasada (`/api/triage`) como en el chat conversacional — `run_pipeline` lo arma si el modelo no lo
+mandó (`resumen` + `recomendacion`) o lo reemplaza si el gate de emergencia cambió la prioridad:
 
 ```json
 {
+  "respuesta": "string",
   "resumen": "string",
   "sintomas_detectados": ["string"],
   "prioridad": "BAJA | MEDIA | ALTA | EMERGENCIA",
@@ -98,6 +102,13 @@ exactamente esto:
   "confianza": 0.0
 }
 ```
+
+`respuesta` es el texto conversacional que ve la persona en el chat (contesta la pregunta puntual
+del último mensaje); `resumen`/`recomendacion` siguen siendo la evaluación estructurada. Es
+opcional únicamente de cara al **modelo/notebook**: el notebook congelado no lo genera y su
+salida cruda sigue siendo válida sin él, por eso
+vive en `OPTIONAL_FIELDS` y no en `REQUIRED_FIELDS` (`evals/triage_parsing.py`). Pasa por las mismas
+reglas de contenido (no diagnostica, no medica). Ver `DECISION_LOG.md`, decisión 7.
 
 `prioridad` es case-sensitive en el validador (se compara en mayúsculas), `confianza` tiene que
 estar entre 0 y 1.

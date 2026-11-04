@@ -38,6 +38,9 @@ HUMAN_DECISION = (
 
 # Mismas claves y significados que documenta .claude/CLAUDE.md seccion 4.
 OUTPUT_FIELDS: dict[str, str] = {
+    "respuesta": (
+        "string - lo que le contestas a la persona, en conversacion, a su ultimo mensaje"
+    ),
     "resumen": "string - lo que entendiste del caso en 1 o 2 frases",
     "sintomas_detectados": "array de strings - sintomas identificados",
     "prioridad": "string - BAJA | MEDIA | ALTA | EMERGENCIA",
@@ -106,6 +109,15 @@ PRIORITY_RUBRIC: dict[str, str] = {
 # permitir mas especificidad, se registra en DECISION_LOG.md antes de tocar esto.
 # "Tratamiento" queda definido para que el autocuidado no derive en productos.
 CONTENT_GUIDE = (
+    "- respuesta: es lo que la persona lee primero, como un mensaje de chat. Hablale de tu, "
+    "con calidez y en lenguaje sencillo, en 2 a 5 frases. Si es el primer mensaje: di en una "
+    "frase lo que entendiste, cual es el siguiente paso y en que plazo, y por que. Si en el "
+    "\"historial\" ya hubo una evaluacion y la persona pregunta algo nuevo (que comer, si "
+    "puede trabajar, cuando preocuparse, que significa algo), CONTESTA ESA PREGUNTA de forma "
+    "concreta en vez de repetir la evaluacion. Si te falta un dato importante, haz UNA "
+    "pregunta clara al final. Las mismas reglas aplican aqui: nunca diagnosticas, nunca "
+    "nombras medicamentos ni tratamientos. Termina recordando, en pocas palabras, que la "
+    "orientacion no reemplaza a un profesional.\n"
     "- resumen: en 1 o 2 frases, lo que entendiste del caso: sintomas principales, desde "
     "cuando, intensidad y contexto que importe (edad, antecedentes, que lo desencadeno). Si "
     "falta un dato que cambiaria la prioridad, dilo.\n"
@@ -218,6 +230,9 @@ FEW_SHOT_EXAMPLES: list[dict] = [
             "pero me siento bien en general y puedo hacer mis actividades normales."
         ),
         "output": {
+            "respuesta": "Por lo que me cuentas, parece un cuadro leve que puedes manejar en casa: descansa, toma "
+            "liquidos y vigila como evoluciona esta semana. Si aparece fiebre alta o te cuesta "
+            "respirar, consulta. Recuerda que esta orientacion no reemplaza a un profesional.",
             "resumen": "Resfriado leve de un dia de evolucion, con estornudos y "
             "congestion nasal, sin afectar las actividades diarias.",
             "sintomas_detectados": ["estornudos", "congestion nasal"],
@@ -244,6 +259,10 @@ FEW_SHOT_EXAMPLES: list[dict] = [
             "sin tos ni otros sintomas. Puedo comer y tomar liquidos sin problema."
         ),
         "output": {
+            "respuesta": "Tres dias con dolor de garganta y fiebre ameritan que te revisen en los proximos dias, "
+            "aunque por ahora no veo señales de urgencia. Mientras tanto descansa y toma liquidos. "
+            "Si te cuesta tragar o la fiebre sube de 39, consulta antes. Esta orientacion no "
+            "reemplaza a un profesional de la salud.",
             "resumen": "Dolor de garganta y fiebre baja de 3 dias de evolucion, sin "
             "dificultad para tragar ni otros sintomas asociados.",
             "sintomas_detectados": ["dolor de garganta", "fiebre"],
@@ -270,6 +289,11 @@ FEW_SHOT_EXAMPLES: list[dict] = [
             "enrojecida, caliente e hinchada, y no habia notado eso antes."
         ),
         "output": {
+            "respuesta": "Con diabetes, una herida enrojecida, caliente e hinchada necesita que la vea un "
+            "profesional hoy mismo, porque el riesgo de complicaciones es mayor. Mientras llegas, "
+            "mantenla limpia y cubierta y evita apoyar el pie. Si aparece fiebre o el "
+            "enrojecimiento avanza rapido, ve a urgencias. Esta orientacion no reemplaza a un "
+            "profesional.",
             "resumen": "Persona con diabetes que presenta una herida en el pie con "
             "signos de enrojecimiento, calor e hinchazon de aparicion reciente.",
             "sintomas_detectados": ["herida en el pie", "enrojecimiento", "hinchazon", "calor local"],
@@ -297,6 +321,9 @@ FEW_SHOT_EXAMPLES: list[dict] = [
             "corte profundo y no logro que pare con presion."
         ),
         "output": {
+            "respuesta": "Esto es una emergencia: ve a urgencias ahora o llama a la linea de emergencias. "
+            "Mientras tanto, manten presion firme sobre la herida y eleva la mano. Esta "
+            "orientacion no reemplaza la atencion profesional.",
             "resumen": "Sangrado abundante en la mano por un corte profundo que no "
             "cede con presion directa.",
             "sintomas_detectados": ["sangrado abundante", "corte profundo en la mano"],

@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { mockChat, sendFollowUp, submitSymptoms, triageBody, type Priority } from "./fixtures";
+import { mockChat, openEvaluation, sendFollowUp, submitSymptoms, triageBody, type Priority } from "./fixtures";
 
 const LONG_TEXT = "Tengo tos seca y congestión desde hace dos días, sin fiebre ni otros síntomas.";
 const ANONYMOUS_ENDPOINT = "**/api/v1/chat/anonymous/messages";
@@ -20,6 +20,9 @@ test.describe("triaje sin cuenta (chat anónimo)", () => {
       await submitSymptoms(page, LONG_TEXT);
 
       await expect(page).toHaveURL(/\/$/);
+      // El chat contesta primero; la evaluación completa está plegada hasta abrirla.
+      await expect(page.getByText(/por lo que me cuentas/i)).toBeVisible();
+      await page.getByRole("button", { name: /ver evaluación completa/i }).click();
       await expect(page.getByRole("heading", { level: 1 })).toHaveText(EXPECTED[priority]);
       await expect(page.getByText(/no calibrada clínicamente/i)).toContainText(/puede equivocarse/i);
     });
@@ -102,9 +105,11 @@ test.describe("triaje sin cuenta (chat anónimo)", () => {
     await mockChat(page, 200, triageBody("MEDIA"));
     await page.goto("/");
     await submitSymptoms(page, LONG_TEXT);
+    await openEvaluation(page);
     await expect(page.getByRole("heading", { level: 1 })).toHaveText(EXPECTED.MEDIA);
 
     await page.reload();
+    await openEvaluation(page);
     await expect(page.getByRole("heading", { level: 1 })).toHaveText(EXPECTED.MEDIA);
 
     const fresh = await (await browser.newContext()).newPage();
@@ -132,6 +137,7 @@ test.describe("triaje sin cuenta (chat anónimo)", () => {
     expect(await page.evaluate(() => localStorage.getItem("healthguide_anonymous_chat"))).toBeNull();
 
     await submitSymptoms(page, LONG_TEXT);
+    await openEvaluation(page);
     await expect(page.getByRole("heading", { level: 1 })).toHaveText(EXPECTED.BAJA);
     expect(bodies[1]).toMatchObject({ history: [], already_emergency: false });
     await expect(page.getByText(/esta conversación fue marcada como emergencia/i)).toHaveCount(0);
@@ -141,11 +147,13 @@ test.describe("triaje sin cuenta (chat anónimo)", () => {
     await mockChat(page, 200, triageBody("MEDIA"));
     await page.goto("/");
     await submitSymptoms(page, LONG_TEXT);
+    await openEvaluation(page);
     await expect(page.getByRole("heading", { level: 1 })).toHaveText(EXPECTED.MEDIA);
 
     page.once("dialog", (dialog) => dialog.dismiss());
     await page.getByRole("button", { name: /nueva evaluación/i }).click();
 
+    // Cancelar no toca la conversación: el desplegable sigue abierto.
     await expect(page.getByRole("heading", { level: 1 })).toHaveText(EXPECTED.MEDIA);
   });
 });

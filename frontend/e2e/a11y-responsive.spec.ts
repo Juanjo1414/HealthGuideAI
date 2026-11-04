@@ -28,6 +28,20 @@ test.describe("accesibilidad (axe) y responsive", () => {
     });
   }
 
+  test("resultado con la evaluación completa desplegada: accesible y sin desbordes", async ({ page }) => {
+    await mockChat(page, 200, triageBody("MEDIA"));
+    await page.goto("/");
+    await submitSymptoms(page, "Tengo tos seca y congestión desde hace dos días, sin fiebre ni otros síntomas.");
+    const toggle = page.getByRole("button", { name: /ver evaluación completa/i });
+    await expect(toggle).toHaveAttribute("aria-expanded", "false");
+    await toggle.click();
+    await expect(page.getByRole("button", { name: /ocultar evaluación completa/i })).toHaveAttribute("aria-expanded", "true");
+    await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+
+    await expectNoSeriousA11yViolations(page);
+    await expectNoHorizontalOverflow(page);
+  });
+
   test("historial y perfil (con sesión): accesibles y sin desbordes", async ({ page }) => {
     await signupViaApi(page);
     for (const path of ["/historial", "/perfil"]) {
