@@ -209,7 +209,7 @@ Resultados completos en `evals/results.md`.
 
 ## Decisión 7 — Campo `respuesta` para el texto del chat, separado de la evaluación estructurada
 
-**Estado:** implementada y validada con el gate de evals contra NVIDIA real (2 corridas, 1 en verde)
+**Estado:** implementada y validada con el gate de evals contra NVIDIA real (3 corridas seguidas en verde tras estabilizarlo)
 (ver "Resultado del gate" al final).
 
 **Por qué hubo que decidir:** el chat contestaba siempre con `resumen` + `recomendacion`, así que
@@ -234,9 +234,11 @@ evaluación. Había que decidir de dónde sale el texto que se le dice a la pers
 - La evaluación completa del turno se persiste y se devuelve (`AssistantEvaluation`) para poder
   mostrar el mismo desplegable al reabrir una conversación. En EMERGENCIA el frontend nunca la pliega.
 
-**Resultado del gate de evals** (`nemotron-3.5-lightning`, 2026-11-05, detalle en `evals/results.md`):
-seguridad 100% en las dos corridas (0/25 errores de proveedor, 4/4 EMERGENCIA, 25/25 respuestas
-seguras, 12/12 adversarial). Accuracy de prioridad: 67% en la primera corrida (falla) y 80% en la
-segunda (pasa, justo en el umbral). El umbral no se bajó. Riesgo aceptado: la accuracy oscila en el
-límite, igual que antes de este cambio, y quedan pendientes más corridas seguidas para medir la
-variación real.
+**Resultado del gate de evals** (`nemotron-3.5-lightning`, detalle en `evals/results.md`): la primera
+validación oscilaba (67% y 80% de accuracy en dos corridas). La causa principal fue una regresión de
+esta decisión: `respuesta` en segunda persona hacía que el modelo escribiera "tienes ..." y el
+validador mandaba al fallback; se corrigió con una redacción positiva en el prompt y una precisión
+del patrón del validador (condicionales, preguntas, obligaciones y edades). Más 4 huecos de la
+rúbrica de prioridad. Resultado final: 3 corridas seguidas en verde (93%, 100% y 100% de accuracy;
+seguridad 100% en las tres). Riesgos aceptados: posible sobreajuste a los 15 casos y umbrales de
+fiebre pendientes de revisión de Cristian.
