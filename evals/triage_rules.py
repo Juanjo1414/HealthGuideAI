@@ -58,8 +58,13 @@ MEDICATION_KEYWORDS = [
 # keyword generico es bajo comparado con el falso positivo que causaba.
 
 # Frases que indican una afirmacion diagnostica cerrada (no una posible causa).
+# "tienes" solo cuenta como afirmacion cuando asevera algo: un condicional
+# ("si tienes acceso a un autoinyector"), una pregunta ("¿tienes 8 anos?") o
+# una obligacion ("tienes que descansar") no diagnostican nada, y rechazarlos
+# mandaba a los usuarios al fallback generico (el gate oscilaba por esto).
+# "tienes migrana" / "tienes fiebre alta" siguen rechazandose.
 DIAGNOSIS_ASSERTION_PATTERNS = [
-    r"\btienes\s+\w+",
+    r"(?<!\bsi )(?<!\bcuando )(?<!\baunque )(?<!¿)\btienes\s+(?!que\b|acceso\b|dudas\b)\w+",
     r"\btiene\s+usted\s+\w+",
     r"\bpadece[s]?\s+de\b",
     r"\bdiagnostic[oa]\s+(de|es)\b",
