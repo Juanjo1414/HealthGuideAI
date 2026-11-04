@@ -12,6 +12,12 @@ htmlcov/
 *.claude
 .claude
 
+# Excepcion a *.pdf de arriba: fuentes del RAG (documentos-cristian/), via
+# Git LFS (ver .gitattributes) — no son entregables del curso, son datos
+# que el pipeline de ingesta necesita leer.
+!/documentos-cristian/**/*.pdf
+!/documentos-cristian/**/*.jpg
+
 # graphify: cache y paths locales de interprete no se versionan (son
 # regenerables/especificos de la maquina); el resto (graph.json, .html,
 # GRAPH_REPORT.md, obsidian/) si se versiona para que el equipo lo vea sin
