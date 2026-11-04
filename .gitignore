@@ -32,3 +32,7 @@ graphify-out/.gfy-*.tmp
 
 # Material de presentación del equipo (pitch) — entregable local, no va a git.
 /pitch/
+
+# RAG: fuentes (zip/PDF) en Git LFS, solo para indexar. Excepcion a *.pdf de arriba.
+!documentos-cristian/**/*.pdf
+!documentos-cristian/*.pdf
