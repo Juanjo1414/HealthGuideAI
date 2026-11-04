@@ -42,6 +42,23 @@ class SendMessageRequest(BaseModel):
         return normalized
 
 
+class AssistantEvaluation(BaseModel):
+    """La evaluación estructurada de un turno del asistente, para que una
+    conversación abierta desde "Mi Historial" muestre lo mismo que se vio en
+    vivo (la tarjeta plegable con prioridad, causas y señales)."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    resumen: str
+    sintomas_detectados: list[str]
+    prioridad: Priority
+    posibles_causas: list[str]
+    alertas: list[str]
+    recomendacion: str
+    requiere_revision: bool
+    confianza: float = Field(ge=0.0, le=1.0)
+
+
 class ChatMessageOut(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
@@ -52,6 +69,7 @@ class ChatMessageOut(BaseModel):
     # Solo presente en turnos "assistant"
     prioridad: Priority | None = None
     requiere_revision: bool | None = None
+    evaluacion: AssistantEvaluation | None = None
 
 
 class ConversationDetail(BaseModel):
@@ -75,6 +93,7 @@ class ChatMessageResponse(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
+    respuesta: str
     resumen: str
     sintomas_detectados: list[str]
     prioridad: Priority
@@ -150,6 +169,7 @@ class AnonymousChatMessageResponse(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
+    respuesta: str
     resumen: str
     sintomas_detectados: list[str]
     prioridad: Priority

@@ -32,6 +32,8 @@ class StubOrchestrator:
 
 def model_output(**overrides):
     output = {
+        # El pipeline real siempre la arma (pipeline.py), aunque el modelo no la mande.
+        "respuesta": "Por lo que me cuentas, conviene que te revisen esta semana.",
         "resumen": "Dolor reportado por el usuario.",
         "sintomas_detectados": ["dolor de cabeza"],
         "prioridad": "MEDIA",

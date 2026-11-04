@@ -60,8 +60,8 @@
     "semantic_hash": ""
   },
   "backend/app/api/routes_health.py": {
-    "mtime": 1791129716.480239,
-    "seen": 1791129796.0447686,
+    "mtime": 1791144775.9069145,
+    "seen": 1791144785.303324,
     "ast_hash": "48cb753652dea5a3f0fbc8fb64e8b890",
     "semantic_hash": ""
   },
@@ -270,9 +270,9 @@
     "semantic_hash": ""
   },
   "backend/tests/test_gateway.py": {
-    "mtime": 1791129722.0829937,
-    "seen": 1791129796.0448425,
-    "ast_hash": "42174fc6bf01bd8a4166d7b2cccf19b4",
+    "mtime": 1791144775.9069145,
+    "seen": 1791144785.3034306,
+    "ast_hash": "6d96adb22a3427b1ae4d888e1a5c38cc",
     "semantic_hash": ""
   },
   "backend/tests/test_list_flagged_for_review.py": {
@@ -1110,8 +1110,8 @@
     "semantic_hash": ""
   },
   "docs/DESPLIEGUE.md": {
-    "mtime": 1791129789.2336328,
-    "seen": 1791129796.0450032,
+    "mtime": 1791144775.915495,
+    "seen": 1791144785.3036406,
     "ast_hash": "0a019cde56c74218ef24a9ee9bffe65c",
     "semantic_hash": ""
   },

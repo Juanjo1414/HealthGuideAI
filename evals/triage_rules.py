@@ -17,12 +17,12 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 
 try:
-    from triage_parsing import ALLOWED_PRIORITIES, REQUIRED_FIELDS, strip_accents, text_blob
+    from triage_parsing import ALLOWED_PRIORITIES, OPTIONAL_FIELDS, REQUIRED_FIELDS, strip_accents, text_blob
 except ImportError:
     # Ver el docstring de validate_triage_output.py: los dos caminos de
     # import (notebook top-level vs. backend como paquete "evals.X") no
     # siempre dejan "evals/" en sys.path de la misma forma.
-    from evals.triage_parsing import ALLOWED_PRIORITIES, REQUIRED_FIELDS, strip_accents, text_blob
+    from evals.triage_parsing import ALLOWED_PRIORITIES, OPTIONAL_FIELDS, REQUIRED_FIELDS, strip_accents, text_blob
 
 # Nombres/clases de medicamentos y frases de prescripcion mas comunes en espanol.
 # Es una lista heuristica, no exhaustiva — sirve para detectar violaciones obvias,
@@ -193,7 +193,12 @@ class SchemaRule(ValidationRule):
                 reasons.append(
                     f"'{field_name}' tiene tipo incorrecto: {type(output[field_name]).__name__}."
                 )
-        extra_fields = sorted(set(output) - set(REQUIRED_FIELDS))
+        for field_name, expected_type in OPTIONAL_FIELDS.items():
+            if field_name in output and not isinstance(output[field_name], expected_type):
+                reasons.append(
+                    f"'{field_name}' tiene tipo incorrecto: {type(output[field_name]).__name__}."
+                )
+        extra_fields = sorted(set(output) - set(REQUIRED_FIELDS) - set(OPTIONAL_FIELDS))
         if extra_fields:
             reasons.append(f"El output contiene campos no permitidos: {extra_fields}.")
         for list_field in ("sintomas_detectados", "posibles_causas", "alertas"):
