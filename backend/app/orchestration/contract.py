@@ -66,7 +66,8 @@ OUTPUT_FIELDS: dict[str, str] = {
 PRIORITY_RUBRIC: dict[str, str] = {
     "EMERGENCIA": (
         "Peligro inmediato para la vida o una funcion vital. Criterios observables: "
-        "dolor en el pecho, dificultad seria para respirar, perdida de conciencia, "
+        "dolor en el pecho intenso, opresivo o acompañado de dificultad para respirar, "
+        "dificultad seria para respirar, perdida de conciencia, "
         "convulsion, sangrado que no se controla con presion directa, signos de "
         "accidente cerebrovascular (cara caida, dificultad para hablar o mover un "
         "lado del cuerpo), reaccion alergica grave con hinchazon en cara o garganta. "
@@ -78,19 +79,33 @@ PRIORITY_RUBRIC: dict[str, str] = {
         "Criterios observables: fiebre alta persistente en un bebe o adulto mayor, "
         "dolor intenso que no cede, sintomas que empeoran rapido, un antecedente de "
         "riesgo relevante (embarazo, enfermedad cronica, edad muy temprana o "
-        "avanzada) combinado con un sintoma nuevo. Accion esperada: buscar atencion "
-        "medica en las proximas horas, no esperar dias."
+        "avanzada) combinado con un sintoma nuevo. Tambien es ALTA la informacion "
+        "contradictoria o ambigua: datos que se contradicen entre si (tiempos de inicio "
+        "que no cuadran, edad que no encaja con el antecedente) o un sintoma que podria "
+        "ser grave descrito de forma poco clara (dolor de pecho que va y viene o cuya "
+        "intensidad no esta clara). Como no se puede confiar en la evaluacion ni descartar "
+        "gravedad, se clasifica ALTA, se marca requiere_revision y se pide aclarar el dato. Ante la duda entre dos "
+        "niveles, el mas severo. Accion esperada: buscar atencion medica en las "
+        "proximas horas, no esperar dias."
     ),
     "MEDIA": (
         "Sintomas molestos o persistentes que ameritan consulta medica pero pueden "
         "esperar dias sin peligro evidente. Criterios observables: fiebre moderada "
-        "de pocos dias sin señales de alarma, dolor leve a moderado estable, un "
+        "(menos de 39 grados, por ejemplo 38.5, que NUNCA se llama \"fiebre alta\"; de 1 a 3 "
+        "dias, en un adulto sin antecedentes ni señales de alarma, aunque venga con tos "
+        "o dolor muscular; la fiebre \"alta persistente\" de ALTA es de 39 o mas, de mas "
+        "de 3 dias, o en un grupo de riesgo), "
+        "un sintoma nuevo que persiste horas o dias y la persona aun no sabe a que se "
+        "debe, aunque sea leve (si viene dentro de un relato largo, se clasifica por ese "
+        "sintoma, no por el resto del relato), dolor leve a moderado estable, un "
         "cuadro tipico y manejable (gripe comun, migraña habitual del paciente). "
         "Accion esperada: agendar cita, monitorear evolucion."
     ),
     "BAJA": (
         "Sintomas leves y estables, manejables con autocuidado general "
-        "(hidratacion, reposo), sin señales de alarma ni empeoramiento. Accion "
+        "(hidratacion, reposo), sin señales de alarma ni empeoramiento: molestias "
+        "conocidas o pasajeras (un resfriado comun que la persona ya identifica, una "
+        "molestia que viene mejorando). Accion "
         "esperada: monitorear en casa, consultar si no mejora o si aparece algo nuevo."
     ),
 }
@@ -281,6 +296,96 @@ FEW_SHOT_EXAMPLES: list[dict] = [
             f"abrir la boca, o aparecen manchas blancas en la garganta. {DISCLAIMER}",
             "requiere_revision": False,
             "confianza": 0.7,
+        },
+    },
+    {
+        "input": (
+            "Tengo 41 anos, desde anteayer tengo fiebre de 38.6, dolor de cabeza y "
+            "malestar general. Tomo liquidos y puedo hacer mis cosas, no tengo "
+            "enfermedades previas."
+        ),
+        "output": {
+            "respuesta": "Una fiebre moderada de dos dias con malestar general, sin señales de alarma, "
+            "amerita que te revisen en las proximas 24 a 48 horas, no es una urgencia. Descansa y "
+            "toma liquidos. Si la fiebre llega a 39 o dura mas de tres dias, consulta antes. Esta "
+            "orientacion no reemplaza a un profesional de la salud.",
+            "resumen": "Adulto sin antecedentes con fiebre moderada de dos dias, dolor de cabeza "
+            "y malestar general, que mantiene sus actividades.",
+            "sintomas_detectados": ["fiebre", "dolor de cabeza", "malestar general"],
+            "prioridad": "MEDIA",
+            "posibles_causas": [
+                "infeccion viral comun: fiebre moderada con malestar general de pocos dias "
+                "es un cuadro frecuente; solo un profesional puede distinguir el origen",
+                "deshidratacion o cansancio acumulado: pueden sumar al dolor de cabeza y al "
+                "malestar, aunque no explican la fiebre",
+            ],
+            "alertas": [],
+            "recomendacion": "Agenda una consulta medica en las proximas 24 a 48 horas. Mientras "
+            "tanto, descansa, toma liquidos con frecuencia, usa ropa ligera y registra la "
+            "temperatura dos veces al dia. Consulta antes si la fiebre llega a 39 grados, dura "
+            "mas de tres dias, o aparece rigidez de cuello, confusion o dificultad para "
+            f"respirar. {DISCLAIMER}",
+            "requiere_revision": False,
+            "confianza": 0.7,
+        },
+    },
+    {
+        "input": (
+            "Tengo dolor de abdomen que empezo esta mañana, aunque tambien llevo casi "
+            "dos semanas con la misma molestia."
+        ),
+        "output": {
+            "respuesta": "Lo que me cuentas no cuadra del todo: dices que el dolor empezo hoy y tambien que "
+            "lleva casi dos semanas. Como no puedo descartar algo importante con datos "
+            "contradictorios, conviene que te evaluen en las proximas horas. ¿Desde cuando "
+            "empezo realmente y como ha cambiado? Esta orientacion no reemplaza a un profesional.",
+            "resumen": "Dolor de abdomen con informacion contradictoria sobre el inicio: esta "
+            "manana y casi dos semanas a la vez.",
+            "sintomas_detectados": ["dolor de abdomen"],
+            "prioridad": "ALTA",
+            "posibles_causas": [
+                "irritacion o inflamacion del aparato digestivo: es una categoria frecuente de "
+                "dolor abdominal, pero con tiempos contradictorios no se puede precisar",
+                "tension o sobrecarga muscular de la pared abdominal: podria explicar una "
+                "molestia prolongada, aunque no confirma el origen",
+            ],
+            "alertas": ["informacion contradictoria sobre cuando empezo el dolor"],
+            "recomendacion": "Busca atencion medica en las proximas horas para que evaluen el "
+            "dolor, y aclara cuando empezo de verdad y si ha cambiado. Mientras tanto, "
+            "descansa y toma liquidos en pequeños sorbos. Ve a urgencias si el dolor se hace "
+            f"intenso, aparece vomito persistente, fiebre o el abdomen se pone duro. {DISCLAIMER}",
+            "requiere_revision": True,
+            "confianza": 0.4,
+        },
+    },
+    {
+        "input": (
+            "Fue un dia largo: fui al mercado, cocine para la familia, vi una pelicula "
+            "y ah, desde la noche siento una molestia leve en un oido, nada fuerte. "
+            "Despues me puse a limpiar la casa y me acoste tarde."
+        ),
+        "output": {
+            "respuesta": "De todo lo que me cuentas, lo que importa es la molestia leve en el oido que "
+            "empezo anoche. Aunque es leve, es un sintoma nuevo, asi que vigilalo uno o dos dias "
+            "y agenda una cita si no se va o empeora. Esta orientacion no reemplaza a un "
+            "profesional de la salud.",
+            "resumen": "Molestia leve y nueva en un oido desde anoche, mencionada dentro de un "
+            "relato largo de actividades del dia.",
+            "sintomas_detectados": ["molestia en un oido"],
+            "prioridad": "MEDIA",
+            "posibles_causas": [
+                "irritacion o inflamacion leve del oido: es una molestia nueva sin causa clara "
+                "todavia; solo un profesional puede precisar el origen",
+                "cambios de presion o congestion de las vias respiratorias altas: pueden dar "
+                "sensacion de molestia en el oido sin ser algo grave",
+            ],
+            "alertas": [],
+            "recomendacion": "Observa la molestia durante uno o dos dias y agenda una consulta "
+            "medica si persiste o empeora. Mientras tanto, mantén el oido seco y evita "
+            "introducir objetos. Consulta antes si aparece dolor fuerte, salida de liquido, "
+            f"fiebre o perdida de audicion. {DISCLAIMER}",
+            "requiere_revision": False,
+            "confianza": 0.6,
         },
     },
     {
