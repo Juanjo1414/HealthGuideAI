@@ -348,9 +348,9 @@
     "semantic_hash": ""
   },
   "frontend/package.json": {
-    "mtime": 1791092489.2205343,
-    "seen": 1791092516.7166557,
-    "ast_hash": "d6121bf0ae15878667d8e4429dd38ba0",
+    "mtime": 1793826480.983655,
+    "seen": 1793826783.3872023,
+    "ast_hash": "c29ca913490b0824b27d2859e72dfd72",
     "semantic_hash": ""
   },
   "frontend/vite.config.js": {
@@ -360,9 +360,9 @@
     "semantic_hash": ""
   },
   ".github/workflows/ci.yml": {
-    "mtime": 1791092489.0736685,
-    "seen": 1791092516.7167778,
-    "ast_hash": "c6ebd89b042026af467f4f2cb20be036",
+    "mtime": 1793826480.967996,
+    "seen": 1793826783.3873131,
+    "ast_hash": "bc463cd2f1ccab67ba37cdc2b9000ef3",
     "semantic_hash": ""
   },
   ".kiro/skills/refactor-large-files/SKILL.md": {
@@ -372,9 +372,9 @@
     "semantic_hash": "89dccbf0b78a4e86a22ca713e0cb6688"
   },
   "CLAUDE.md": {
-    "mtime": 1791127870.1765153,
-    "seen": 1791127871.7928476,
-    "ast_hash": "3e9c84632aecee243cd94dab4d78ed22",
+    "mtime": 1793659205.936355,
+    "seen": 1793826783.387328,
+    "ast_hash": "31fa2bc816ef863d55b04cd6127bf47b",
     "semantic_hash": ""
   },
   "CONSTRAINTS.md": {
@@ -384,9 +384,9 @@
     "semantic_hash": ""
   },
   "DECISION_LOG.md": {
-    "mtime": 1791092489.0921009,
-    "seen": 1791092516.7167969,
-    "ast_hash": "136ac83190d24581daadfe1117be5f66",
+    "mtime": 1793826480.983655,
+    "seen": 1793826783.387331,
+    "ast_hash": "f47bdbb39dd6e4584f896b8ede17bbb0",
     "semantic_hash": ""
   },
   "DECISION_TABLE.md": {
@@ -426,15 +426,15 @@
     "semantic_hash": "bfca8fd86feec47c364c00f8f75c1e6b"
   },
   "backend/requirements-dev.txt": {
-    "mtime": 1793368211.3743596,
-    "seen": 1793369983.109578,
-    "ast_hash": "1f8755301fe7f7eca021ed9f6eb1d2c7",
+    "mtime": 1793826480.983655,
+    "seen": 1793826783.3873436,
+    "ast_hash": "04e5c94ef440ed9405e55674695689ab",
     "semantic_hash": ""
   },
   "backend/requirements.txt": {
-    "mtime": 1791123148.455317,
-    "seen": 1791123174.8886793,
-    "ast_hash": "19a637228ff04230963b3c22c54eda49",
+    "mtime": 1793826480.983655,
+    "seen": 1793826783.3873448,
+    "ast_hash": "c38f6c4dd733c280a9e29815f74285ae",
     "semantic_hash": ""
   },
   "compose.yml": {
@@ -480,9 +480,9 @@
     "semantic_hash": ""
   },
   "evals/results.md": {
-    "mtime": 1791092489.177404,
-    "seen": 1791092516.7168436,
-    "ast_hash": "72cff905db02ecaea6314cc65b20bb5f",
+    "mtime": 1793826480.983655,
+    "seen": 1793826783.387371,
+    "ast_hash": "9a5c514def36b5d5a6a8f8e09d3356be",
     "semantic_hash": ""
   },
   "frontend/README.md": {
@@ -858,9 +858,9 @@
     "semantic_hash": ""
   },
   "frontend/e2e/a11y-responsive.spec.ts": {
-    "mtime": 1793368211.3934345,
-    "seen": 1793369983.1093674,
-    "ast_hash": "50a6bd2117df37687564fb450f7e2bd4",
+    "mtime": 1793659205.95249,
+    "seen": 1793826783.3871908,
+    "ast_hash": "ddb50b659983e434dd8359d01637f841",
     "semantic_hash": ""
   },
   "frontend/e2e/account.spec.ts": {
@@ -870,21 +870,21 @@
     "semantic_hash": ""
   },
   "frontend/e2e/desktop-only.spec.ts": {
-    "mtime": 1793368211.398069,
-    "seen": 1793369983.109372,
-    "ast_hash": "501355a94edb0af6fd4c2724b08dfb08",
+    "mtime": 1793659205.9589922,
+    "seen": 1793826783.3871953,
+    "ast_hash": "613f0467aa359d33d8b2093fd295a0c8",
     "semantic_hash": ""
   },
   "frontend/e2e/fixtures.ts": {
-    "mtime": 1793369430.294268,
-    "seen": 1793369983.1093762,
-    "ast_hash": "c50b8688b418f9ab85c5a2a071ba6c17",
+    "mtime": 1793659205.960913,
+    "seen": 1793826783.3871987,
+    "ast_hash": "0d3388d0b25030fced3897f354801103",
     "semantic_hash": ""
   },
   "frontend/e2e/triage.spec.ts": {
-    "mtime": 1793368211.405594,
-    "seen": 1793369983.1093788,
-    "ast_hash": "40e0fce19e4a65d6d715152ba8eb596c",
+    "mtime": 1793659205.9635546,
+    "seen": 1793826783.3872006,
+    "ast_hash": "f6630a184dde8d59ac4c16d7ce687308",
     "semantic_hash": ""
   },
   "frontend/playwright.config.ts": {
@@ -948,9 +948,9 @@
     "semantic_hash": ""
   },
   "frontend/src/pages/HomePage.test.tsx": {
-    "mtime": 1793369649.5001469,
-    "seen": 1793369983.1094933,
-    "ast_hash": "c8f093bd79e2a30e19033ccdef25feee",
+    "mtime": 1793659205.969742,
+    "seen": 1793826783.387285,
+    "ast_hash": "1c0c6ed5c55687e7999d28d47a7a83fa",
     "semantic_hash": ""
   },
   "frontend/src/pages/ProfilePage.test.tsx": {
@@ -984,9 +984,9 @@
     "semantic_hash": ""
   },
   "evals/gate_report.md": {
-    "mtime": 1791092489.1701581,
-    "seen": 1791092516.7168388,
-    "ast_hash": "092e0758d695bbc0d2c3082799a5dddc",
+    "mtime": 1793826480.983655,
+    "seen": 1793826783.3873656,
+    "ast_hash": "3ab024793c15710a58511f19dcb01844",
     "semantic_hash": ""
   },
   "docs/branch-protection-main.json": {
@@ -1008,9 +1008,9 @@
     "semantic_hash": ""
   },
   ".github/workflows/evals.yml": {
-    "mtime": 1791092489.0787697,
-    "seen": 1791092516.7167823,
-    "ast_hash": "6c08c2f9e86d764eb12e3f29526780e4",
+    "mtime": 1793826480.967996,
+    "seen": 1793826783.3873162,
+    "ast_hash": "15c0253f5d53ca764f50b3b534380eaf",
     "semantic_hash": ""
   },
   ".github/workflows/release.yml": {
@@ -1020,9 +1020,9 @@
     "semantic_hash": ""
   },
   ".github/workflows/security.yml": {
-    "mtime": 1791092489.0818284,
-    "seen": 1791092516.7167866,
-    "ast_hash": "a7b574e14319a1d198d3964c9296a2bd",
+    "mtime": 1793826480.983655,
+    "seen": 1793826783.3873196,
+    "ast_hash": "e2bc45e10146272266fb1df66097f9a8",
     "semantic_hash": ""
   },
   "backend/tests/test_auth_rate_limit.py": {
@@ -1275,6 +1275,30 @@
     "mtime": 1793370099.1580253,
     "seen": 1793370116.993002,
     "ast_hash": "f77c693e7f9ec731c38c9ca45961e76c",
+    "semantic_hash": ""
+  },
+  "frontend/src/components/triage/AssistantMessage.test.tsx": {
+    "mtime": 1793659205.969206,
+    "seen": 1793826783.3872385,
+    "ast_hash": "28120094c45d9eb9e364cd06a2ef0195",
+    "semantic_hash": ""
+  },
+  "documentos-cristian/09/17/446.jpg": {
+    "mtime": 1789659064.1293578,
+    "seen": 1793826783.3874154,
+    "ast_hash": "f9d0144a16eefc4bc744aef3b033674c",
+    "semantic_hash": ""
+  },
+  "documentos-cristian/09/18/4D5.jpg": {
+    "mtime": 1789737837.951611,
+    "seen": 1793826783.3874178,
+    "ast_hash": "b90bce1cac1368a562cd8d0981df69a0",
+    "semantic_hash": ""
+  },
+  "documentos-cristian/09/18/4F3.jpg": {
+    "mtime": 1789740803.9207542,
+    "seen": 1793826783.3874202,
+    "ast_hash": "ac6c50d5d94ef22cd3f7ad4205256ce8",
     "semantic_hash": ""
   }
 }
