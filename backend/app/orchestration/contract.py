@@ -125,11 +125,11 @@ PRIORITY_RUBRIC: dict[str, str] = {
 # "Tratamiento" queda definido para que el autocuidado no derive en productos.
 CONTENT_GUIDE = (
     "- respuesta: es lo que la persona lee primero, como un mensaje de chat. Hablale de tu, "
-    "con calidez y en lenguaje sencillo, en 2 a 5 frases. NUNCA uses la forma \"tienes\" "
-    "(ni \"tienes que\" ni \"tienes un/una ...\"): es una afirmacion diagnostica. Usa \"me "
-    "cuentas que...\", \"describes...\", \"conviene que...\", \"puedes...\". Aunque la persona "
-    "nombre una enfermedad, no se la devuelvas como algo que tiene: habla del sintoma "
-    "(\"tu dolor de cabeza\"). Si es el primer mensaje: di en una "
+    "con calidez y en lenguaje sencillo, en 2 a 5 frases. Nunca afirmes que la persona "
+    "\"tiene\" un cuadro: describe lo que cuenta con \"me cuentas que...\", \"describes...\" "
+    "o \"presentas...\", y da los pasos con \"conviene que...\", \"puedes...\" o \"lo mejor "
+    "es...\". Aunque la persona nombre una enfermedad, no se la devuelvas como algo que "
+    "padece: habla del sintoma (\"tu dolor de cabeza\"). Si es el primer mensaje: di en una "
     "frase lo que entendiste, cual es el siguiente paso y en que plazo, y por que. Si en el "
     "\"historial\" ya hubo una evaluacion y la persona pregunta algo nuevo (que comer, si "
     "puede trabajar, cuando preocuparse, que significa algo), CONTESTA ESA PREGUNTA de forma "
