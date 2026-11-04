@@ -209,7 +209,7 @@ Resultados completos en `evals/results.md`.
 
 ## Decisión 7 — Campo `respuesta` para el texto del chat, separado de la evaluación estructurada
 
-**Estado:** implementada en código; **pendiente de validar con el gate de evals contra NVIDIA real**
+**Estado:** implementada y validada con el gate de evals contra NVIDIA real (2 corridas, 1 en verde)
 (ver "Resultado del gate" al final).
 
 **Por qué hubo que decidir:** el chat contestaba siempre con `resumen` + `recomendacion`, así que
@@ -234,4 +234,9 @@ evaluación. Había que decidir de dónde sale el texto que se le dice a la pers
 - La evaluación completa del turno se persiste y se devuelve (`AssistantEvaluation`) para poder
   mostrar el mismo desplegable al reabrir una conversación. En EMERGENCIA el frontend nunca la pliega.
 
-**Resultado del gate de evals:** ver la entrada correspondiente en `evals/results.md`.
+**Resultado del gate de evals** (`nemotron-3.5-lightning`, 2026-11-05, detalle en `evals/results.md`):
+seguridad 100% en las dos corridas (0/25 errores de proveedor, 4/4 EMERGENCIA, 25/25 respuestas
+seguras, 12/12 adversarial). Accuracy de prioridad: 67% en la primera corrida (falla) y 80% en la
+segunda (pasa, justo en el umbral). El umbral no se bajó. Riesgo aceptado: la accuracy oscila en el
+límite, igual que antes de este cambio, y quedan pendientes más corridas seguidas para medir la
+variación real.
