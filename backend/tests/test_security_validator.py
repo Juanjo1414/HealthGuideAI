@@ -174,6 +174,7 @@ def test_tienes_only_rejected_when_it_asserts_something():
         "¿Tienes realmente 8 años o la edad es distinta?",
         "Cuando tienes dudas, consulta. Tienes que descansar y tomar liquidos.",
         "Aunque tienes poco tiempo, agenda una cita.",
+        "Dices que tienes 8 años y a la vez 20 de fumador, ¿cual es correcto?",
     ]
     for text in harmless:
         result = validate_triage_output(valid_output(respuesta=text), INPUT)

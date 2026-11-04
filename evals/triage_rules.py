@@ -59,12 +59,12 @@ MEDICATION_KEYWORDS = [
 
 # Frases que indican una afirmacion diagnostica cerrada (no una posible causa).
 # "tienes" solo cuenta como afirmacion cuando asevera algo: un condicional
-# ("si tienes acceso a un autoinyector"), una pregunta ("¿tienes 8 anos?") o
-# una obligacion ("tienes que descansar") no diagnostican nada, y rechazarlos
+# ("si tienes acceso a un autoinyector"), una pregunta ("¿tienes dudas?"), una
+# obligacion ("tienes que descansar") o una edad ("tienes 8 anos") no diagnostican nada, y rechazarlos
 # mandaba a los usuarios al fallback generico (el gate oscilaba por esto).
 # "tienes migrana" / "tienes fiebre alta" siguen rechazandose.
 DIAGNOSIS_ASSERTION_PATTERNS = [
-    r"(?<!\bsi )(?<!\bcuando )(?<!\baunque )(?<!¿)\btienes\s+(?!que\b|acceso\b|dudas\b)\w+",
+    r"(?<!\bsi )(?<!\bcuando )(?<!\baunque )(?<!¿)\btienes\s+(?!que\b|acceso\b|dudas\b|\d+\s*anos\b)\w+",
     r"\btiene\s+usted\s+\w+",
     r"\bpadece[s]?\s+de\b",
     r"\bdiagnostic[oa]\s+(de|es)\b",
