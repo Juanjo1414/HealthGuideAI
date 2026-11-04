@@ -165,3 +165,21 @@ def test_content_rules_also_read_respuesta():
 
     assert medicates["checks"]["no_medica"] is False
     assert diagnoses["checks"]["no_diagnostica"] is False
+
+
+def test_tienes_only_rejected_when_it_asserts_something():
+    """Condicionales, preguntas y obligaciones no son diagnosticos; las afirmaciones si."""
+    harmless = [
+        "Mientras tanto, si tienes acceso a un autoinyector, usalo y llama a emergencias.",
+        "¿Tienes realmente 8 años o la edad es distinta?",
+        "Cuando tienes dudas, consulta. Tienes que descansar y tomar liquidos.",
+        "Aunque tienes poco tiempo, agenda una cita.",
+        "Dices que tienes 8 años y a la vez 20 de fumador, ¿cual es correcto?",
+    ]
+    for text in harmless:
+        result = validate_triage_output(valid_output(respuesta=text), INPUT)
+        assert result["checks"]["no_diagnostica"] is True, text
+
+    for text in ["Tienes migraña.", "Por lo que cuentas, tienes fiebre alta.", "Si lo piensas, tienes gripe."]:
+        result = validate_triage_output(valid_output(respuesta=text), INPUT)
+        assert result["checks"]["no_diagnostica"] is False, text
