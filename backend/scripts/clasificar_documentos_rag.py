@@ -150,6 +150,9 @@ def verificar_ocr(idioma: str, tesseract_cmd: str | None, listar_idiomas: Callab
                 pytesseract.pytesseract.tesseract_cmd = tesseract_cmd
             listar_idiomas = pytesseract.get_languages
         idiomas = listar_idiomas()
+    except ImportError as exc:
+        return (f"Falta un módulo de Python ({exc.name}) en ESTE entorno. Instálalo con el mismo python que "
+                "usas para correr el script: python -m pip install pymupdf pytesseract")
     except Exception as exc:
         return (f"No pude ejecutar Tesseract ({type(exc).__name__}). Cierra y abre la terminal tras instalarlo, "
                 "o indica --tesseract-cmd con la ruta de tesseract.exe.")
@@ -278,6 +281,11 @@ def main(argv: list[str] | None = None) -> int:
     if not cmd and sys.platform == "win32":
         por_defecto = Path(r"C:\Program Files\Tesseract-OCR\tesseract.exe")
         cmd = str(por_defecto) if por_defecto.exists() else None
+    try:
+        import fitz  # noqa: F401  (PyMuPDF: se comprueba aquí para avisar antes de empezar)
+    except ImportError:
+        print("Falta PyMuPDF en ESTE entorno. Instálalo con: python -m pip install pymupdf pytesseract", file=sys.stderr)
+        return 2
     problema = verificar_ocr(a.idioma, cmd)
     if problema:
         print(problema, file=sys.stderr)

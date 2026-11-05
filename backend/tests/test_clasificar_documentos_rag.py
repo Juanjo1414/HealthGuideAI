@@ -82,6 +82,12 @@ def test_verificar_ocr_avisa_si_falta_el_idioma_o_tesseract():
 
     assert "Tesseract" in verificar_ocr("spa", None, no_instalado)
 
+    def sin_modulo():
+        raise ModuleNotFoundError("sin pytesseract", name="pytesseract")
+
+    mensaje = verificar_ocr("spa", None, sin_modulo)
+    assert "pytesseract" in mensaje and "pip install" in mensaje
+
 
 def test_la_salida_no_puede_estar_dentro_del_repo(capsys):
     assert main([str(REPO_ROOT / "backend"), "--salida", str(REPO_ROOT / "salida")]) == 2
