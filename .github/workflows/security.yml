@@ -18,9 +18,7 @@ jobs:
     name: CodeQL (${{ matrix.language }})
     runs-on: ubuntu-latest
     permissions:
-      actions: read # en repos privados el action consulta la corrida del workflow
       contents: read
-      security-events: write
     strategy:
       fail-fast: false
       matrix:
@@ -30,7 +28,26 @@ jobs:
       - uses: github/codeql-action/init@v4
         with:
           languages: ${{ matrix.language }}
+      # Repo privado sin GitHub Advanced Security: no se puede subir a Code Scanning,
+      # así que el SARIF queda como artefacto y el gate lo aplica el paso siguiente.
       - uses: github/codeql-action/analyze@v4
+        with:
+          upload: never
+          output: codeql-results
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: codeql-${{ matrix.language }}
+          path: codeql-results
+      - name: Fallar si hay hallazgos de severidad error
+        run: |
+          total=0
+          for f in codeql-results/*.sarif; do
+            n=$(jq '[.runs[].results[]? | select(.level == "error")] | length' "$f")
+            echo "$f: $n hallazgos nivel error"
+            total=$((total + n))
+          done
+          test "$total" -eq 0
 
   dependencias:
     name: Dependencias (pip-audit + npm audit)
