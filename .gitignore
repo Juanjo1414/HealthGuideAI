@@ -12,11 +12,11 @@ htmlcov/
 *.claude
 .claude
 
-# Excepcion a *.pdf de arriba: fuentes del RAG (documentos-cristian/), via
-# Git LFS (ver .gitattributes) — no son entregables del curso, son datos
-# que el pipeline de ingesta necesita leer.
-!/documentos-cristian/**/*.pdf
-!/documentos-cristian/**/*.jpg
+# documentos-cristian/: fuentes del RAG con datos de pacientes (nombres, cedulas,
+# historias clinicas). Se trabajan SOLO en local, nunca en este repo ni en GitHub
+# (ver DECISION_LOG.md y plan de privacidad) — por eso va ignorada sin excepcion,
+# a diferencia de versiones anteriores de este archivo.
+/documentos-cristian/
 
 # graphify: cache y paths locales de interprete no se versionan (son
 # regenerables/especificos de la maquina); el resto (graph.json, .html,
