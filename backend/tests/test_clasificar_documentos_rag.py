@@ -1,13 +1,18 @@
+import json
+from collections import Counter
 from pathlib import Path
 
 import pytest
 
+from backend.scripts import clasificar_documentos_rag as mod
 from backend.scripts.clasificar_documentos_rag import (
     REPO_ROOT,
     clasificar_texto,
     main,
     procesar_pdf,
     resumir,
+    tipo_del_documento,
+    verificar_ocr,
 )
 
 
@@ -46,14 +51,36 @@ def test_detecta_que_parece_haber_una_cedula_sin_devolver_el_numero():
     assert clasificar_texto("Examen fisico normal, signos vitales estables y control en una semana")["posible_cedula"] == 0
 
 
-def test_el_resumen_cuenta_por_tipo():
+def test_el_resumen_cuenta_documentos_y_paginas_por_tipo():
     filas = [
-        {"tipo": "comprobante_recibo", "clinico": 0, "posible_cedula": 1},
-        {"tipo": "historia_clinica_nota", "clinico": 1, "posible_cedula": 0},
-        {"tipo": "sin_texto", "clinico": 0, "posible_cedula": 0},
+        {"ruta": "a.pdf", "tipo": "comprobante_recibo", "posible_cedula": 1, "paginas_ocr": 1,
+         "paginas_por_tipo": json.dumps({"comprobante_recibo": 1})},
+        {"ruta": "b.pdf", "tipo": "con_contenido_clinico", "posible_cedula": 0, "paginas_ocr": 3,
+         "paginas_por_tipo": json.dumps({"comprobante_recibo": 1, "historia_clinica_nota": 2})},
+        {"ruta": "c.pdf", "tipo": "sin_texto", "posible_cedula": 0, "paginas_ocr": 1,
+         "paginas_por_tipo": json.dumps({"sin_texto": 1})},
     ]
     r = resumir(filas)
-    assert (r["clinicos"], r["a_descartar"], r["a_revisar_a_mano"], r["con_posible_cedula"]) == (1, 1, 1, 1)
+    assert (r["conservar_candidatos"], r["descartar"], r["revisar_a_mano"]) == (1, 1, 1)
+    assert r["paginas_analizadas"] == 5 and r["documentos_con_posible_cedula"] == 1
+    assert r["paginas_por_tipo"]["comprobante_recibo"] == 2
+
+
+def test_una_pagina_clinica_salva_el_documento_aunque_empiece_con_un_comprobante():
+    assert tipo_del_documento(Counter({"comprobante_recibo": 1, "historia_clinica_nota": 1})) == "con_contenido_clinico"
+    assert tipo_del_documento(Counter({"comprobante_recibo": 2})) == "comprobante_recibo"
+    assert tipo_del_documento(Counter({"sin_texto": 2})) == "sin_texto"
+    assert tipo_del_documento(Counter({"sin_clasificar": 1, "sin_texto": 1})) == "sin_clasificar"
+
+
+def test_verificar_ocr_avisa_si_falta_el_idioma_o_tesseract():
+    assert verificar_ocr("spa", None, lambda: ["eng", "spa", "osd"]) is None
+    assert "spa" in verificar_ocr("spa", None, lambda: ["eng", "osd"])
+
+    def no_instalado():
+        raise FileNotFoundError
+
+    assert "Tesseract" in verificar_ocr("spa", None, no_instalado)
 
 
 def test_la_salida_no_puede_estar_dentro_del_repo(capsys):
@@ -73,5 +100,62 @@ def test_procesar_pdf_solo_devuelve_etiquetas_no_texto(tmp_path: Path):
     fila = procesar_pdf(pdf, tmp_path, 1, 72, "spa", None, ocr=lambda *_: "Historia clinica. Motivo de consulta: control. Examen fisico normal")
 
     assert fila["ruta"] == "a/doc.pdf"
-    assert fila["tipo"] == "historia_clinica_nota"
+    assert fila["tipo"] == "con_contenido_clinico"
     assert "Motivo" not in str(fila)
+
+
+def test_procesar_pdf_clasifica_pagina_por_pagina_con_paginas_cero_igual_a_todas(tmp_path: Path):
+    fitz = pytest.importorskip("fitz")
+    pdf = tmp_path / "doc.pdf"
+    doc = fitz.open()
+    for _ in range(3):
+        doc.new_page()
+    doc.save(pdf)
+    doc.close()
+    textos = iter([
+        "COMPROBANTE DE RECIBO DEL USUARIO firma del usuario huella",
+        "Historia clinica. Motivo de consulta: control. Examen fisico normal",
+        "",
+    ])
+
+    fila = procesar_pdf(pdf, tmp_path, 0, 72, "spa", None, ocr=lambda *_: next(textos))
+
+    assert fila["paginas_ocr"] == 3
+    assert fila["tipo"] == "con_contenido_clinico" and fila["paginas_clinicas"] == 1
+    assert json.loads(fila["paginas_por_tipo"]) == {"comprobante_recibo": 1, "historia_clinica_nota": 1, "sin_texto": 1}
+
+
+def test_reanudar_no_repite_lo_ya_clasificado(tmp_path: Path, monkeypatch):
+    pytest.importorskip("fitz")
+    import fitz
+
+    carpeta = tmp_path / "docs"
+    carpeta.mkdir()
+    for nombre in ("a.pdf", "b.pdf"):
+        d = fitz.open()
+        d.new_page()
+        d.save(carpeta / nombre)
+        d.close()
+    salida = tmp_path / "salida"
+    salida.mkdir()
+    (salida / "clasificacion.csv").write_text(
+        ",".join(mod.CAMPOS_CSV) + "\n" + 'a.pdf,1,1,50,historia_clinica_nota,1,"{}",0,\n', encoding="utf-8"
+    )
+    vistos = []
+
+    class PoolFalso:
+        def __init__(self, *a, **k): ...
+        def map(self, fn, trabajos):
+            for t in trabajos:
+                vistos.append(t[0].name)
+                yield {"ruta": t[0].name, "paginas_totales": 1, "paginas_ocr": 1, "chars_ocr": 9, "tipo": "sin_texto",
+                       "paginas_clinicas": 0, "paginas_por_tipo": "{}", "posible_cedula": 0}
+        def shutdown(self, *a, **k): ...
+
+    monkeypatch.setattr(mod, "ProcessPoolExecutor", PoolFalso)
+    monkeypatch.setattr(mod, "verificar_ocr", lambda *a, **k: None)
+    monkeypatch.setattr(mod, "REPO_ROOT", Path("/no/es/el/repo"))
+
+    assert main([str(carpeta), "--todo", "--reanudar", "--salida", str(salida)]) == 0
+    assert vistos == ["b.pdf"]
+    assert "b.pdf" in (salida / "clasificacion.csv").read_text(encoding="utf-8")
