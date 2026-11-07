@@ -4,7 +4,7 @@
 # misma petición (max_tokens, extra_body) y misma lectura de la respuesta.
 fastapi>=0.115,<1
 uvicorn[standard]>=0.54.0,<1
-pydantic>=2.9,<3
+pydantic>=2.14.2,<3
 python-dotenv>=1.2.4,<2
 openai>=3.26.0,<4
 passlib>=1.7,<2
