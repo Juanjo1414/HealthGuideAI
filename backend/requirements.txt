@@ -2,7 +2,7 @@
 # que nadie la revise (pasó con openai, que llegó a 3.x solo). Se suben a mano,
 # en su propio PR. openai 3.x se verificó contra un servidor que imita a NVIDIA:
 # misma petición (max_tokens, extra_body) y misma lectura de la respuesta.
-fastapi>=0.115,<1
+fastapi>=0.162.0,<1
 uvicorn[standard]>=0.54.0,<1
 pydantic>=2.9,<3
 python-dotenv>=1.2.4,<2
